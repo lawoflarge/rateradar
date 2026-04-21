@@ -1,10 +1,13 @@
+import { ImpliedRateCurve } from "@/components/ImpliedRateCurve";
 import { MeetingCountdown } from "@/components/MeetingCountdown";
+import { MostLikelyPath } from "@/components/MostLikelyPath";
 import { ProbabilityTable } from "@/components/ProbabilityTable";
 import {
   getEcbProbabilities,
   getFedProbabilities,
   getMeetingHistory,
 } from "@/lib/data";
+import { CURRENT_POLICY_RATES } from "@/lib/policy-rates";
 import type { MeetingProbabilities, ProbabilitySeries } from "@/lib/types";
 
 async function prefetchHistory(
@@ -107,6 +110,34 @@ export default async function Home() {
               </div>
             </div>
           </div>
+        </section>
+      )}
+
+      {/* Most-likely path overview */}
+      {(fed.length > 0 || ecb.length > 0) && (
+        <section className="mb-12 space-y-6">
+          {fed.length > 0 && <MostLikelyPath snapshots={fed} label="Fed path" />}
+          {ecb.length > 0 && <MostLikelyPath snapshots={ecb} label="ECB path" />}
+        </section>
+      )}
+
+      {/* Implied rate curves */}
+      {(fed.length > 0 || ecb.length > 0) && (
+        <section className="mb-14 grid gap-6 md:grid-cols-2">
+          {fed.length > 0 && (
+            <ImpliedRateCurve
+              snapshots={fed}
+              startingRate={CURRENT_POLICY_RATES.FED}
+              bankLabel="Federal Reserve"
+            />
+          )}
+          {ecb.length > 0 && (
+            <ImpliedRateCurve
+              snapshots={ecb}
+              startingRate={CURRENT_POLICY_RATES.ECB}
+              bankLabel="European Central Bank"
+            />
+          )}
         </section>
       )}
 
