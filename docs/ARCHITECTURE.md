@@ -81,7 +81,7 @@ Single source of truth for data acquisition + probability calculation. Runs on a
 
 ### `infra/supabase` — Postgres
 
-**Schema (see `infra/supabase/migrations/0001_initial.sql`):**
+**Schema (see `supabase/migrations/20260421000000_initial.sql`):**
 
 ```sql
 central_banks (id uuid, code text unique, name text)
