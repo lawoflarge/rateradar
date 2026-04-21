@@ -10,6 +10,8 @@ import {
 import { CURRENT_POLICY_RATES } from "@/lib/policy-rates";
 import type { MeetingProbabilities, ProbabilitySeries } from "@/lib/types";
 
+export const revalidate = 300; // ISR: refresh every 5 minutes
+
 async function prefetchHistory(
   snapshots: MeetingProbabilities[],
   count: number,

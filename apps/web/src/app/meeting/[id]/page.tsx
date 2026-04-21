@@ -10,6 +10,8 @@ interface PageProps {
   params: Promise<{ id: string }>;
 }
 
+export const revalidate = 300;
+
 function formatLongDate(iso: string): string {
   const d = new Date(iso + "T00:00:00");
   return d.toLocaleDateString("en-US", {
