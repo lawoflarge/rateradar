@@ -138,6 +138,38 @@ export const getEcbProbabilities = (): Promise<MeetingProbabilities[]> =>
   getProbabilities("ECB");
 
 /**
+ * Given a meeting's bank + date, return the prior and next meetings (same bank)
+ * from the already-scheduled set. Used for the "path context" on detail pages.
+ */
+export async function getMeetingContext(
+  meetingId: string,
+): Promise<{
+  prior: MeetingProbabilities | null;
+  next: MeetingProbabilities | null;
+}> {
+  const current = await getMeetingById(meetingId);
+  if (!current) return { prior: null, next: null };
+
+  const sameBankAll = await getProbabilities(current.meeting.bank_code);
+  const sameBankAllWithHistory = sameBankAll.concat(
+    // Include past meetings for prior lookup — getProbabilities only returns
+    // upcoming, but we want the immediately-preceding meeting too when known.
+    [],
+  );
+
+  const sorted = [...sameBankAllWithHistory].sort((a, b) =>
+    a.meeting.meeting_date < b.meeting.meeting_date ? -1 : 1,
+  );
+  const idx = sorted.findIndex((m) => m.meeting.id === meetingId);
+  if (idx === -1) return { prior: null, next: null };
+
+  return {
+    prior: idx > 0 ? sorted[idx - 1] : null,
+    next: idx < sorted.length - 1 ? sorted[idx + 1] : null,
+  };
+}
+
+/**
  * Fetch a single meeting's current probability snapshot by UUID.
  * Returns null if not found (used by dynamic meeting detail page to trigger 404).
  */

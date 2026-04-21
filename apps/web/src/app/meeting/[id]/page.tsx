@@ -1,10 +1,11 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { MeetingContext } from "@/components/MeetingContext";
 import { MeetingCountdown } from "@/components/MeetingCountdown";
 import { ProbabilityTable } from "@/components/ProbabilityTable";
 import { ShareButtons } from "@/components/ShareButtons";
-import { getMeetingById, getMeetingHistory } from "@/lib/data";
+import { getMeetingById, getMeetingContext, getMeetingHistory } from "@/lib/data";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -69,7 +70,10 @@ export default async function MeetingPage({ params }: PageProps) {
   const data = await getMeetingById(id);
   if (!data) notFound();
 
-  const history = await getMeetingHistory(id, 60);
+  const [history, context] = await Promise.all([
+    getMeetingHistory(id, 60),
+    getMeetingContext(id),
+  ]);
   const top = [...data.outcomes].sort((a, b) => b.probability - a.probability)[0];
   const bank = data.meeting.bank_code;
 
@@ -142,9 +146,14 @@ export default async function MeetingPage({ params }: PageProps) {
         </div>
       </header>
 
+      {/* Path context: prior + next meeting */}
+      <section className="mb-8">
+        <MeetingContext prior={context.prior} next={context.next} />
+      </section>
+
       {/* Full probability table + chart */}
       <section className="mb-10">
-        <ProbabilityTable data={data} history={history} />
+        <ProbabilityTable data={data} history={history} showDetailLink={false} />
       </section>
 
       {/* Share */}
