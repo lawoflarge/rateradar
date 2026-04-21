@@ -34,18 +34,14 @@ function getKey(): string | undefined {
   return process.env.NEXT_PUBLIC_POSTHOG_KEY;
 }
 
-function getHost(): string {
-  return process.env.NEXT_PUBLIC_POSTHOG_HOST ?? "https://us.i.posthog.com";
-}
-
 /** Initialize PostHog if a key is configured. Safe to call multiple times. */
 export function initAnalytics(): void {
   if (initialized) return;
   const key = getKey();
   if (!key || typeof window === "undefined") return;
-
   // Lazy-load posthog-js via a script tag to avoid bundling it until needed.
-  // In a more mature integration, import from 'posthog-js' directly.
+  // In a more mature integration, import from 'posthog-js' directly and read
+  // the host from NEXT_PUBLIC_POSTHOG_HOST (defaults to https://us.i.posthog.com).
   initialized = true;
 }
 

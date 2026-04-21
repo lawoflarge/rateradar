@@ -32,17 +32,24 @@ export function MostLikelyPath({
 
   const list = snapshots.slice(0, maxMeetings);
 
-  // Running total of expected bps change (not the same as most-likely — this is
-  // the expectation over all outcomes, shown as a "cumulative pricing" metric)
-  let cumulativeExpectedBps = 0;
-  const withExpected = list.map((s) => {
+  // Running total of expected bps change. Use reduce instead of a mutable
+  // `let` accumulator — React 19's purity rule flags reassignment during render.
+  type PathEntry = {
+    snapshot: (typeof list)[number];
+    expectedDelta: number;
+    cumulative: number;
+  };
+  const withExpected: PathEntry[] = list.reduce<PathEntry[]>((acc, s) => {
     const expectedDelta = s.outcomes.reduce(
-      (acc, o) => acc + o.probability * o.delta_bps,
+      (a, o) => a + o.probability * o.delta_bps,
       0,
     );
-    cumulativeExpectedBps += expectedDelta;
-    return { snapshot: s, expectedDelta, cumulative: cumulativeExpectedBps };
-  });
+    const prevCumulative = acc.length === 0 ? 0 : acc[acc.length - 1].cumulative;
+    return [
+      ...acc,
+      { snapshot: s, expectedDelta, cumulative: prevCumulative + expectedDelta },
+    ];
+  }, []);
 
   const finalCumulative = withExpected[withExpected.length - 1]?.cumulative ?? 0;
 

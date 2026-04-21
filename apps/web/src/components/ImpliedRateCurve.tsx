@@ -30,25 +30,31 @@ function formatShort(iso: string): string {
 export function ImpliedRateCurve({ snapshots, startingRate, bankLabel }: Props) {
   if (snapshots.length === 0) return null;
 
-  let runningRate = startingRate;
-  const data = [
-    { label: "Now", fullLabel: "Today", rate: runningRate },
-    ...snapshots.map((s) => {
+  // Use reduce instead of a mutable `let` counter — React 19's purity rule
+  // flags reassignment during render.
+  type CurvePoint = { label: string; fullLabel: string; rate: number };
+  const data: CurvePoint[] = snapshots.reduce<CurvePoint[]>(
+    (acc, s) => {
+      const prevRate = acc.length === 0 ? startingRate : acc[acc.length - 1].rate;
       const expectedDeltaBps = s.outcomes.reduce(
-        (acc, o) => acc + o.probability * o.delta_bps,
+        (a, o) => a + o.probability * o.delta_bps,
         0,
       );
-      runningRate += expectedDeltaBps / 100; // bps -> percent
-      return {
-        label: formatShort(s.meeting.meeting_date),
-        fullLabel: new Date(s.meeting.meeting_date + "T00:00:00").toLocaleDateString(
-          "en-US",
-          { weekday: "short", month: "short", day: "numeric" },
-        ),
-        rate: runningRate,
-      };
-    }),
-  ];
+      const nextRate = prevRate + expectedDeltaBps / 100; // bps -> percent
+      return [
+        ...acc,
+        {
+          label: formatShort(s.meeting.meeting_date),
+          fullLabel: new Date(s.meeting.meeting_date + "T00:00:00").toLocaleDateString(
+            "en-US",
+            { weekday: "short", month: "short", day: "numeric" },
+          ),
+          rate: nextRate,
+        },
+      ];
+    },
+    [{ label: "Now", fullLabel: "Today", rate: startingRate }],
+  );
 
   const min = Math.min(...data.map((d) => d.rate)) - 0.25;
   const max = Math.max(...data.map((d) => d.rate)) + 0.25;
