@@ -105,13 +105,32 @@ def main() -> int:
     print_probabilities(results)
 
     if args.write:
-        # TODO(phase-1b): wire Supabase writer once project is spun up
-        print(
-            "\n[--write requested but Supabase integration not yet implemented. "
-            "Spin up Supabase project and re-run.]",
-            file=sys.stderr,
-        )
-        return 3
+        import os
+
+        import psycopg2
+
+        from .supabase_writer import write_probabilities
+
+        db_url = os.environ.get("RR_DB_URL") or os.environ.get("SUPABASE_DB_URL")
+        if not db_url:
+            print(
+                "\n[--write requires RR_DB_URL or SUPABASE_DB_URL env var pointing to "
+                "the Supabase Postgres connection string]",
+                file=sys.stderr,
+            )
+            return 3
+        if "sslmode=" not in db_url:
+            db_url += "&sslmode=require" if "?" in db_url else "?sslmode=require"
+
+        logger.info("Connecting to Supabase to upsert snapshots...")
+        conn = psycopg2.connect(db_url)
+        try:
+            written, missing = write_probabilities(
+                conn, results, bank_code=args.bank.upper(), source="pipeline"
+            )
+        finally:
+            conn.close()
+        print(f"\nWrote {written} probability snapshots to Supabase ({missing} unmatched).")
 
     elapsed = (datetime.now(timezone.utc) - started_at).total_seconds()
     logger.info("Done in %.2fs", elapsed)
