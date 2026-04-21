@@ -1,0 +1,31 @@
+# European Central Bank / Governing Council 2026 monetary policy meeting calendar
+# Source: https://www.ecb.europa.eu/press/calendars/mgcgc/html/index.en.html
+# Verified: 2026-04-21
+#
+# Each entry is the DECISION DAY (second day of the two-day meeting),
+# following the ECB convention that the monetary policy decision is announced
+# on the second day at 14:15 CET, with press conference at 14:45 CET.
+#
+# Note: January and March meetings already occurred at time of seeding; they
+# are retained for historical reference and probability backfilling.
+bank: ECB
+year: 2026
+meetings:
+  - date: 2026-01-22
+    location: Frankfurt
+    status: completed
+  - date: 2026-03-05
+    location: Frankfurt
+    status: completed
+  - date: 2026-04-30
+    location: Frankfurt
+  - date: 2026-06-11
+    location: Frankfurt
+  - date: 2026-07-23
+    location: Frankfurt
+  - date: 2026-09-10
+    location: Deutsche Bundesbank
+  - date: 2026-10-29
+    location: Frankfurt
+  - date: 2026-12-17
+    location: Frankfurt

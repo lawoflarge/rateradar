@@ -1,0 +1,25 @@
+# Federal Reserve / FOMC 2026 meeting calendar
+# Source: https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm
+# Verified: 2026-04-21
+#
+# Each entry is the DECISION DAY (second day of the two-day meeting).
+# Starred meetings also include a Summary of Economic Projections (SEP).
+bank: FED
+year: 2026
+meetings:
+  - date: 2026-01-28
+    has_sep: false
+  - date: 2026-03-18
+    has_sep: true
+  - date: 2026-04-29
+    has_sep: false
+  - date: 2026-06-17
+    has_sep: true
+  - date: 2026-07-29
+    has_sep: false
+  - date: 2026-09-16
+    has_sep: true
+  - date: 2026-10-28
+    has_sep: false
+  - date: 2026-12-09
+    has_sep: true

@@ -114,7 +114,29 @@ We also run weekly regression checks against CME's published historical archive 
 - **Non-25bp moves:** when markets price unusual outcomes (e.g., +50 bps), the three-outcome decomposition can produce sign-flipped probabilities during transitions. We clamp to [0, 1] and re-normalize.
 - **ECB between-meeting decisions:** historically rare but possible; we flag these in the UI when detected.
 
-## 10. Changelog
+## 10. Known limitations (MVP scaffold, pre-production)
+
+The initial implementation in `services/data-pipeline` uses **a single contract per
+meeting** to solve for the implied post-meeting rate. This works accurately when the
+meeting falls near the start or middle of its month (plenty of post-meeting days to
+average over), but **amplifies small noise into large rate deltas** for meetings that
+land near the end of a month (2-5 days remaining).
+
+**Example.** A meeting on July 29 leaves only 2 days of post-meeting effective rate
+baked into the July contract. A 1 bp error in the contract price produces a ~15 bp
+error in the solved post-meeting rate.
+
+**Production fix (tracked as a Phase 2 task):** Use the CME methodology's
+cross-contract approach — anchor the pre-meeting rate with the *prior* month's
+contract (which mostly reflects pre-decision rates when the meeting is late in its
+own month), and the post-meeting rate with the *next* month's contract. Solve the
+resulting system of equations iteratively.
+
+Until that lands, production deployment should either (a) skip meetings that fall
+in the last 7 days of their month, or (b) validate solved rates against the live
+FedWatch snapshot and flag divergences > 5 bp.
+
+## 11. Changelog
 
 Material changes to this methodology are recorded here with date and reason. Consumers who rely on historical comparability can pin to a specific methodology version.
 
