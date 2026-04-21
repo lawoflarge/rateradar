@@ -8,7 +8,7 @@
 
 import { MOCK_FED_PROBABILITIES } from "./mock-data";
 import { getSupabase } from "./supabase";
-import type { MeetingProbabilities, Outcome } from "./types";
+import type { MeetingProbabilities, Outcome, ProbabilitySeries } from "./types";
 
 function hasSupabaseConfig(): boolean {
   return Boolean(
@@ -117,5 +117,71 @@ export async function getFedProbabilities(): Promise<MeetingProbabilities[]> {
     return nonEmpty.length > 0 ? nonEmpty : MOCK_FED_PROBABILITIES;
   } catch {
     return MOCK_FED_PROBABILITIES;
+  }
+}
+
+interface HistoryRow {
+  outcome_id: string;
+  snapshot_at: string;
+  probability: number;
+  outcomes: { label: string; delta_bps: number } | null;
+}
+
+/**
+ * Fetch historical probability time series for a given meeting.
+ *
+ * Returns one series per outcome, each containing chronologically-sorted
+ * (snapshot_at, probability) points over the requested window.
+ * Falls back to empty array if Supabase is unconfigured or errors.
+ */
+export async function getMeetingHistory(
+  meetingId: string,
+  windowDays = 60,
+): Promise<ProbabilitySeries[]> {
+  if (!hasSupabaseConfig()) return [];
+
+  try {
+    const supabase = getSupabase();
+    const since = new Date(Date.now() - windowDays * 24 * 60 * 60 * 1000).toISOString();
+
+    // 1. Get all outcomes for this meeting (we need labels + delta_bps)
+    const { data: outcomes, error: oErr } = await supabase
+      .from("outcomes")
+      .select("id, label, delta_bps")
+      .eq("meeting_id", meetingId)
+      .order("delta_bps", { ascending: true });
+    if (oErr || !outcomes) return [];
+
+    // 2. Get all snapshots for those outcomes in the window
+    const outcomeIds = outcomes.map((o) => o.id as string);
+    const { data: snaps, error: sErr } = await supabase
+      .from("probability_snapshots")
+      .select("outcome_id, snapshot_at, probability, outcomes!inner(label, delta_bps)")
+      .in("outcome_id", outcomeIds)
+      .gte("snapshot_at", since)
+      .order("snapshot_at", { ascending: true });
+    if (sErr || !snaps) return [];
+
+    const typedSnaps = snaps as unknown as HistoryRow[];
+
+    // 3. Group by outcome_id
+    const series: ProbabilitySeries[] = outcomes.map((o) => {
+      const points = typedSnaps
+        .filter((s) => s.outcome_id === o.id)
+        .map((s) => ({
+          snapshot_at: s.snapshot_at,
+          probability: s.probability,
+        }));
+      return {
+        outcome_id: o.id as string,
+        label: o.label as string,
+        delta_bps: o.delta_bps as number,
+        series: points,
+      };
+    });
+
+    return series;
+  } catch {
+    return [];
   }
 }

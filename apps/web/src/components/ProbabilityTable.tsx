@@ -1,7 +1,9 @@
-import type { MeetingProbabilities } from "@/lib/types";
+import { HistoricalChart } from "./HistoricalChart";
+import type { MeetingProbabilities, ProbabilitySeries } from "@/lib/types";
 
 interface Props {
   data: MeetingProbabilities;
+  history?: ProbabilitySeries[];
 }
 
 function formatMeetingDate(iso: string): string {
@@ -22,11 +24,11 @@ function probabilityColor(p: number): string {
   return "bg-zinc-900 text-zinc-600 border-zinc-800";
 }
 
-export function ProbabilityTable({ data }: Props) {
+export function ProbabilityTable({ data, history }: Props) {
   const topOutcome = [...data.outcomes].sort((a, b) => b.probability - a.probability)[0];
 
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-950/50 p-6">
+    <div className="space-y-4 rounded-xl border border-zinc-800 bg-zinc-950/50 p-6">
       <div className="mb-4 flex items-baseline justify-between">
         <div>
           <h3 className="text-lg font-semibold text-zinc-50">
@@ -84,6 +86,12 @@ export function ProbabilityTable({ data }: Props) {
           </tbody>
         </table>
       </div>
+
+      <HistoricalChart
+        meetingId={data.meeting.id}
+        windowDays={60}
+        initialSeries={history}
+      />
     </div>
   );
 }

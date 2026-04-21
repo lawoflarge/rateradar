@@ -1,9 +1,16 @@
 import { MeetingCountdown } from "@/components/MeetingCountdown";
 import { ProbabilityTable } from "@/components/ProbabilityTable";
-import { getFedProbabilities } from "@/lib/data";
+import { getFedProbabilities, getMeetingHistory } from "@/lib/data";
 
 export default async function Home() {
   const snapshots = await getFedProbabilities();
+
+  // Pre-fetch history for the first few meetings server-side so initial render
+  // shows charts immediately. Remaining meetings lazy-fetch client-side.
+  const historyByMeeting: Record<string, Awaited<ReturnType<typeof getMeetingHistory>>> = {};
+  for (const s of snapshots.slice(0, 4)) {
+    historyByMeeting[s.meeting.id] = await getMeetingHistory(s.meeting.id, 60);
+  }
 
   if (snapshots.length === 0) {
     return (
@@ -83,7 +90,11 @@ export default async function Home() {
         </h2>
         <div className="space-y-6">
           {snapshots.map((s) => (
-            <ProbabilityTable key={s.meeting.id} data={s} />
+            <ProbabilityTable
+              key={s.meeting.id}
+              data={s}
+              history={historyByMeeting[s.meeting.id]}
+            />
           ))}
         </div>
       </section>
