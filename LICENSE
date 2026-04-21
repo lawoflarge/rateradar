@@ -1,0 +1,12 @@
+Copyright (c) 2026 lawoflarge
+
+All rights reserved.
+
+This software is proprietary. No part of this repository may be reproduced,
+distributed, or transmitted in any form or by any means without the prior
+written permission of the copyright holder.
+
+This license will be revisited prior to public launch. Candidates include:
+- Remaining proprietary (closed source)
+- MIT license for the data pipeline only, with a separate commercial license for the apps
+- Full MIT license for everything

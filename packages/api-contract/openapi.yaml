@@ -1,0 +1,275 @@
+openapi: 3.1.0
+info:
+  title: RateRadar API
+  version: 0.1.0
+  description: |
+    Public API serving Fed + ECB rate-decision probabilities and history.
+    Consumed by both the Next.js web app and native iOS app.
+servers:
+  - url: https://{host}/api
+    variables:
+      host:
+        default: rateradar.vercel.app
+        description: Initial production domain (custom domain planned post-launch)
+paths:
+  /banks:
+    get:
+      summary: List tracked central banks
+      operationId: listBanks
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CentralBank"
+
+  /meetings:
+    get:
+      summary: List meetings, filterable by bank and upcoming-only
+      operationId: listMeetings
+      parameters:
+        - in: query
+          name: bank
+          schema:
+            type: string
+            enum: [FED, ECB]
+        - in: query
+          name: upcoming
+          schema:
+            type: boolean
+            default: false
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Meeting"
+
+  /meetings/{id}/probabilities:
+    get:
+      summary: Current probability snapshot for a meeting
+      operationId: getMeetingProbabilities
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MeetingProbabilities"
+
+  /meetings/{id}/probabilities/history:
+    get:
+      summary: Historical probability time series for a meeting
+      operationId: getMeetingProbabilityHistory
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: window
+          schema:
+            type: string
+            enum: [7d, 30d, 90d, 1y, all]
+            default: 90d
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ProbabilitySeries"
+
+  /meetings/{id}/conditional:
+    get:
+      summary: Conditional probabilities given a specified outcome
+      operationId: getConditionalProbabilities
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - in: query
+          name: given
+          required: true
+          schema:
+            type: string
+            format: uuid
+            description: outcome_id from a prior meeting
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MeetingProbabilities"
+
+  /events:
+    get:
+      summary: Macro events (CPI, NFP, speeches) for chart overlays
+      operationId: listEvents
+      parameters:
+        - in: query
+          name: bank
+          schema:
+            type: string
+            enum: [FED, ECB]
+        - in: query
+          name: window
+          schema:
+            type: string
+            enum: [30d, 90d, 1y]
+            default: 90d
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Event"
+
+  /brokers:
+    get:
+      summary: Affiliate broker partnerships for contextual placement
+      operationId: listBrokers
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Broker"
+
+components:
+  schemas:
+    CentralBank:
+      type: object
+      required: [id, code, name]
+      properties:
+        id: { type: string, format: uuid }
+        code: { type: string, enum: [FED, ECB] }
+        name: { type: string }
+
+    Meeting:
+      type: object
+      required: [id, bank_id, meeting_date, status]
+      properties:
+        id: { type: string, format: uuid }
+        bank_id: { type: string, format: uuid }
+        bank_code: { type: string, enum: [FED, ECB] }
+        meeting_date: { type: string, format: date }
+        status:
+          type: string
+          enum: [scheduled, in_progress, completed, cancelled]
+
+    Outcome:
+      type: object
+      required: [id, label, delta_bps, probability]
+      properties:
+        id: { type: string, format: uuid }
+        label: { type: string, example: "-25bp" }
+        delta_bps: { type: integer, example: -25 }
+        probability:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+        snapshot_at: { type: string, format: date-time }
+
+    MeetingProbabilities:
+      type: object
+      required: [meeting, outcomes]
+      properties:
+        meeting:
+          $ref: "#/components/schemas/Meeting"
+        outcomes:
+          type: array
+          items:
+            $ref: "#/components/schemas/Outcome"
+        snapshot_at: { type: string, format: date-time }
+
+    ProbabilityPoint:
+      type: object
+      required: [snapshot_at, probability]
+      properties:
+        snapshot_at: { type: string, format: date-time }
+        probability:
+          type: number
+          format: float
+          minimum: 0
+          maximum: 1
+
+    ProbabilitySeries:
+      type: object
+      required: [outcome_id, label, delta_bps, series]
+      properties:
+        outcome_id: { type: string, format: uuid }
+        label: { type: string }
+        delta_bps: { type: integer }
+        series:
+          type: array
+          items:
+            $ref: "#/components/schemas/ProbabilityPoint"
+
+    Event:
+      type: object
+      required: [id, date, kind, title]
+      properties:
+        id: { type: string, format: uuid }
+        bank_code: { type: string, enum: [FED, ECB, null] }
+        date: { type: string, format: date }
+        kind:
+          type: string
+          enum:
+            - cpi
+            - ppi
+            - nfp
+            - unemployment
+            - gdp
+            - fomc_minutes
+            - ecb_speech
+            - fed_speech
+            - jolts
+            - retail_sales
+            - other
+        title: { type: string }
+        description: { type: string }
+        source_url: { type: string, format: uri }
+
+    Broker:
+      type: object
+      required: [slug, name, affiliate_url, markets]
+      properties:
+        slug: { type: string }
+        name: { type: string }
+        affiliate_url: { type: string, format: uri }
+        markets:
+          type: array
+          items:
+            type: string
+            enum: [US, EU, UK, Global]
+        logo_url: { type: string, format: uri }
+        tagline: { type: string }
