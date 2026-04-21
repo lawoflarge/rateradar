@@ -1,28 +1,46 @@
 import { MeetingCountdown } from "@/components/MeetingCountdown";
 import { ProbabilityTable } from "@/components/ProbabilityTable";
-import { getFedProbabilities, getMeetingHistory } from "@/lib/data";
+import {
+  getEcbProbabilities,
+  getFedProbabilities,
+  getMeetingHistory,
+} from "@/lib/data";
+import type { MeetingProbabilities, ProbabilitySeries } from "@/lib/types";
+
+async function prefetchHistory(
+  snapshots: MeetingProbabilities[],
+  count: number,
+): Promise<Record<string, ProbabilitySeries[]>> {
+  const out: Record<string, ProbabilitySeries[]> = {};
+  for (const s of snapshots.slice(0, count)) {
+    out[s.meeting.id] = await getMeetingHistory(s.meeting.id, 60);
+  }
+  return out;
+}
+
+function soonestMeeting(
+  fed: MeetingProbabilities[],
+  ecb: MeetingProbabilities[],
+): MeetingProbabilities | null {
+  const all = [...fed, ...ecb];
+  if (all.length === 0) return null;
+  return all.reduce((earliest, cur) =>
+    cur.meeting.meeting_date < earliest.meeting.meeting_date ? cur : earliest,
+  );
+}
 
 export default async function Home() {
-  const snapshots = await getFedProbabilities();
+  const [fed, ecb] = await Promise.all([
+    getFedProbabilities(),
+    getEcbProbabilities(),
+  ]);
 
-  // Pre-fetch history for the first few meetings server-side so initial render
-  // shows charts immediately. Remaining meetings lazy-fetch client-side.
-  const historyByMeeting: Record<string, Awaited<ReturnType<typeof getMeetingHistory>>> = {};
-  for (const s of snapshots.slice(0, 4)) {
-    historyByMeeting[s.meeting.id] = await getMeetingHistory(s.meeting.id, 60);
-  }
+  const [fedHistory, ecbHistory] = await Promise.all([
+    prefetchHistory(fed, 3),
+    prefetchHistory(ecb, 3),
+  ]);
 
-  if (snapshots.length === 0) {
-    return (
-      <main className="mx-auto max-w-5xl px-6 py-16">
-        <h1 className="text-4xl font-semibold">RateRadar</h1>
-        <p className="mt-4 text-zinc-400">No upcoming meetings found. Check back soon.</p>
-      </main>
-    );
-  }
-
-  const next = snapshots[0];
-  const topOutcome = [...next.outcomes].sort((a, b) => b.probability - a.probability)[0];
+  const next = soonestMeeting(fed, ecb);
 
   return (
     <main className="mx-auto max-w-5xl px-6 py-16">
@@ -32,9 +50,7 @@ export default async function Home() {
           <div
             aria-hidden
             className="h-8 w-8 rounded-full border-2 border-emerald-400"
-            style={{
-              boxShadow: "0 0 20px rgba(52, 211, 153, 0.5)",
-            }}
+            style={{ boxShadow: "0 0 20px rgba(52, 211, 153, 0.5)" }}
           />
           <span className="text-xl font-semibold tracking-tight">RateRadar</span>
         </div>
@@ -50,61 +66,95 @@ export default async function Home() {
         </p>
       </header>
 
-      {/* Hero snapshot */}
-      <section className="mb-12">
-        <div className="rounded-2xl border border-zinc-800 bg-gradient-to-br from-emerald-950/30 to-zinc-950 p-8">
-          <div className="flex flex-wrap items-baseline justify-between gap-4">
-            <div>
-              <div className="text-xs uppercase tracking-wide text-emerald-400">
-                Next Fed decision
+      {/* Hero — whichever bank decides soonest */}
+      {next && (
+        <section className="mb-12">
+          <div className="rounded-2xl border border-zinc-800 bg-gradient-to-br from-emerald-950/30 to-zinc-950 p-8">
+            <div className="flex flex-wrap items-baseline justify-between gap-4">
+              <div>
+                <div className="text-xs uppercase tracking-wide text-emerald-400">
+                  Next {next.meeting.bank_code === "FED" ? "Fed" : "ECB"} decision
+                </div>
+                <div className="mt-1 text-2xl font-semibold">
+                  {new Date(next.meeting.meeting_date + "T00:00:00").toLocaleDateString(
+                    "en-US",
+                    { weekday: "long", month: "long", day: "numeric" },
+                  )}
+                </div>
+                <div className="mt-1 text-sm text-zinc-500">
+                  <MeetingCountdown meetingDate={next.meeting.meeting_date} />
+                </div>
               </div>
-              <div className="mt-1 text-2xl font-semibold">
-                {new Date(next.meeting.meeting_date + "T00:00:00").toLocaleDateString(
-                  "en-US",
-                  { weekday: "long", month: "long", day: "numeric" },
-                )}
-              </div>
-              <div className="mt-1 text-sm text-zinc-500">
-                <MeetingCountdown meetingDate={next.meeting.meeting_date} />
-              </div>
-            </div>
-            <div className="text-right">
-              <div className="text-xs uppercase tracking-wide text-zinc-500">
-                Market expects
-              </div>
-              <div className="mt-1 text-4xl font-semibold tabular-nums text-emerald-300">
-                {(topOutcome.probability * 100).toFixed(0)}%
-              </div>
-              <div className="mt-1 text-lg font-medium text-zinc-300">
-                {topOutcome.label === "Hold" ? "holds rates" : `moves ${topOutcome.label}`}
+              <div className="text-right">
+                {(() => {
+                  const top = [...next.outcomes].sort(
+                    (a, b) => b.probability - a.probability,
+                  )[0];
+                  return (
+                    <>
+                      <div className="text-xs uppercase tracking-wide text-zinc-500">
+                        Market expects
+                      </div>
+                      <div className="mt-1 text-4xl font-semibold tabular-nums text-emerald-300">
+                        {(top.probability * 100).toFixed(0)}%
+                      </div>
+                      <div className="mt-1 text-lg font-medium text-zinc-300">
+                        {top.label === "Hold" ? "holds rates" : `moves ${top.label}`}
+                      </div>
+                    </>
+                  );
+                })()}
               </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
-      {/* All upcoming meetings */}
-      <section>
-        <h2 className="mb-6 text-2xl font-semibold tracking-tight">
-          Upcoming Fed meetings
-        </h2>
-        <div className="space-y-6">
-          {snapshots.map((s) => (
-            <ProbabilityTable
-              key={s.meeting.id}
-              data={s}
-              history={historyByMeeting[s.meeting.id]}
-            />
-          ))}
-        </div>
-      </section>
+      {/* Fed section */}
+      {fed.length > 0 && (
+        <section className="mb-14">
+          <h2 className="mb-6 text-2xl font-semibold tracking-tight">
+            Upcoming Fed meetings
+          </h2>
+          <div className="space-y-6">
+            {fed.map((s) => (
+              <ProbabilityTable
+                key={s.meeting.id}
+                data={s}
+                history={fedHistory[s.meeting.id]}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ECB section */}
+      {ecb.length > 0 && (
+        <section className="mb-14">
+          <h2 className="mb-6 text-2xl font-semibold tracking-tight">
+            Upcoming ECB meetings
+          </h2>
+          <div className="space-y-6">
+            {ecb.map((s) => (
+              <ProbabilityTable
+                key={s.meeting.id}
+                data={s}
+                history={ecbHistory[s.meeting.id]}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {fed.length === 0 && ecb.length === 0 && (
+        <p className="text-zinc-400">No upcoming meetings found. Check back soon.</p>
+      )}
 
       {/* Footer */}
       <footer className="mt-20 border-t border-zinc-900 pt-8 text-sm text-zinc-500">
         <p>
-          Data computed in-house from Fed Funds Futures (Yahoo Finance) using the public
-          CME methodology. Not financial advice. Historical tracking and ECB coverage
-          launching soon.
+          Data computed in-house from Fed Funds Futures (Yahoo Finance) and €STR OIS
+          quotes using the public CME methodology. Not financial advice.
         </p>
         <p className="mt-3 text-xs">
           Built by{" "}

@@ -46,7 +46,7 @@ export function HistoricalChart({
     async function load() {
       try {
         const res = await fetch(
-          `/api/fed/meetings/${meetingId}/history?window=${windowDays}d`,
+          `/api/meetings/${meetingId}/history?window=${windowDays}d`,
           { cache: "no-store" },
         );
         const json = (await res.json()) as { data: ProbabilitySeries[] };

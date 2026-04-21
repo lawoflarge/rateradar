@@ -1,8 +1,8 @@
 /**
- * GET /api/fed/meetings/:id/history?window=60d
+ * GET /api/meetings/:id/history?window=60d
  *
- * Returns historical probability time series for a single meeting — one
- * series per outcome, chronologically sorted.
+ * Bank-agnostic historical probability time series for a single meeting.
+ * (meeting IDs are globally unique UUIDs.)
  */
 
 import { type NextRequest, NextResponse } from "next/server";

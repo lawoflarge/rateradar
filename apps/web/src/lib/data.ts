@@ -8,7 +8,12 @@
 
 import { MOCK_FED_PROBABILITIES } from "./mock-data";
 import { getSupabase } from "./supabase";
-import type { MeetingProbabilities, Outcome, ProbabilitySeries } from "./types";
+import type {
+  BankCode,
+  MeetingProbabilities,
+  Outcome,
+  ProbabilitySeries,
+} from "./types";
 
 function hasSupabaseConfig(): boolean {
   return Boolean(
@@ -37,27 +42,31 @@ interface MeetingRow {
 }
 
 /**
- * Fetch current probability snapshot for each scheduled meeting of the given bank.
- * Returns mock data if Supabase isn't configured or returns empty.
+ * Fetch current probability snapshot for each upcoming (future) scheduled meeting
+ * of the given bank. Returns mock data for FED if Supabase isn't configured or
+ * the query errors; returns empty for ECB in those cases (no ECB mock yet).
  */
-export async function getFedProbabilities(): Promise<MeetingProbabilities[]> {
-  if (!hasSupabaseConfig()) return MOCK_FED_PROBABILITIES;
+export async function getProbabilities(
+  bankCode: BankCode,
+): Promise<MeetingProbabilities[]> {
+  const fallback = bankCode === "FED" ? MOCK_FED_PROBABILITIES : [];
+  if (!hasSupabaseConfig()) return fallback;
 
   try {
     const supabase = getSupabase();
 
-    // 1. Grab upcoming Fed meetings (scheduled AND in the future)
+    // 1. Grab upcoming meetings for this bank
     const todayISO = new Date().toISOString().slice(0, 10);
     const { data: meetings, error: mErr } = await supabase
       .from("meetings")
       .select("id, meeting_date, status, bank_id, central_banks!inner(code)")
-      .eq("central_banks.code", "FED")
+      .eq("central_banks.code", bankCode)
       .eq("status", "scheduled")
       .gte("meeting_date", todayISO)
       .order("meeting_date", { ascending: true });
 
     if (mErr || !meetings || meetings.length === 0) {
-      return MOCK_FED_PROBABILITIES;
+      return fallback;
     }
 
     // 2. For each meeting, pull its outcomes + latest snapshot via the view
@@ -70,7 +79,7 @@ export async function getFedProbabilities(): Promise<MeetingProbabilities[]> {
       .in("meeting_id", meetingIds);
 
     if (pErr || !probs) {
-      return MOCK_FED_PROBABILITIES;
+      return fallback;
     }
 
     // 3. Group by meeting
@@ -100,7 +109,7 @@ export async function getFedProbabilities(): Promise<MeetingProbabilities[]> {
       return {
         meeting: {
           id: m.id,
-          bank_code: m.central_banks?.code ?? "FED",
+          bank_code: m.central_banks?.code ?? bankCode,
           meeting_date: m.meeting_date,
           status: m.status,
         },
@@ -114,11 +123,19 @@ export async function getFedProbabilities(): Promise<MeetingProbabilities[]> {
     const nonEmpty = result.filter((r) =>
       r.outcomes.some((o) => o.probability > 0),
     );
-    return nonEmpty.length > 0 ? nonEmpty : MOCK_FED_PROBABILITIES;
+    return nonEmpty.length > 0 ? nonEmpty : fallback;
   } catch {
-    return MOCK_FED_PROBABILITIES;
+    return fallback;
   }
 }
+
+/** Backwards-compatible shortcut for FED. */
+export const getFedProbabilities = (): Promise<MeetingProbabilities[]> =>
+  getProbabilities("FED");
+
+/** ECB counterpart. */
+export const getEcbProbabilities = (): Promise<MeetingProbabilities[]> =>
+  getProbabilities("ECB");
 
 interface HistoryRow {
   outcome_id: string;
