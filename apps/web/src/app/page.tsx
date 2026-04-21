@@ -1,9 +1,9 @@
 import { MeetingCountdown } from "@/components/MeetingCountdown";
 import { ProbabilityTable } from "@/components/ProbabilityTable";
-import { MOCK_FED_PROBABILITIES } from "@/lib/mock-data";
+import { getFedProbabilities } from "@/lib/data";
 
-export default function Home() {
-  const snapshots = MOCK_FED_PROBABILITIES;
+export default async function Home() {
+  const snapshots = await getFedProbabilities();
 
   if (snapshots.length === 0) {
     return (

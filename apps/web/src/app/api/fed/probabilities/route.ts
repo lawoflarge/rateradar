@@ -7,11 +7,12 @@
  */
 
 import { NextResponse } from "next/server";
-import { MOCK_FED_PROBABILITIES } from "@/lib/mock-data";
+import { getFedProbabilities } from "@/lib/data";
 
 export async function GET() {
+  const data = await getFedProbabilities();
   return NextResponse.json(
-    { data: MOCK_FED_PROBABILITIES },
+    { data },
     {
       headers: {
         "Cache-Control": "s-maxage=300, stale-while-revalidate=600",

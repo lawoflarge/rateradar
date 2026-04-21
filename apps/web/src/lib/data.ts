@@ -1,0 +1,121 @@
+/**
+ * Data-access layer for meeting probabilities.
+ *
+ * Tries Supabase first (if env vars are configured); falls back to built-in
+ * mock data so dev / CI / first deploys never break. The fallback also covers
+ * the "Supabase reachable but empty" case — handy before the pipeline runs.
+ */
+
+import { MOCK_FED_PROBABILITIES } from "./mock-data";
+import { getSupabase } from "./supabase";
+import type { MeetingProbabilities, Outcome } from "./types";
+
+function hasSupabaseConfig(): boolean {
+  return Boolean(
+    process.env.NEXT_PUBLIC_SUPABASE_URL &&
+      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+  );
+}
+
+interface LatestProbabilityRow {
+  outcome_id: string;
+  meeting_id: string;
+  label: string;
+  delta_bps: number;
+  bank_id: string;
+  meeting_date: string;
+  probability: number | null;
+  snapshot_at: string | null;
+}
+
+interface MeetingRow {
+  id: string;
+  meeting_date: string;
+  status: "scheduled" | "in_progress" | "completed" | "cancelled";
+  bank_id: string;
+  central_banks: { code: "FED" | "ECB" } | null;
+}
+
+/**
+ * Fetch current probability snapshot for each scheduled meeting of the given bank.
+ * Returns mock data if Supabase isn't configured or returns empty.
+ */
+export async function getFedProbabilities(): Promise<MeetingProbabilities[]> {
+  if (!hasSupabaseConfig()) return MOCK_FED_PROBABILITIES;
+
+  try {
+    const supabase = getSupabase();
+
+    // 1. Grab upcoming Fed meetings (scheduled AND in the future)
+    const todayISO = new Date().toISOString().slice(0, 10);
+    const { data: meetings, error: mErr } = await supabase
+      .from("meetings")
+      .select("id, meeting_date, status, bank_id, central_banks!inner(code)")
+      .eq("central_banks.code", "FED")
+      .eq("status", "scheduled")
+      .gte("meeting_date", todayISO)
+      .order("meeting_date", { ascending: true });
+
+    if (mErr || !meetings || meetings.length === 0) {
+      return MOCK_FED_PROBABILITIES;
+    }
+
+    // 2. For each meeting, pull its outcomes + latest snapshot via the view
+    const typedMeetings = meetings as unknown as MeetingRow[];
+    const meetingIds = typedMeetings.map((m) => m.id);
+
+    const { data: probs, error: pErr } = await supabase
+      .from("latest_probabilities")
+      .select("*")
+      .in("meeting_id", meetingIds);
+
+    if (pErr || !probs) {
+      return MOCK_FED_PROBABILITIES;
+    }
+
+    // 3. Group by meeting
+    const typedProbs = probs as LatestProbabilityRow[];
+    const byMeeting = new Map<string, LatestProbabilityRow[]>();
+    for (const row of typedProbs) {
+      const list = byMeeting.get(row.meeting_id) ?? [];
+      list.push(row);
+      byMeeting.set(row.meeting_id, list);
+    }
+
+    const result: MeetingProbabilities[] = typedMeetings.map((m) => {
+      const rows = (byMeeting.get(m.id) ?? []).sort(
+        (a, b) => a.delta_bps - b.delta_bps,
+      );
+      const outcomes: Outcome[] = rows.map((r) => ({
+        id: r.outcome_id,
+        label: r.label,
+        delta_bps: r.delta_bps,
+        probability: r.probability ?? 0,
+        post_meeting_rate: 0, // post-meeting rate isn't stored in DB yet — computed by pipeline
+      }));
+      const latestSnap = rows.reduce(
+        (acc, r) => (r.snapshot_at && (!acc || r.snapshot_at > acc) ? r.snapshot_at : acc),
+        "",
+      );
+      return {
+        meeting: {
+          id: m.id,
+          bank_code: m.central_banks?.code ?? "FED",
+          meeting_date: m.meeting_date,
+          status: m.status,
+        },
+        snapshot_at: latestSnap || new Date().toISOString(),
+        outcomes,
+      };
+    });
+
+    // Filter to only meetings that have at least one non-zero probability — avoids
+    // rendering empty rows when data hasn't flowed yet for a given meeting.
+    const nonEmpty = result.filter((r) =>
+      r.outcomes.some((o) => o.probability > 0),
+    );
+    return nonEmpty.length > 0 ? nonEmpty : MOCK_FED_PROBABILITIES;
+  } catch {
+    return MOCK_FED_PROBABILITIES;
+  }
+}
