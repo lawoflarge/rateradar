@@ -1,9 +1,11 @@
+import Link from "next/link";
 import { HistoricalChart } from "./HistoricalChart";
 import type { MeetingProbabilities, ProbabilitySeries } from "@/lib/types";
 
 interface Props {
   data: MeetingProbabilities;
   history?: ProbabilitySeries[];
+  showDetailLink?: boolean;
 }
 
 function formatMeetingDate(iso: string): string {
@@ -24,7 +26,7 @@ function probabilityColor(p: number): string {
   return "bg-zinc-900 text-zinc-600 border-zinc-800";
 }
 
-export function ProbabilityTable({ data, history }: Props) {
+export function ProbabilityTable({ data, history, showDetailLink = true }: Props) {
   const topOutcome = [...data.outcomes].sort((a, b) => b.probability - a.probability)[0];
 
   return (
@@ -92,6 +94,17 @@ export function ProbabilityTable({ data, history }: Props) {
         windowDays={60}
         initialSeries={history}
       />
+
+      {showDetailLink && (
+        <div className="flex justify-end">
+          <Link
+            href={`/meeting/${data.meeting.id}`}
+            className="text-sm text-emerald-400 hover:text-emerald-300"
+          >
+            View full details →
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

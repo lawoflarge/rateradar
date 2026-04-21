@@ -137,6 +137,67 @@ export const getFedProbabilities = (): Promise<MeetingProbabilities[]> =>
 export const getEcbProbabilities = (): Promise<MeetingProbabilities[]> =>
   getProbabilities("ECB");
 
+/**
+ * Fetch a single meeting's current probability snapshot by UUID.
+ * Returns null if not found (used by dynamic meeting detail page to trigger 404).
+ */
+export async function getMeetingById(
+  meetingId: string,
+): Promise<MeetingProbabilities | null> {
+  if (!hasSupabaseConfig()) {
+    // In mock mode, linear-search the mock list
+    return (
+      MOCK_FED_PROBABILITIES.find((m) => m.meeting.id === meetingId) ?? null
+    );
+  }
+
+  try {
+    const supabase = getSupabase();
+
+    const { data: meeting, error: mErr } = await supabase
+      .from("meetings")
+      .select("id, meeting_date, status, bank_id, central_banks!inner(code)")
+      .eq("id", meetingId)
+      .maybeSingle();
+    if (mErr || !meeting) return null;
+
+    const typed = meeting as unknown as MeetingRow;
+
+    const { data: probs, error: pErr } = await supabase
+      .from("latest_probabilities")
+      .select("*")
+      .eq("meeting_id", meetingId)
+      .order("delta_bps", { ascending: true });
+    if (pErr || !probs) return null;
+
+    const typedProbs = probs as LatestProbabilityRow[];
+    const outcomes: Outcome[] = typedProbs.map((r) => ({
+      id: r.outcome_id,
+      label: r.label,
+      delta_bps: r.delta_bps,
+      probability: r.probability ?? 0,
+      post_meeting_rate: 0,
+    }));
+    const latestSnap = typedProbs.reduce(
+      (acc, r) => (r.snapshot_at && (!acc || r.snapshot_at > acc) ? r.snapshot_at : acc),
+      "",
+    );
+
+    return {
+      meeting: {
+        id: typed.id,
+        bank_code: typed.central_banks?.code ?? "FED",
+        meeting_date: typed.meeting_date,
+        status: typed.status,
+      },
+      snapshot_at: latestSnap || new Date().toISOString(),
+      outcomes,
+    };
+  } catch {
+    return null;
+  }
+}
+
 interface HistoryRow {
   outcome_id: string;
   snapshot_at: string;
