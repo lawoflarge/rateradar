@@ -5,6 +5,7 @@ or a deterministic mock — without the orchestrator caring which one is live.
 """
 
 from .base import ContractPrice, PriceFetcher
+from .ecb_mock_source import EcbMockFetcher
 from .mock_source import MockFetcher
 
-__all__ = ["ContractPrice", "PriceFetcher", "MockFetcher"]
+__all__ = ["ContractPrice", "EcbMockFetcher", "MockFetcher", "PriceFetcher"]

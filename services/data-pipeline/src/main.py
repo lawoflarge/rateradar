@@ -1,18 +1,17 @@
 """Data pipeline orchestrator — CLI entry point.
 
 Usage:
-    python -m src.main --bank fed --year 2026 --mock
-    python -m src.main --bank fed --year 2026 --source yfinance
+    python -m src.main --bank fed --year 2026 --source mock
+    python -m src.main --bank ecb --year 2026 --source mock
+    python -m src.main --bank fed --source yfinance --write
 
 Flags:
-    --bank         FED or ECB (currently only FED is implemented)
-    --year         Year to pull meetings from (default 2026)
-    --source       'mock' | 'yfinance' (default: mock for safety)
-    --current-rate Current policy-rate midpoint (percent). Default 4.375 (Fed target 4.25-4.50)
-    --write        If set, writes snapshots to Supabase. Without it, prints to stdout only.
-
-This is the entry point that the scheduler calls. Today it writes to stdout;
-Supabase integration lands when SUPABASE_URL + service key are configured.
+    --bank          fed | ecb
+    --year          Year to pull meetings from (default 2026)
+    --source        'mock' | 'yfinance' (default: mock for safety)
+    --current-rate  Current policy-rate midpoint (percent). Default auto-picks
+                    by bank: 4.375 for FED, 2.00 for ECB.
+    --write         If set, writes snapshots to Supabase via RR_DB_URL.
 """
 
 from __future__ import annotations
@@ -22,20 +21,32 @@ import logging
 import sys
 from datetime import datetime, timezone
 
+from .ecb_fetcher import run_ecb_fetch
 from .fed_fetcher import MeetingProbability, run_fed_fetch
 from .fetchers.base import PriceFetcher
+from .fetchers.ecb_mock_source import EcbMockFetcher
 from .fetchers.mock_source import MockFetcher
 
 logger = logging.getLogger(__name__)
 
 
-def build_fetcher(source: str) -> PriceFetcher:
+DEFAULT_RATES = {
+    "fed": 4.375,
+    "ecb": 2.00,
+}
+
+
+def build_fetcher(source: str, bank: str) -> PriceFetcher:
     if source == "mock":
-        return MockFetcher()
+        return EcbMockFetcher() if bank == "ecb" else MockFetcher()
     if source == "yfinance":
         # Imported lazily so mock mode doesn't require yfinance/requests at runtime
         from .fetchers.yfinance_source import YFinanceFetcher
 
+        if bank == "ecb":
+            raise NotImplementedError(
+                "yfinance source not supported for ECB yet — use --source mock for now"
+            )
         return YFinanceFetcher()
     raise ValueError(f"Unknown source: {source}. Valid: mock, yfinance")
 
@@ -65,13 +76,14 @@ def main() -> int:
     parser.add_argument(
         "--current-rate",
         type=float,
-        default=4.375,
-        help="Current policy-rate midpoint, percent (e.g. 4.375)",
+        default=None,
+        help="Current policy-rate midpoint, percent. Defaults by bank "
+        "(FED: 4.375%, ECB: 2.00%).",
     )
     parser.add_argument(
         "--write",
         action="store_true",
-        help="Write snapshots to Supabase (requires SUPABASE_URL + SERVICE_ROLE_KEY env vars)",
+        help="Write snapshots to Supabase (requires RR_DB_URL env var)",
     )
     parser.add_argument(
         "--verbose", "-v", action="store_true", help="Enable debug logging"
@@ -83,23 +95,31 @@ def main() -> int:
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
     )
 
-    if args.bank == "ecb":
-        print("ECB fetcher not yet implemented — Fed only for now", file=sys.stderr)
-        return 2
+    current_rate = (
+        args.current_rate if args.current_rate is not None else DEFAULT_RATES[args.bank]
+    )
+    fetcher = build_fetcher(args.source, args.bank)
 
-    fetcher = build_fetcher(args.source)
     logger.info(
-        "Running Fed fetch: year=%s source=%s current_rate=%.3f%%",
+        "Running %s fetch: year=%s source=%s current_rate=%.3f%%",
+        args.bank.upper(),
         args.year,
         args.source,
-        args.current_rate,
+        current_rate,
     )
     started_at = datetime.now(timezone.utc)
-    results = run_fed_fetch(
-        fetcher=fetcher,
-        current_target_midpoint=args.current_rate,
-        year=args.year,
-    )
+    if args.bank == "fed":
+        results = run_fed_fetch(
+            fetcher=fetcher,
+            current_target_midpoint=current_rate,
+            year=args.year,
+        )
+    else:
+        results = run_ecb_fetch(
+            fetcher=fetcher,
+            current_target=current_rate,
+            year=args.year,
+        )
     logger.info("Computed %d probability rows", len(results))
 
     print_probabilities(results)
