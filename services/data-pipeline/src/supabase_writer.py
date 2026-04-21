@@ -12,7 +12,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from typing import Protocol
 
 logger = logging.getLogger(__name__)
@@ -22,7 +22,7 @@ logger = logging.getLogger(__name__)
 class OutcomeKey:
     """Identifies an outcome row by its natural key (not UUID)."""
 
-    bank_code: str          # 'FED' | 'ECB'
+    bank_code: str  # 'FED' | 'ECB'
     meeting_date: date
     delta_bps: int
 
@@ -117,7 +117,7 @@ def write_probabilities(
     Returns `(written, missing)` counts.
     """
     if snapshot_at is None:
-        snapshot_at = datetime.now(timezone.utc).replace(microsecond=0)
+        snapshot_at = datetime.now(UTC).replace(microsecond=0)
 
     keys = [
         OutcomeKey(

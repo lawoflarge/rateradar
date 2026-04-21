@@ -19,7 +19,7 @@ from __future__ import annotations
 import argparse
 import logging
 import sys
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from .ecb_fetcher import run_ecb_fetch
 from .fed_fetcher import MeetingProbability, run_fed_fetch
@@ -85,9 +85,7 @@ def main() -> int:
         action="store_true",
         help="Write snapshots to Supabase (requires RR_DB_URL env var)",
     )
-    parser.add_argument(
-        "--verbose", "-v", action="store_true", help="Enable debug logging"
-    )
+    parser.add_argument("--verbose", "-v", action="store_true", help="Enable debug logging")
     args = parser.parse_args()
 
     logging.basicConfig(
@@ -95,9 +93,7 @@ def main() -> int:
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
     )
 
-    current_rate = (
-        args.current_rate if args.current_rate is not None else DEFAULT_RATES[args.bank]
-    )
+    current_rate = args.current_rate if args.current_rate is not None else DEFAULT_RATES[args.bank]
     fetcher = build_fetcher(args.source, args.bank)
 
     logger.info(
@@ -107,7 +103,7 @@ def main() -> int:
         args.source,
         current_rate,
     )
-    started_at = datetime.now(timezone.utc)
+    started_at = datetime.now(UTC)
     if args.bank == "fed":
         results = run_fed_fetch(
             fetcher=fetcher,
@@ -152,7 +148,7 @@ def main() -> int:
             conn.close()
         print(f"\nWrote {written} probability snapshots to Supabase ({missing} unmatched).")
 
-    elapsed = (datetime.now(timezone.utc) - started_at).total_seconds()
+    elapsed = (datetime.now(UTC) - started_at).total_seconds()
     logger.info("Done in %.2fs", elapsed)
     return 0
 

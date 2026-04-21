@@ -14,8 +14,8 @@ from dataclasses import dataclass
 class Outcome:
     """A possible rate-change outcome for a meeting."""
 
-    label: str            # e.g. "-25bp", "Hold", "+25bp"
-    delta_bps: int        # 0 = hold, negative = cut, positive = hike
+    label: str  # e.g. "-25bp", "Hold", "+25bp"
+    delta_bps: int  # 0 = hold, negative = cut, positive = hike
     post_meeting_rate: float  # target-midpoint after this outcome, in percent
 
 

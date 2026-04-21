@@ -25,7 +25,6 @@ from .probability_calc import (
     Outcome,
     decompose_probabilities,
     implied_rate_from_price,
-    monthly_avg_rate,
     solve_post_meeting_rate,
 )
 

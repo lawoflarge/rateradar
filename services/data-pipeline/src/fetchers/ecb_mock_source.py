@@ -24,12 +24,12 @@ class EcbMockFetcher(BaseFetcher):
 
     DEFAULT_PRICES: ClassVar[dict[str, tuple[float, date]]] = {
         # Apr 2026 (already past Apr 22 meeting, included for robustness)
-        "ESTR_J26": (98.00, date(2026, 4, 1)),   # Apr 2026: DFR ~2.00
-        "ESTR_K26": (98.00, date(2026, 5, 1)),   # May
-        "ESTR_M26": (98.07, date(2026, 6, 1)),   # June: slight easing priced
-        "ESTR_N26": (98.20, date(2026, 7, 1)),   # July
-        "ESTR_Q26": (98.33, date(2026, 8, 1)),   # Aug
-        "ESTR_U26": (98.47, date(2026, 9, 1)),   # Sep
+        "ESTR_J26": (98.00, date(2026, 4, 1)),  # Apr 2026: DFR ~2.00
+        "ESTR_K26": (98.00, date(2026, 5, 1)),  # May
+        "ESTR_M26": (98.07, date(2026, 6, 1)),  # June: slight easing priced
+        "ESTR_N26": (98.20, date(2026, 7, 1)),  # July
+        "ESTR_Q26": (98.33, date(2026, 8, 1)),  # Aug
+        "ESTR_U26": (98.47, date(2026, 9, 1)),  # Sep
         "ESTR_V26": (98.60, date(2026, 10, 1)),  # Oct
         "ESTR_X26": (98.72, date(2026, 11, 1)),  # Nov
         "ESTR_Z26": (98.83, date(2026, 12, 1)),  # Dec: ~1.17% by year-end

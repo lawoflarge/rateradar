@@ -24,11 +24,11 @@ class MockFetcher(BaseFetcher):
     # Prices chosen so `100 - price` gives a rate consistent with a slow
     # cutting path starting mid-2026.
     DEFAULT_PRICES: ClassVar[dict[str, tuple[float, date]]] = {
-        "ZQK26": (95.625, date(2026, 5, 1)),   # May 2026: rate ~4.375 (current level)
-        "ZQM26": (95.685, date(2026, 6, 1)),   # June: ~4.315 (cut partially priced)
-        "ZQN26": (95.810, date(2026, 7, 1)),   # July: ~4.190
-        "ZQQ26": (95.870, date(2026, 8, 1)),   # Aug: ~4.130
-        "ZQU26": (95.985, date(2026, 9, 1)),   # Sep: ~4.015
+        "ZQK26": (95.625, date(2026, 5, 1)),  # May 2026: rate ~4.375 (current level)
+        "ZQM26": (95.685, date(2026, 6, 1)),  # June: ~4.315 (cut partially priced)
+        "ZQN26": (95.810, date(2026, 7, 1)),  # July: ~4.190
+        "ZQQ26": (95.870, date(2026, 8, 1)),  # Aug: ~4.130
+        "ZQU26": (95.985, date(2026, 9, 1)),  # Sep: ~4.015
         "ZQV26": (96.065, date(2026, 10, 1)),  # Oct: ~3.935
         "ZQX26": (96.175, date(2026, 11, 1)),  # Nov: ~3.825
         "ZQZ26": (96.245, date(2026, 12, 1)),  # Dec: ~3.755

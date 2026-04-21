@@ -16,17 +16,16 @@ from typing import Protocol
 class ContractPrice:
     """One Fed Funds Futures contract's latest settlement price."""
 
-    symbol: str          # e.g. "ZQM26" (Fed Funds Futures, June 2026)
+    symbol: str  # e.g. "ZQM26" (Fed Funds Futures, June 2026)
     contract_month: date  # first day of the contract month (e.g. 2026-06-01)
-    price: float         # settlement price (e.g. 95.75 → implied rate 4.25%)
-    as_of: date          # the session date this price represents
+    price: float  # settlement price (e.g. 95.75 → implied rate 4.25%)
+    as_of: date  # the session date this price represents
 
 
 class PriceFetcher(Protocol):
     """Any class implementing `fetch` is a valid price fetcher."""
 
-    def fetch(self, symbols: list[str]) -> list[ContractPrice]:
-        ...
+    def fetch(self, symbols: list[str]) -> list[ContractPrice]: ...
 
 
 class BaseFetcher(ABC):

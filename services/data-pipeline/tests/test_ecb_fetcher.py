@@ -49,9 +49,9 @@ def test_run_ecb_fetch_end_to_end_mock():
     for r in results:
         by_meeting.setdefault(r.meeting_date, []).append(r.probability)
     for meeting_date, probs in by_meeting.items():
-        assert sum(probs) == pytest.approx(1.0), (
-            f"Probabilities for {meeting_date} did not sum to 1: {sum(probs)}"
-        )
+        assert sum(probs) == pytest.approx(
+            1.0
+        ), f"Probabilities for {meeting_date} did not sum to 1: {sum(probs)}"
 
 
 def test_run_ecb_fetch_has_cut_bias_in_h2_2026():

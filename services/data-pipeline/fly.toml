@@ -1,0 +1,30 @@
+# fly.io deployment config for the RateRadar pipeline.
+#
+# Deploy steps (one-time):
+#   fly auth login
+#   fly launch --no-deploy --name rateradar-pipeline --copy-config
+#   fly secrets set RR_DB_URL="postgresql://postgres.xxx:pwd@aws-1-eu-central-1.pooler.supabase.com:6543/postgres"
+#   fly deploy
+#
+# After deploy, configure a machine schedule via `fly machines run`:
+#   fly machines run --schedule hourly --region fra rateradar-pipeline "python -m src.main --bank fed --source mock --write"
+#
+# (The actual schedule is set when the machine is created; adjust times as needed.
+# For twice-daily: schedule two machines with specific cron expressions via Fly's
+# scheduled machines feature, or use an external cron like GitHub Actions.)
+
+app = "rateradar-pipeline"
+primary_region = "fra"   # Frankfurt — closest to eu-central-1 Supabase
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  PYTHONUNBUFFERED = "1"
+
+# No [[services]] block — this is a worker/cron app, not an HTTP server.
+
+[processes]
+  # Default: runs once then exits. Fly's scheduled machines will invoke this.
+  app = "python -m src.main --bank fed --source mock --write"
+  ecb = "python -m src.main --bank ecb --source mock --write"

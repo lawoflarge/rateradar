@@ -75,7 +75,9 @@ def test_compute_meeting_probabilities_with_mock_data():
     # June 2026 contract price 95.685 → implied avg 4.315% (cut partially priced)
     # For the June 17 meeting, with pre-rate 4.375 and meeting on day 17 of 30,
     # solve for post-rate. Should yield a probability mix biased toward a -25bp cut.
-    june_probs = {p.outcome_label: p.probability for p in probs if p.meeting_date == date(2026, 6, 17)}
+    june_probs = {
+        p.outcome_label: p.probability for p in probs if p.meeting_date == date(2026, 6, 17)
+    }
     # We expect non-trivial probability on -25bp AND Hold, with -25bp dominant
     assert june_probs["-25bp"] > 0
     assert june_probs["Hold"] > 0
@@ -92,7 +94,7 @@ def test_run_fed_fetch_end_to_end_mock():
     # 8 meetings × 5 outcomes each = 40 rows, but the mock only covers
     # 8 contract months (May-Dec 2026), and January/March meetings don't have
     # mock prices (happened before). Filter logic skips those.
-    # We have mock data for May onward; meetings in May/Jun/Jul/Aug/Sep/Oct/Nov/Dec = 6 mock meetings * 5 outcomes = 30
+    # Mock covers May-Dec 2026; May/Jun/Jul/Aug/Sep/Oct/Nov/Dec meetings * 5 = 30
     # (Jan 28 and Mar 18 have no mock contract — they're skipped with a warning)
     # Apr 29 meeting is in April but mock doesn't have ZQJ26 - also skipped
     assert len(results) > 0

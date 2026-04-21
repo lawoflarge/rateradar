@@ -11,7 +11,6 @@ Shares the pure math in `probability_calc.py` with the Fed pipeline.
 from __future__ import annotations
 
 import logging
-from calendar import monthrange
 from datetime import date
 from pathlib import Path
 
@@ -19,15 +18,12 @@ import yaml
 
 from .fed_fetcher import (
     MeetingProbability,
+)
+from .fed_fetcher import (
     compute_meeting_probabilities as _compute_meeting_probabilities,
-    outcomes_around as _outcomes_around,
 )
 from .fetchers.base import PriceFetcher
 from .fetchers.yfinance_source import MONTH_TO_CODE
-from .probability_calc import (
-    implied_rate_from_price,
-    solve_post_meeting_rate,
-)
 
 logger = logging.getLogger(__name__)
 

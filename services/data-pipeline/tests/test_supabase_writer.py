@@ -2,10 +2,8 @@
 
 from __future__ import annotations
 
-from datetime import date, datetime, timezone
+from datetime import UTC, date, datetime
 from typing import Any
-
-import pytest
 
 from src.fed_fetcher import MeetingProbability
 from src.supabase_writer import (
@@ -31,7 +29,7 @@ class FakeCursor:
         return self._fetch_rows
 
     # context-manager protocol — psycopg2 cursors are used via `with conn.cursor() as cur:`
-    def __enter__(self) -> "FakeCursor":
+    def __enter__(self) -> FakeCursor:
         return self
 
     def __exit__(self, *args: object) -> None:
@@ -82,13 +80,13 @@ def test_upsert_snapshots_writes_each_row():
         SnapshotRow(
             outcome_id="11111111-1111-1111-1111-111111111111",
             probability=0.75,
-            snapshot_at=datetime(2026, 4, 21, 22, 0, tzinfo=timezone.utc),
+            snapshot_at=datetime(2026, 4, 21, 22, 0, tzinfo=UTC),
             source="pipeline",
         ),
         SnapshotRow(
             outcome_id="22222222-2222-2222-2222-222222222222",
             probability=0.18,
-            snapshot_at=datetime(2026, 4, 21, 22, 0, tzinfo=timezone.utc),
+            snapshot_at=datetime(2026, 4, 21, 22, 0, tzinfo=UTC),
             source="pipeline",
         ),
     ]
