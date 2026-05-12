@@ -2,6 +2,8 @@ import { ImpliedRateCurve } from "@/components/ImpliedRateCurve";
 import { MeetingCountdown } from "@/components/MeetingCountdown";
 import { MostLikelyPath } from "@/components/MostLikelyPath";
 import { ProbabilityTable } from "@/components/ProbabilityTable";
+import { Rule } from "@/components/Rule";
+import { SectionLabel } from "@/components/SectionLabel";
 import {
   getEcbProbabilities,
   getFedProbabilities,
@@ -46,86 +48,75 @@ export default async function Home() {
   ]);
 
   const next = soonestMeeting(fed, ecb);
+  const nextTop = next
+    ? [...next.outcomes].sort((a, b) => b.probability - a.probability)[0]
+    : null;
 
   return (
     <main className="mx-auto max-w-5xl px-6 py-16">
-      {/* Header */}
       <header className="mb-16">
-        <div className="flex items-center gap-3">
-          <div
-            aria-hidden
-            className="h-8 w-8 rounded-full border-2 border-emerald-400"
-            style={{ boxShadow: "0 0 20px rgba(52, 211, 153, 0.5)" }}
-          />
-          <span className="text-xl font-semibold tracking-tight">RateRadar</span>
-        </div>
-        <h1 className="mt-10 max-w-3xl text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">
+        <SectionLabel>Real-time market-implied odds</SectionLabel>
+        <h1 className="mt-4 max-w-3xl font-serif text-5xl font-medium leading-[1.05] tracking-tight text-ink sm:text-6xl">
           See where rates are headed
-          <br />
-          <span className="text-zinc-500">— before the meeting.</span>
+          <span className="block text-ink-mute">— before the meeting.</span>
         </h1>
-        <p className="mt-6 max-w-2xl text-lg text-zinc-400">
+        <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink-soft">
           Market-implied probabilities for Fed and ECB interest-rate decisions, with
           historical tracking over days and weeks. Computed from Fed Funds Futures and
           €STR OIS — not scraped.
         </p>
       </header>
 
-      {/* Hero — whichever bank decides soonest */}
-      {next && (
-        <section className="mb-12">
-          <div className="rounded-2xl border border-zinc-800 bg-gradient-to-br from-emerald-950/30 to-zinc-950 p-8">
-            <div className="flex flex-wrap items-baseline justify-between gap-4">
-              <div>
-                <div className="text-xs uppercase tracking-wide text-emerald-400">
-                  Next {next.meeting.bank_code === "FED" ? "Fed" : "ECB"} decision
-                </div>
-                <div className="mt-1 text-2xl font-semibold">
-                  {new Date(next.meeting.meeting_date + "T00:00:00").toLocaleDateString(
-                    "en-US",
-                    { weekday: "long", month: "long", day: "numeric" },
-                  )}
-                </div>
-                <div className="mt-1 text-sm text-zinc-500">
-                  <MeetingCountdown meetingDate={next.meeting.meeting_date} />
-                </div>
+      <Rule />
+
+      {next && nextTop && (
+        <section className="my-12">
+          <SectionLabel>Next decision</SectionLabel>
+          <div className="mt-4 grid gap-8 sm:grid-cols-[1fr_auto] sm:items-end">
+            <div>
+              <div className="text-sm uppercase tracking-wider text-cut">
+                {next.meeting.bank_code === "FED" ? "Federal Reserve" : "European Central Bank"}{" "}
+                ·{" "}
+                {new Date(next.meeting.meeting_date + "T00:00:00").toLocaleDateString(
+                  "en-US",
+                  { dateStyle: "long" },
+                )}
               </div>
-              <div className="text-right">
-                {(() => {
-                  const top = [...next.outcomes].sort(
-                    (a, b) => b.probability - a.probability,
-                  )[0];
-                  return (
-                    <>
-                      <div className="text-xs uppercase tracking-wide text-zinc-500">
-                        Market expects
-                      </div>
-                      <div className="mt-1 text-4xl font-semibold tabular-nums text-emerald-300">
-                        {(top.probability * 100).toFixed(0)}%
-                      </div>
-                      <div className="mt-1 text-lg font-medium text-zinc-300">
-                        {top.label === "Hold" ? "holds rates" : `moves ${top.label}`}
-                      </div>
-                    </>
-                  );
-                })()}
-              </div>
+              <h2 className="mt-2 font-serif text-3xl font-medium leading-tight">
+                {nextTop.label === "Hold" ? "Hold rates" : `Move ${nextTop.label}`}
+              </h2>
+              <p className="mt-2 text-ink-soft">
+                Current policy rate{" "}
+                <span className="font-mono tabular-nums">
+                  {CURRENT_POLICY_RATES[next.meeting.bank_code]}%
+                </span>
+                . Market puts{" "}
+                <span className="font-mono tabular-nums font-semibold text-ink">
+                  {(nextTop.probability * 100).toFixed(0)}%
+                </span>{" "}
+                on this outcome.
+              </p>
             </div>
+            <MeetingCountdown meetingDate={next.meeting.meeting_date} />
           </div>
         </section>
       )}
 
-      {/* Most-likely path overview */}
-      {(fed.length > 0 || ecb.length > 0) && (
-        <section className="mb-12 space-y-6">
+      <Rule tone="soft" />
+
+      <section className="my-12">
+        <SectionLabel>Most likely path · cumulative</SectionLabel>
+        <div className="mt-4 grid gap-8 lg:grid-cols-2">
           {fed.length > 0 && <MostLikelyPath snapshots={fed} label="Fed path" />}
           {ecb.length > 0 && <MostLikelyPath snapshots={ecb} label="ECB path" />}
-        </section>
-      )}
+        </div>
+      </section>
 
-      {/* Implied rate curves */}
-      {(fed.length > 0 || ecb.length > 0) && (
-        <section className="mb-14 grid gap-6 md:grid-cols-2">
+      <Rule tone="soft" />
+
+      <section className="my-12">
+        <SectionLabel>Implied rate curves</SectionLabel>
+        <div className="mt-4 grid gap-8 lg:grid-cols-2">
           {fed.length > 0 && (
             <ImpliedRateCurve
               snapshots={fed}
@@ -140,51 +131,54 @@ export default async function Home() {
               bankLabel="European Central Bank"
             />
           )}
-        </section>
-      )}
+        </div>
+      </section>
 
-      {/* Fed section */}
       {fed.length > 0 && (
-        <section className="mb-14">
-          <h2 className="mb-6 text-2xl font-semibold tracking-tight">
-            Upcoming Fed meetings
-          </h2>
-          <div className="space-y-6">
-            {fed.map((s) => (
-              <ProbabilityTable
-                key={s.meeting.id}
-                data={s}
-                history={fedHistory[s.meeting.id]}
-              />
-            ))}
-          </div>
-        </section>
+        <>
+          <Rule tone="soft" />
+          <section className="my-12">
+            <SectionLabel>Per-meeting probabilities · Fed</SectionLabel>
+            <div className="mt-6 space-y-12">
+              {fed.slice(0, 3).map((s) => (
+                <ProbabilityTable
+                  key={s.meeting.id}
+                  data={s}
+                  history={fedHistory[s.meeting.id]}
+                />
+              ))}
+            </div>
+          </section>
+        </>
       )}
 
-      {/* ECB section */}
       {ecb.length > 0 && (
-        <section className="mb-14">
-          <h2 className="mb-6 text-2xl font-semibold tracking-tight">
-            Upcoming ECB meetings
-          </h2>
-          <div className="space-y-6">
-            {ecb.map((s) => (
-              <ProbabilityTable
-                key={s.meeting.id}
-                data={s}
-                history={ecbHistory[s.meeting.id]}
-              />
-            ))}
-          </div>
-        </section>
+        <>
+          <Rule tone="soft" />
+          <section className="my-12">
+            <SectionLabel>Per-meeting probabilities · ECB</SectionLabel>
+            <div className="mt-6 space-y-12">
+              {ecb.slice(0, 3).map((s) => (
+                <ProbabilityTable
+                  key={s.meeting.id}
+                  data={s}
+                  history={ecbHistory[s.meeting.id]}
+                />
+              ))}
+            </div>
+          </section>
+        </>
       )}
 
       {fed.length === 0 && ecb.length === 0 && (
-        <p className="text-zinc-400">No upcoming meetings found. Check back soon.</p>
+        <p className="my-12 text-ink-mute">
+          No upcoming meetings found. Check back soon.
+        </p>
       )}
 
-      {/* Footer */}
-      <footer className="mt-20 border-t border-zinc-900 pt-8 text-sm text-zinc-500">
+      <Rule />
+
+      <footer className="mt-12 pt-8 text-sm text-ink-mute">
         <p>
           Data computed in-house from Fed Funds Futures (Yahoo Finance) and €STR OIS
           quotes using the public CME methodology. Not financial advice.
@@ -193,7 +187,7 @@ export default async function Home() {
           Built by{" "}
           <a
             href="https://github.com/lawoflarge"
-            className="text-zinc-400 hover:text-emerald-400"
+            className="text-cut hover:text-ink underline-offset-4 hover:underline"
           >
             lawoflarge
           </a>
