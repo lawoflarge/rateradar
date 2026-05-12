@@ -13,3 +13,5 @@ __snapshots__/
 archive/
 
 .cache/
+.asc-playwright-session/
+dist-test/
