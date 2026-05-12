@@ -3,9 +3,16 @@ workflows:
     name: iOS Production -> TestFlight
     instance_type: mac_mini_m2
     max_build_duration: 60
-    integrations:
-      app_store_connect: rateradar-asc
+    # ASC credentials come from the `appstore_credentials` env-var group
+    # (set in Codemagic UI -> app Settings -> Environment variables, all marked
+    # Secure). This replaces the Codemagic-team-level `integrations` object,
+    # which isn't reliably available on personal accounts. The Codemagic CLI
+    # tools (app-store-connect, etc.) auto-read APP_STORE_CONNECT_KEY_IDENTIFIER,
+    # APP_STORE_CONNECT_ISSUER_ID, and APP_STORE_CONNECT_PRIVATE_KEY when
+    # exposed via env.
     environment:
+      groups:
+        - appstore_credentials
       vars:
         XCODE_WORKSPACE: "RateRadar.xcworkspace"
         XCODE_SCHEME: "RateRadar"
@@ -158,7 +165,11 @@ workflows:
 
     publishing:
       app_store_connect:
-        auth: integration
+        # auth: env switches to env-var creds (set in `appstore_credentials`
+        # group above). On a personal Codemagic account where team-level
+        # integrations aren't reliable, this is the path that works.
+        auth: env
         submit_to_testflight: true
-        beta_groups:
-          - Founders
+        # No beta groups yet — internal testers only. After the build lands
+        # in TestFlight, add Levin as an internal tester via ASC web UI, or
+        # create a "Founders" group later and add it here.
