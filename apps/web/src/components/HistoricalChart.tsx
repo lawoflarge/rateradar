@@ -18,13 +18,13 @@ interface Props {
   initialSeries?: ProbabilitySeries[];
 }
 
-// Color palette consistent with ProbabilityTable — cuts emerald, hold blue, hikes red
+// Wire Room palette — cut amber, hold sage, hike rust, with intensity tweaks per step
 const OUTCOME_COLORS: Record<number, string> = {
-  [-50]: "#10b981", // emerald-500
-  [-25]: "#34d399", // emerald-400
-  [0]: "#60a5fa", // blue-400
-  [25]: "#f87171", // red-400
-  [50]: "#ef4444", // red-500
+  [-50]: "#A06208", // deep cut
+  [-25]: "#C8841C", // cut amber
+  [0]: "#3E5640", // hold sage
+  [25]: "#A8312A", // hike rust
+  [50]: "#7A1F1B", // deep hike
 };
 
 function formatDateLabel(iso: string): string {
@@ -85,32 +85,32 @@ export function HistoricalChart({
 
   if (loading && chartData.length === 0) {
     return (
-      <div className="h-40 rounded-lg border border-zinc-800 bg-zinc-950/50 flex items-center justify-center text-sm text-zinc-600">
+      <div className="h-40 rounded-lg border border-ink/15 bg-cream-soft flex items-center justify-center text-sm text-ink-mute">
         Loading history…
       </div>
     );
   }
   if (chartData.length === 0) {
     return (
-      <div className="h-40 rounded-lg border border-dashed border-zinc-800 bg-zinc-950/50 flex items-center justify-center text-sm text-zinc-600">
+      <div className="h-40 rounded-lg border border-dashed border-ink/15 bg-cream-soft flex items-center justify-center text-sm text-ink-mute">
         No history yet — come back after we capture more snapshots.
       </div>
     );
   }
 
   return (
-    <div className="rounded-lg border border-zinc-800 bg-zinc-950/50 p-4">
+    <div className="rounded-lg border border-ink/15 bg-cream-soft p-4">
       <div className="mb-3 flex items-center justify-between">
-        <div className="text-xs uppercase tracking-wide text-zinc-500">
+        <div className="text-xs uppercase tracking-wide text-ink-mute">
           Probability history · last {windowDays} days
         </div>
         <div className="flex flex-wrap gap-2 text-xs">
           {series.map((s) => {
-            const color = OUTCOME_COLORS[s.delta_bps] ?? "#a1a1aa";
+            const color = OUTCOME_COLORS[s.delta_bps] ?? "#1A1A1A";
             return (
               <span
                 key={s.outcome_id}
-                className="inline-flex items-center gap-1.5 text-zinc-400"
+                className="inline-flex items-center gap-1.5 font-mono tabular-nums text-ink-mute"
               >
                 <span
                   aria-hidden
@@ -126,29 +126,33 @@ export function HistoricalChart({
       <div className="h-56 w-full">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={chartData} margin={{ top: 8, right: 12, bottom: 4, left: 0 }}>
-            <CartesianGrid stroke="#27272a" strokeDasharray="3 3" />
+            <CartesianGrid stroke="#1A1A1A" strokeOpacity={0.12} strokeDasharray="3 3" />
             <XAxis
               dataKey="date"
               tickFormatter={formatDateLabel}
-              stroke="#52525b"
-              tick={{ fontSize: 11, fill: "#a1a1aa" }}
+              stroke="#1A1A1A"
+              strokeOpacity={0.25}
+              tick={{ fontSize: 11, fill: "#1A1A1A", fillOpacity: 0.55, fontFamily: "var(--font-jetbrains-mono), ui-monospace, monospace" }}
               minTickGap={30}
             />
             <YAxis
               domain={[0, 100]}
               tickFormatter={(v) => `${v}%`}
-              stroke="#52525b"
-              tick={{ fontSize: 11, fill: "#a1a1aa" }}
+              stroke="#1A1A1A"
+              strokeOpacity={0.25}
+              tick={{ fontSize: 11, fill: "#1A1A1A", fillOpacity: 0.55, fontFamily: "var(--font-jetbrains-mono), ui-monospace, monospace" }}
               width={40}
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: "#09090b",
-                border: "1px solid #27272a",
-                borderRadius: "6px",
+                backgroundColor: "#F5EFE3",
+                border: "1px solid rgba(26,26,26,0.15)",
+                borderRadius: "0",
                 fontSize: "12px",
+                fontFamily: "var(--font-jetbrains-mono), ui-monospace, monospace",
+                color: "#1A1A1A",
               }}
-              labelStyle={{ color: "#e4e4e7", marginBottom: "4px" }}
+              labelStyle={{ color: "#1A1A1A", marginBottom: "4px" }}
               labelFormatter={(label) =>
                 new Date(String(label)).toLocaleDateString("en-US", {
                   weekday: "short",
@@ -169,7 +173,7 @@ export function HistoricalChart({
                   key={label}
                   type="monotone"
                   dataKey={label}
-                  stroke={OUTCOME_COLORS[delta] ?? "#a1a1aa"}
+                  stroke={OUTCOME_COLORS[delta] ?? "#1A1A1A"}
                   strokeWidth={2}
                   dot={false}
                   isAnimationActive={false}
