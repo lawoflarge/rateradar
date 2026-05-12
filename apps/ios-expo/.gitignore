@@ -10,3 +10,4 @@ android/
 .secrets/
 .eas/
 __snapshots__/
+archive/
