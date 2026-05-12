@@ -3,15 +3,17 @@ workflows:
     name: iOS Production -> TestFlight
     instance_type: mac_mini_m2
     max_build_duration: 60
-    # ASC creds come from an "Environment variables" group named
-    # `appstore_credentials` configured in the Codemagic UI for this app
-    # (left sidebar -> Environment variables). Personal-account Codemagic
-    # doesn't expose the team-level Integrations page reliably, so we
-    # use env vars. APP_STORE_CONNECT_KEY_IDENTIFIER, ISSUER_ID, and
-    # PRIVATE_KEY are auto-read by Codemagic's app-store-connect CLI.
+    # ASC auth via Codemagic team-level App Store Connect integration
+    # named `rateradar-asc`. Same pattern as Relatably/Titi&Bina — set up
+    # ONCE in Codemagic Teams -> Integrations -> Apple Developer Portal,
+    # then reference here. Codemagic auto-injects the 3 APP_STORE_CONNECT_*
+    # env vars at build time so asc-revoke-distribution-certs-ci.mjs works.
+    # Gotcha #11: `auth: env` is NOT a valid value in Codemagic's schema —
+    # only `auth: integration`. A prior session's handover claimed an
+    # env-var-group escape hatch existed; it doesn't. Use integration auth.
+    integrations:
+      app_store_connect: rateradar-asc
     environment:
-      groups:
-        - appstore_credentials
       vars:
         XCODE_WORKSPACE: "RateRadar.xcworkspace"
         XCODE_SCHEME: "RateRadar"
@@ -164,5 +166,5 @@ workflows:
 
     publishing:
       app_store_connect:
-        auth: env
+        auth: integration
         submit_to_testflight: true
