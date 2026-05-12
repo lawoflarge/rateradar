@@ -15,7 +15,7 @@ workflows:
     # only `auth: integration`. A prior session's handover claimed an
     # env-var-group escape hatch existed; it doesn't.
     integrations:
-      app_store_connect: rateradar-asc
+      app_store_connect: relatably-asc
     environment:
       vars:
         XCODE_WORKSPACE: "RateRadar.xcworkspace"
