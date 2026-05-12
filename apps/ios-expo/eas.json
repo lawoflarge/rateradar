@@ -16,7 +16,10 @@
     },
     "production": {
       "autoIncrement": true,
-      "channel": "production"
+      "channel": "production",
+      "env": {
+        "EXPO_PUBLIC_ADMOB_ENABLED": "false"
+      }
     }
   },
   "submit": {

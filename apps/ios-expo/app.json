@@ -22,7 +22,8 @@
         "ITSAppUsesNonExemptEncryption": false,
         "NSPrivacyTracking": false,
         "NSPrivacyTrackingDomains": [],
-        "UIStatusBarStyle": "UIStatusBarStyleDefault"
+        "UIStatusBarStyle": "UIStatusBarStyleDefault",
+        "SKAdNetworkItems": []
       }
     },
     "plugins": [
