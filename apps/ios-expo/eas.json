@@ -1,0 +1,31 @@
+{
+  "cli": {
+    "version": ">= 13.0.0",
+    "appVersionSource": "remote"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "ios": { "simulator": true }
+    },
+    "preview": {
+      "distribution": "internal",
+      "ios": { "simulator": false },
+      "channel": "preview"
+    },
+    "production": {
+      "autoIncrement": true,
+      "channel": "production"
+    }
+  },
+  "submit": {
+    "production": {
+      "ios": {
+        "appleId": "levin.schwab@gmx.de",
+        "ascAppId": "PLACEHOLDER_REPLACE_AFTER_ASC_APP_CREATE",
+        "appleTeamId": "R95M36AU2X"
+      }
+    }
+  }
+}
