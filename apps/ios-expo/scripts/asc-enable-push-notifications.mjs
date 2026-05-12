@@ -11,21 +11,20 @@
  *
  *   error: Provisioning profile "..." doesn't include the Push Notifications
  *          capability.
- *   error: Provisioning profile "..." doesn't include the aps-environment
- *          entitlement.
  *
  * Build #3 (commit 02e45fa) hit this. Fix: enable PUSH_NOTIFICATIONS on the
- * bundle id ONCE via this script, then re-run the Codemagic build. The
- * capability persists in ASC across builds.
+ * bundle id ONCE via this script, then re-run the build. The capability
+ * persists in ASC across builds.
  *
  * Idempotent — checks existing capabilities first, no-op if already enabled.
  *
- * Local usage (one-shot):
- *   node scripts/asc-enable-push-notifications.mjs
- *
- * CI usage: also wired into codemagic.yaml as a defensive pre-step (uses env
- * vars APP_STORE_CONNECT_KEY_IDENTIFIER / ISSUER_ID / PRIVATE_KEY from the
- * `relatably-asc` integration, just like asc-revoke-distribution-certs-ci.mjs).
+ * Auth modes:
+ *   - Local: reads .p8 from `.secrets/AuthKey_8XWLD2B2RQ.p8`.
+ *   - CI: reads APP_STORE_CONNECT_PRIVATE_KEY / _KEY_IDENTIFIER / _ISSUER_ID
+ *         env vars injected by Codemagic's `relatably-asc` integration.
+ *         Same battle-tested PEM normalization + signing logic as
+ *         `asc-revoke-distribution-certs-ci.mjs` (handles all three of
+ *         Codemagic's .p8 serialization quirks).
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -39,8 +38,7 @@ const BUNDLE_ID = "com.lawoflarge.rateradar";
 const CAPABILITY = "PUSH_NOTIFICATIONS";
 const API = "https://api.appstoreconnect.apple.com";
 
-// Dual local/CI auth — match the pattern of asc-revoke-distribution-certs-ci.mjs.
-const CI_KEY = process.env.APP_STORE_CONNECT_PRIVATE_KEY;
+const CI_RAW_KEY = process.env.APP_STORE_CONNECT_PRIVATE_KEY;
 const CI_KEY_ID =
   process.env.APP_STORE_CONNECT_KEY_IDENTIFIER ||
   process.env.APP_STORE_CONNECT_KEY_ID;
@@ -53,80 +51,61 @@ const LOCAL_KEY_ID = process.env.ASC_KEY_ID || "8XWLD2B2RQ";
 const LOCAL_ISSUER =
   process.env.ASC_ISSUER_ID || "538cb0d4-b8c6-4bc7-8b59-75da5d2b9411";
 
+// Normalize the PEM. Codemagic has been observed serializing the .p8 in three
+// different ways (see asc-revoke-distribution-certs-ci.mjs for the full
+// failure history):
+//   (a) Full PEM with real \n — works as-is with crypto.createPrivateKey
+//   (b) Full PEM with literal "\n" escape sequences — fails ERR_OSSL_UNSUPPORTED
+//   (c) Just the base64 body, no BEGIN/END markers — same OpenSSL failure
+// Build #5 of RateRadar hit case (b) or (c). Handle both here.
+function normalizePem(raw) {
+  if (!raw) return raw;
+  let s = raw.trim();
+  if (s.includes("\\n")) s = s.replace(/\\n/g, "\n");
+  if (!s.includes("BEGIN")) {
+    const b64 = s.replace(/\s+/g, "");
+    s = `-----BEGIN PRIVATE KEY-----\n${b64}\n-----END PRIVATE KEY-----\n`;
+  }
+  return s;
+}
+
 function b64url(buf) {
   return Buffer.from(buf)
     .toString("base64")
-    .replace(/=+$/, "")
+    .replace(/=+$/g, "")
     .replace(/\+/g, "-")
     .replace(/\//g, "_");
 }
 
-function derToJose(der) {
-  let i = 0;
-  if (der[i++] !== 0x30) throw new Error("bad der seq");
-  let len = der[i++];
-  if (len & 0x80) {
-    const n = len & 0x7f;
-    len = 0;
-    for (let j = 0; j < n; j++) len = (len << 8) | der[i++];
-  }
-  function readInt() {
-    if (der[i++] !== 0x02) throw new Error("bad der int");
-    let l = der[i++];
-    if (l & 0x80) {
-      const n = l & 0x7f;
-      l = 0;
-      for (let j = 0; j < n; j++) l = (l << 8) | der[i++];
-    }
-    let val = der.slice(i, i + l);
-    i += l;
-    while (val.length > 32) val = val.slice(1);
-    if (val.length < 32) {
-      val = Buffer.concat([Buffer.alloc(32 - val.length), val]);
-    }
-    return val;
-  }
-  const r = readInt();
-  const s = readInt();
-  return Buffer.concat([r, s]);
-}
-
-function normalizePem(raw) {
-  if (!raw) return raw;
-  // Codemagic occasionally serializes the .p8 with literal \n escapes.
-  if (raw.includes("\\n") && !raw.includes("\n")) {
-    return raw.replace(/\\n/g, "\n");
-  }
-  return raw;
-}
-
-function signToken({ key, keyId, issuer }) {
-  const now = Math.floor(Date.now() / 1000);
+function makeToken({ keyPem, keyId, issuer }) {
   const header = { alg: "ES256", kid: keyId, typ: "JWT" };
+  const now = Math.floor(Date.now() / 1000);
   const payload = {
     iss: issuer,
     iat: now,
-    exp: now + 20 * 60,
+    exp: now + 60 * 15,
     aud: "appstoreconnect-v1",
   };
-  const headerB = b64url(JSON.stringify(header));
-  const payloadB = b64url(JSON.stringify(payload));
-  const signingInput = `${headerB}.${payloadB}`;
-  const signer = crypto.createSign("SHA256");
-  signer.update(signingInput);
-  const derSig = signer.sign(key);
-  const joseSig = derToJose(derSig);
-  return `${signingInput}.${b64url(joseSig)}`;
+  const signingInput = `${b64url(JSON.stringify(header))}.${b64url(JSON.stringify(payload))}`;
+  // Use crypto.sign with dsaEncoding=ieee-p1363 to get JOSE-format signature
+  // directly. Same approach as asc-revoke-distribution-certs-ci.mjs.
+  const privateKey = crypto.createPrivateKey(keyPem);
+  const sig = crypto.sign("SHA256", Buffer.from(signingInput), {
+    key: privateKey,
+    dsaEncoding: "ieee-p1363",
+  });
+  return `${signingInput}.${b64url(sig)}`;
 }
 
 function resolveAuth() {
-  if (CI_KEY && CI_KEY_ID && CI_ISSUER) {
-    return {
-      key: normalizePem(CI_KEY),
-      keyId: CI_KEY_ID,
-      issuer: CI_ISSUER,
-      mode: "ci",
-    };
+  if (CI_RAW_KEY && CI_KEY_ID && CI_ISSUER) {
+    const keyPem = normalizePem(CI_RAW_KEY);
+    // Diagnostic so future failures land in the right case without leaking
+    // the secret. Mirrors asc-revoke-distribution-certs-ci.mjs.
+    const first = keyPem.slice(0, 30).replace(/\n/g, "\\n");
+    const last = keyPem.slice(-30).replace(/\n/g, "\\n");
+    console.log(`PEM length=${keyPem.length}  first=${first}…  last=…${last}`);
+    return { keyPem, keyId: CI_KEY_ID, issuer: CI_ISSUER, mode: "ci" };
   }
   if (!fs.existsSync(LOCAL_KEY_PATH)) {
     throw new Error(
@@ -134,7 +113,7 @@ function resolveAuth() {
     );
   }
   return {
-    key: fs.readFileSync(LOCAL_KEY_PATH, "utf8"),
+    keyPem: fs.readFileSync(LOCAL_KEY_PATH, "utf8"),
     keyId: LOCAL_KEY_ID,
     issuer: LOCAL_ISSUER,
     mode: "local",
@@ -164,7 +143,7 @@ async function call(method, urlPath, token, body) {
 async function main() {
   const auth = resolveAuth();
   console.log(`[1/4] Auth mode: ${auth.mode} (key ${auth.keyId})`);
-  const token = signToken(auth);
+  const token = makeToken(auth);
 
   console.log(`[2/4] Looking up bundle ${BUNDLE_ID}...`);
   const lookup = await call(
