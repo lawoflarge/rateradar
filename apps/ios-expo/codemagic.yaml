@@ -14,7 +14,7 @@ workflows:
         # If you see this literal in a build log, run:
         #   node apps/ios-expo/scripts/asc-create-app.mjs
         # then sed the printed id into this line and commit.
-        APP_STORE_APPLE_ID: __APP_STORE_APPLE_ID__
+        APP_STORE_APPLE_ID: 6768628917
         # Mirrors eas.json build.production.env — Codemagic doesn't read
         # eas.json, so anything Expo's runtime expects via process.env.EXPO_PUBLIC_*
         # MUST be re-declared here (gotcha #8). RateRadar's WebView URL is

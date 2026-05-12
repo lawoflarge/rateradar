@@ -82,7 +82,7 @@ function logResult(label, res) {
 }
 
 const META = {
-  subtitle: "Fed & ECB Odds",
+  subtitle: "Live decision odds + history",
   privacyPolicyUrl: "https://rateradar-web.vercel.app/methodology",
   primaryCategory: "FINANCE",
   secondaryCategory: "NEWS",
