@@ -22,6 +22,7 @@
 //   node scripts/asc-revoke-distribution-certs-ci.mjs
 
 import crypto from "node:crypto";
+import fs from "node:fs";
 
 // Codemagic exposes these via the `integrations: app_store_connect:` hook.
 // Older Codemagic CLI versions used `_KEY_ID` instead of `_KEY_IDENTIFIER`,
@@ -32,16 +33,28 @@ const KEY_ID =
   process.env.APP_STORE_CONNECT_KEY_ID;
 const ISSUER_ID = process.env.APP_STORE_CONNECT_ISSUER_ID;
 
-// Normalize the PEM. Codemagic has been observed serializing the .p8 in three
-// different ways depending on how the integration was uploaded:
-//   (a) Full PEM with real \n  — works as-is with crypto.createPrivateKey
-//   (b) Full PEM with literal "\n" escape sequences — fails ERR_OSSL_UNSUPPORTED
-//       because OpenSSL parses BEGIN/END as a single 1-line blob
-//   (c) Just the base64 body, no BEGIN/END markers — same OpenSSL failure
-// Build 25 attempt #3 hit case (b) or (c). Normalize both away.
+// Normalize the PEM. Codemagic has been observed exposing the .p8 in FOUR
+// different formats depending on Codemagic version and how the .p8 was
+// uploaded to the integration:
+//   (0) `@file:<path>` — file path reference (Codemagic CLI convention).
+//       The integration writes the .p8 to disk on the runner and exposes the
+//       path here. RateRadar build #6 (2026-05-12) hit this — diagnostic
+//       showed env value ≈ `@file:/Users/builder/clone/.../AuthKey_*.p8`.
+//   (a) Full PEM with real \n — works as-is with crypto.createPrivateKey.
+//   (b) Full PEM with literal "\n" escape sequences — fails ERR_OSSL_UNSUPPORTED.
+//   (c) Just the base64 body, no BEGIN/END markers — same OpenSSL failure.
+// Build 25 attempt #3 hit (b)/(c); RateRadar build #6 hit (0). Handle all.
 function normalizePem(raw) {
   if (!raw) return raw;
   let s = raw.trim();
+  // (0) @file: prefix -> load the actual key contents from disk
+  if (s.startsWith("@file:")) {
+    const p = s.slice("@file:".length);
+    s = fs.readFileSync(p, "utf8").trim();
+  } else if (s.startsWith("@env:")) {
+    const v = s.slice("@env:".length);
+    s = (process.env[v] || "").trim();
+  }
   // (b) literal \n -> real newline
   if (s.includes("\\n")) s = s.replace(/\\n/g, "\n");
   // (c) no BEGIN marker -> wrap as PKCS#8 PEM

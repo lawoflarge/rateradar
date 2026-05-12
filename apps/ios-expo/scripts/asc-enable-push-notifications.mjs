@@ -51,17 +51,31 @@ const LOCAL_KEY_ID = process.env.ASC_KEY_ID || "8XWLD2B2RQ";
 const LOCAL_ISSUER =
   process.env.ASC_ISSUER_ID || "538cb0d4-b8c6-4bc7-8b59-75da5d2b9411";
 
-// Normalize the PEM. Codemagic has been observed serializing the .p8 in three
-// different ways (see asc-revoke-distribution-certs-ci.mjs for the full
-// failure history):
-//   (a) Full PEM with real \n — works as-is with crypto.createPrivateKey
-//   (b) Full PEM with literal "\n" escape sequences — fails ERR_OSSL_UNSUPPORTED
-//   (c) Just the base64 body, no BEGIN/END markers — same OpenSSL failure
-// Build #5 of RateRadar hit case (b) or (c). Handle both here.
-function normalizePem(raw) {
+// Resolve and normalize the PEM. Codemagic's app_store_connect integration
+// can expose APP_STORE_CONNECT_PRIVATE_KEY in FOUR different formats
+// depending on Codemagic version and how the .p8 was uploaded:
+//   (0) `@file:<path>` — file path reference (Codemagic CLI convention).
+//       The integration writes the .p8 to disk and exposes the path with
+//       an `@file:` prefix. Build #6 hit this — diagnostic showed
+//       "first=...@f… last=...p8...".
+//   (a) Full PEM with real \n — works as-is with crypto.createPrivateKey.
+//   (b) Full PEM with literal "\n" escape sequences — fails OpenSSL.
+//   (c) Just the base64 body, no BEGIN/END markers — fails OpenSSL.
+// Build #5 hit (b) or (c); build #6 hit (0). Handle all four.
+function resolvePem(raw) {
   if (!raw) return raw;
   let s = raw.trim();
+  // (0) @file: prefix → load the actual key contents from disk
+  if (s.startsWith("@file:")) {
+    const p = s.slice("@file:".length);
+    s = fs.readFileSync(p, "utf8").trim();
+  } else if (s.startsWith("@env:")) {
+    const v = s.slice("@env:".length);
+    s = (process.env[v] || "").trim();
+  }
+  // (b) literal \n → real newline
   if (s.includes("\\n")) s = s.replace(/\\n/g, "\n");
+  // (c) no BEGIN marker → wrap as PKCS#8 PEM envelope
   if (!s.includes("BEGIN")) {
     const b64 = s.replace(/\s+/g, "");
     s = `-----BEGIN PRIVATE KEY-----\n${b64}\n-----END PRIVATE KEY-----\n`;
@@ -99,7 +113,7 @@ function makeToken({ keyPem, keyId, issuer }) {
 
 function resolveAuth() {
   if (CI_RAW_KEY && CI_KEY_ID && CI_ISSUER) {
-    const keyPem = normalizePem(CI_RAW_KEY);
+    const keyPem = resolvePem(CI_RAW_KEY);
     // Diagnostic so future failures land in the right case without leaking
     // the secret. Mirrors asc-revoke-distribution-certs-ci.mjs.
     const first = keyPem.slice(0, 30).replace(/\n/g, "\\n");
