@@ -60,12 +60,12 @@ export function ImpliedRateCurve({ snapshots, startingRate, bankLabel }: Props) 
   const max = Math.max(...data.map((d) => d.rate)) + 0.25;
 
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-950/50 p-6">
+    <div className="rounded-none border border-ink/15 bg-cream-soft p-6">
       <div className="mb-4">
-        <div className="text-xs uppercase tracking-wide text-zinc-500">
+        <div className="text-xs uppercase tracking-wide text-ink-mute">
           Implied policy-rate path
         </div>
-        <div className="mt-1 text-sm text-zinc-400">
+        <div className="mt-1 text-sm text-ink-mute">
           {bankLabel} — expected rate at each upcoming meeting, derived from today&apos;s
           probability distribution.
         </div>
@@ -73,28 +73,32 @@ export function ImpliedRateCurve({ snapshots, startingRate, bankLabel }: Props) 
       <div className="h-64 w-full">
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ top: 8, right: 16, bottom: 4, left: 0 }}>
-            <CartesianGrid stroke="#27272a" strokeDasharray="3 3" />
+            <CartesianGrid stroke="#1A1A1A" strokeOpacity={0.12} strokeDasharray="3 3" />
             <XAxis
               dataKey="label"
-              stroke="#52525b"
-              tick={{ fontSize: 11, fill: "#a1a1aa" }}
+              stroke="#1A1A1A"
+              strokeOpacity={0.25}
+              tick={{ fontSize: 11, fill: "#1A1A1A", fillOpacity: 0.55, fontFamily: "var(--font-jetbrains-mono), ui-monospace, monospace" }}
               interval={0}
             />
             <YAxis
               domain={[min, max]}
               tickFormatter={(v: number) => `${v.toFixed(2)}%`}
-              stroke="#52525b"
-              tick={{ fontSize: 11, fill: "#a1a1aa" }}
+              stroke="#1A1A1A"
+              strokeOpacity={0.25}
+              tick={{ fontSize: 11, fill: "#1A1A1A", fillOpacity: 0.55, fontFamily: "var(--font-jetbrains-mono), ui-monospace, monospace" }}
               width={60}
             />
             <Tooltip
               contentStyle={{
-                backgroundColor: "#09090b",
-                border: "1px solid #27272a",
-                borderRadius: "6px",
+                backgroundColor: "#F5EFE3",
+                border: "1px solid rgba(26,26,26,0.15)",
+                borderRadius: "0",
                 fontSize: "12px",
+                fontFamily: "var(--font-jetbrains-mono), ui-monospace, monospace",
+                color: "#1A1A1A",
               }}
-              labelStyle={{ color: "#e4e4e7", marginBottom: "4px" }}
+              labelStyle={{ color: "#1A1A1A", marginBottom: "4px" }}
               labelFormatter={(label, payload) => {
                 const point = payload?.[0]?.payload as { fullLabel: string } | undefined;
                 return point?.fullLabel ?? String(label);
@@ -107,9 +111,9 @@ export function ImpliedRateCurve({ snapshots, startingRate, bankLabel }: Props) 
             <Line
               type="monotone"
               dataKey="rate"
-              stroke="#34d399"
+              stroke="#C8841C"
               strokeWidth={2.5}
-              dot={{ fill: "#34d399", r: 3 }}
+              dot={{ fill: "#C8841C", r: 3 }}
               isAnimationActive={false}
             />
           </LineChart>
