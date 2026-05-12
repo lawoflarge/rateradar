@@ -3,18 +3,19 @@ workflows:
     name: iOS Production -> TestFlight
     instance_type: mac_mini_m2
     max_build_duration: 60
-    # ASC auth via the SAME Codemagic integration Relatably uses:
-    # `relatably-asc`. One ASC API key (8XWLD2B2RQ) covers every app under
-    # Apple team R95M36AU2X (Relatably, Titi&Bina, RateRadar), so the
-    # integration name is just an identifier — it doesn't have to match
-    # the project. Set up once on 2026-05-11 in Codemagic personal-account
-    # Integrations. Codemagic auto-injects the 3 APP_STORE_CONNECT_* env
+    # ASC auth via a Codemagic Apple Developer Portal integration named
+    # `rateradar-asc`. Set up once via Codemagic personal-account
+    # Settings -> Integrations -> Developer Portal -> Add API key,
+    # using the same ASC API key (8XWLD2B2RQ, issuer 538cb0d4-...,
+    # AuthKey_8XWLD2B2RQ.p8) that Relatably's `relatably-asc` integration
+    # uses — Apple/Codemagic both allow reusing one ASC key under multiple
+    # integration names. Codemagic auto-injects APP_STORE_CONNECT_* env
     # vars at build time so asc-revoke-distribution-certs-ci.mjs works.
     # Gotcha #11: `auth: env` is NOT a valid value in Codemagic's schema —
     # only `auth: integration`. A prior session's handover claimed an
     # env-var-group escape hatch existed; it doesn't.
     integrations:
-      app_store_connect: relatably-asc
+      app_store_connect: rateradar-asc
     environment:
       vars:
         XCODE_WORKSPACE: "RateRadar.xcworkspace"
