@@ -18,9 +18,9 @@ function formatShort(iso: string): string {
 
 function outcomeColor(delta: number, probability: number): string {
   const strong = probability >= 0.5;
-  if (delta < 0) return strong ? "border-emerald-400 text-emerald-300" : "border-emerald-500/40 text-emerald-400/70";
-  if (delta > 0) return strong ? "border-red-400 text-red-300" : "border-red-500/40 text-red-400/70";
-  return strong ? "border-blue-400 text-blue-300" : "border-blue-500/40 text-blue-400/70";
+  if (delta < 0) return strong ? "border-cut text-cut" : "border-ink/25 text-cut/70";
+  if (delta > 0) return strong ? "border-hike text-hike" : "border-ink/25 text-hike/70";
+  return strong ? "border-hold text-hold" : "border-ink/25 text-hold/70";
 }
 
 export function MostLikelyPath({
@@ -54,21 +54,21 @@ export function MostLikelyPath({
   const finalCumulative = withExpected[withExpected.length - 1]?.cumulative ?? 0;
 
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-950/50 p-6">
+    <div className="rounded-none border border-ink/15 bg-cream-soft p-6">
       <div className="mb-4 flex items-baseline justify-between">
         <div>
-          <div className="text-xs uppercase tracking-wide text-zinc-500">
+          <div className="text-xs uppercase tracking-wide text-ink-mute">
             {label}
           </div>
-          <div className="mt-1 text-sm text-zinc-400">
+          <div className="mt-1 text-sm text-ink-mute">
             Most-likely outcome at each upcoming meeting, chained in order.
           </div>
         </div>
         <div className="text-right">
-          <div className="text-xs uppercase tracking-wide text-zinc-500">
+          <div className="text-xs uppercase tracking-wide text-ink-mute">
             Cumulative pricing
           </div>
-          <div className="mt-1 text-lg font-semibold tabular-nums text-emerald-300">
+          <div className="mt-1 text-lg font-mono tabular-nums font-semibold text-cut">
             {finalCumulative >= 0 ? "+" : ""}
             {finalCumulative.toFixed(0)} bps by{" "}
             {formatShort(
@@ -86,27 +86,27 @@ export function MostLikelyPath({
             <div key={snapshot.meeting.id} className="flex items-center">
               <Link
                 href={`/meeting/${snapshot.meeting.id}`}
-                className={`flex w-[104px] flex-col items-center rounded-lg border bg-zinc-900/60 px-3 py-3 text-center transition-colors hover:border-emerald-400 ${cls}`}
+                className={`flex w-[104px] flex-col items-center rounded-lg border bg-cream-soft px-3 py-3 text-center transition-colors hover:border-cut ${cls}`}
               >
                 <div className="text-[10px] uppercase tracking-wide opacity-80">
                   {snapshot.meeting.bank_code}
                 </div>
-                <div className="mt-0.5 text-xs font-medium text-zinc-200">
+                <div className="mt-0.5 text-xs font-medium text-ink">
                   {formatShort(snapshot.meeting.meeting_date)}
                 </div>
-                <div className="mt-2 text-sm font-semibold tabular-nums">
+                <div className="mt-2 text-sm font-mono font-semibold tabular-nums">
                   {top.label}
                 </div>
-                <div className="mt-0.5 text-[11px] text-zinc-500 tabular-nums">
+                <div className="mt-0.5 text-[11px] text-ink-mute font-mono tabular-nums">
                   {(top.probability * 100).toFixed(0)}%
                 </div>
-                <div className="mt-2 text-[10px] text-zinc-500 tabular-nums">
+                <div className="mt-2 text-[10px] text-ink-mute font-mono tabular-nums">
                   Σ {cumulative >= 0 ? "+" : ""}
                   {cumulative.toFixed(0)}bp
                 </div>
               </Link>
               {showChevron && (
-                <div aria-hidden className="px-1 text-zinc-700">
+                <div aria-hidden className="px-1 text-ink/25">
                   →
                 </div>
               )}
