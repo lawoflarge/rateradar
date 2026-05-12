@@ -100,3 +100,7 @@ yarn-error.log*
 
 # Turborepo
 .turbo/
+
+# Expo
+.expo/
+
