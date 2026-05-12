@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Rule } from "@/components/Rule";
 
 export const metadata: Metadata = {
   title: "Glossary — rate-decision terms explained",
@@ -66,21 +67,25 @@ export default function GlossaryPage() {
   return (
     <main className="mx-auto max-w-3xl px-6 py-16">
       <header className="mb-10">
-        <h1 className="text-4xl font-semibold tracking-tight">Glossary</h1>
-        <p className="mt-4 text-lg text-zinc-400">
+        <h1 className="font-serif text-5xl font-medium tracking-tight text-ink">
+          Glossary
+        </h1>
+        <p className="mt-6 text-lg leading-relaxed text-ink-soft">
           Plain-English definitions for the terms you&apos;ll see on RateRadar.
           No Bloomberg terminal required.
         </p>
       </header>
 
-      <dl className="space-y-8">
-        {TERMS.map(({ term, def }) => (
-          <div
-            key={term}
-            className="rounded-xl border border-zinc-800 bg-zinc-950/50 p-6"
-          >
-            <dt className="text-lg font-semibold text-zinc-100">{term}</dt>
-            <dd className="mt-2 text-zinc-400">{def}</dd>
+      <dl>
+        {TERMS.map(({ term, def }, i) => (
+          <div key={term}>
+            <dt className="font-mono text-sm uppercase tracking-wider text-ink">
+              {term}
+            </dt>
+            <dd className="mt-1 mb-6 text-lg leading-relaxed text-ink-soft">
+              {def}
+            </dd>
+            {i < TERMS.length - 1 && <Rule tone="soft" />}
           </div>
         ))}
       </dl>
