@@ -31,8 +31,8 @@ export function ShareButtons({ meetingId, title }: Props) {
   }
 
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-950/50 p-5">
-      <div className="mb-3 text-xs uppercase tracking-wide text-zinc-500">
+    <div className="rounded-none border border-ink/15 bg-cream-soft p-5">
+      <div className="mb-3 text-xs uppercase tracking-wide text-ink-mute">
         Share this meeting
       </div>
       <div className="flex flex-wrap gap-2">
@@ -40,7 +40,7 @@ export function ShareButtons({ meetingId, title }: Props) {
           href={twitterHref}
           target="_blank"
           rel="noopener noreferrer"
-          className="rounded-md border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-sm text-zinc-200 hover:border-emerald-400 hover:text-emerald-300"
+          className="rounded-md border border-ink/25 bg-cream-soft px-3 py-1.5 text-sm text-ink hover:border-cut hover:text-cut"
         >
           Share on Twitter / X
         </a>
@@ -48,14 +48,14 @@ export function ShareButtons({ meetingId, title }: Props) {
           href={linkedinHref}
           target="_blank"
           rel="noopener noreferrer"
-          className="rounded-md border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-sm text-zinc-200 hover:border-emerald-400 hover:text-emerald-300"
+          className="rounded-md border border-ink/25 bg-cream-soft px-3 py-1.5 text-sm text-ink hover:border-cut hover:text-cut"
         >
           Share on LinkedIn
         </a>
         <button
           type="button"
           onClick={copyLink}
-          className="rounded-md border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-sm text-zinc-200 hover:border-emerald-400 hover:text-emerald-300"
+          className="rounded-md border border-ink/25 bg-cream-soft px-3 py-1.5 text-sm text-ink hover:border-cut hover:text-cut"
         >
           {copied ? "Copied!" : "Copy link"}
         </button>
