@@ -3,9 +3,15 @@ workflows:
     name: iOS Production -> TestFlight
     instance_type: mac_mini_m2
     max_build_duration: 60
-    integrations:
-      app_store_connect: rateradar-asc
+    # ASC creds come from an "Environment variables" group named
+    # `appstore_credentials` configured in the Codemagic UI for this app
+    # (left sidebar -> Environment variables). Personal-account Codemagic
+    # doesn't expose the team-level Integrations page reliably, so we
+    # use env vars. APP_STORE_CONNECT_KEY_IDENTIFIER, ISSUER_ID, and
+    # PRIVATE_KEY are auto-read by Codemagic's app-store-connect CLI.
     environment:
+      groups:
+        - appstore_credentials
       vars:
         XCODE_WORKSPACE: "RateRadar.xcworkspace"
         XCODE_SCHEME: "RateRadar"
@@ -158,5 +164,5 @@ workflows:
 
     publishing:
       app_store_connect:
-        auth: integration
+        auth: env
         submit_to_testflight: true
