@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Rule } from "@/components/Rule";
 
 export const metadata: Metadata = {
   title: "Brokers — trade rate-sensitive instruments",
@@ -45,49 +46,64 @@ export default function BrokersPage() {
   return (
     <main className="mx-auto max-w-3xl px-6 py-16">
       <header className="mb-10">
-        <h1 className="text-4xl font-semibold tracking-tight">Trade what you see</h1>
-        <p className="mt-4 text-lg text-zinc-400">
+        <h1 className="font-serif text-5xl font-medium tracking-tight text-ink">
+          Trade what you see
+        </h1>
+        <p className="mt-6 text-lg leading-relaxed text-ink-soft">
           RateRadar is free because of transparent broker partnerships. These are
           reputable, regulated brokers where you can act on the rate-expectation
           shifts this site surfaces.
         </p>
       </header>
 
-      <div className="mb-10 rounded-xl border border-amber-900/40 bg-amber-950/20 p-5 text-sm text-amber-200">
-        <strong>Partnership status:</strong> approvals in progress. Links below
-        are placeholders until affiliate IDs are live. This is not financial
-        advice; trade at your own risk and verify regulation in your region.
+      <div className="mb-10 border-y border-cut/40 bg-cut/10 px-5 py-4 text-sm text-ink-soft">
+        <strong className="text-ink">Partnership status:</strong> approvals in
+        progress. Links below are placeholders until affiliate IDs are live. This
+        is not financial advice; trade at your own risk and verify regulation in
+        your region.
       </div>
 
-      <div className="space-y-6">
-        {BROKERS.map((b) => (
-          <article
-            key={b.slug}
-            className="rounded-xl border border-zinc-800 bg-zinc-950/50 p-6"
-          >
+      <Rule />
+
+      <div>
+        {BROKERS.map((b, i) => (
+          <article key={b.slug} className="py-8">
             <div className="flex flex-wrap items-baseline justify-between gap-3">
-              <h2 className="text-xl font-semibold text-zinc-100">{b.name}</h2>
+              <h2 className="font-serif text-xl font-medium text-ink">
+                {b.name}
+              </h2>
               <div className="flex gap-1">
                 {b.markets.map((m) => (
                   <span
                     key={m}
-                    className="rounded border border-zinc-700 bg-zinc-900 px-2 py-0.5 text-[10px] uppercase tracking-wide text-zinc-400"
+                    className="border border-ink/15 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-ink-mute"
                   >
                     {m}
                   </span>
                 ))}
               </div>
             </div>
-            <p className="mt-2 text-zinc-300">{b.tagline}</p>
-            <p className="mt-2 text-sm text-zinc-500">{b.notes}</p>
-            <div className="mt-4 inline-flex rounded-md border border-zinc-700 bg-zinc-900 px-3 py-1.5 text-xs text-zinc-400">
-              Link coming soon
+            <p className="mt-2 text-lg leading-relaxed text-ink-soft">
+              {b.tagline}
+            </p>
+            <p className="mt-2 text-sm text-ink-mute">{b.notes}</p>
+            <div className="mt-4">
+              <span className="text-cut hover:text-ink underline-offset-4 hover:underline">
+                Link coming soon →
+              </span>
             </div>
+            {i < BROKERS.length - 1 && (
+              <div className="mt-8">
+                <Rule tone="soft" />
+              </div>
+            )}
           </article>
         ))}
       </div>
 
-      <footer className="mt-12 text-sm text-zinc-500">
+      <Rule />
+
+      <footer className="mt-10 pt-8 text-sm text-ink-mute">
         <p>
           Links on this page will be affiliate links once programs are approved.
           RateRadar may receive a commission if you sign up, at no cost to you.
