@@ -23,13 +23,21 @@
         "NSPrivacyTracking": false,
         "NSPrivacyTrackingDomains": [],
         "UIStatusBarStyle": "UIStatusBarStyleDefault",
-        "SKAdNetworkItems": []
+        "SKAdNetworkItems": [],
+        "UIBackgroundModes": ["remote-notification"]
       }
     },
     "plugins": [
       "expo-splash-screen",
       "expo-asset",
-      "./plugins/withPrivacyManifest"
+      "./plugins/withPrivacyManifest",
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/icon.png",
+          "color": "#0E0E0E"
+        }
+      ]
     ],
     "assetBundlePatterns": ["**/*"],
     "extra": {
