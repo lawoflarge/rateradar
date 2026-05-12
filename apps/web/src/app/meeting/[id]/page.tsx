@@ -4,6 +4,8 @@ import { notFound } from "next/navigation";
 import { MeetingContext } from "@/components/MeetingContext";
 import { MeetingCountdown } from "@/components/MeetingCountdown";
 import { ProbabilityTable } from "@/components/ProbabilityTable";
+import { Rule } from "@/components/Rule";
+import { SectionLabel } from "@/components/SectionLabel";
 import { ShareButtons } from "@/components/ShareButtons";
 import { getMeetingById, getMeetingContext, getMeetingHistory } from "@/lib/data";
 
@@ -91,84 +93,109 @@ export default async function MeetingPage({ params }: PageProps) {
 
   return (
     <main className="mx-auto max-w-4xl px-6 py-16">
-      <nav className="mb-8 text-sm text-zinc-500">
-        <Link href="/" className="hover:text-emerald-400">
+      <nav className="mb-8 text-sm text-ink-mute">
+        <Link href="/" className="hover:text-cut underline-offset-4 hover:underline">
           ← Back to all meetings
         </Link>
       </nav>
 
       {/* Hero */}
-      <header className="mb-10">
-        <div className="text-xs uppercase tracking-wide text-emerald-400">
-          {bank === "FED" ? "Federal Reserve (FOMC)" : "European Central Bank (Governing Council)"}
-        </div>
-        <h1 className="mt-2 text-4xl font-semibold tracking-tight sm:text-5xl">
+      <header className="mb-12">
+        <SectionLabel>
+          {bank === "FED"
+            ? "Federal Reserve (FOMC)"
+            : "European Central Bank (Governing Council)"}
+        </SectionLabel>
+        <h1 className="mt-3 font-serif text-5xl font-medium leading-tight tracking-tight text-ink sm:text-6xl">
           {formatLongDate(data.meeting.meeting_date)}
         </h1>
-        <div className="mt-3 text-zinc-500">
+        <div className="mt-4 text-ink-mute">
           <MeetingCountdown meetingDate={data.meeting.meeting_date} />
-        </div>
-
-        <div className="mt-6 grid gap-4 sm:grid-cols-3">
-          <div className="rounded-xl border border-zinc-800 bg-zinc-950/50 p-5">
-            <div className="text-xs uppercase tracking-wide text-zinc-500">
-              Most likely
-            </div>
-            <div className="mt-1 text-2xl font-semibold text-emerald-300">
-              {top.label === "Hold" ? "Hold rates" : `Move ${top.label}`}
-            </div>
-          </div>
-          <div className="rounded-xl border border-zinc-800 bg-zinc-950/50 p-5">
-            <div className="text-xs uppercase tracking-wide text-zinc-500">
-              Probability
-            </div>
-            <div className="mt-1 text-2xl font-semibold tabular-nums">
-              {(top.probability * 100).toFixed(1)}%
-            </div>
-            {deltaLabel && (
-              <div className="mt-1 text-xs text-zinc-500">{deltaLabel}</div>
-            )}
-          </div>
-          <div className="rounded-xl border border-zinc-800 bg-zinc-950/50 p-5">
-            <div className="text-xs uppercase tracking-wide text-zinc-500">
-              Data source
-            </div>
-            <div className="mt-1 text-sm text-zinc-300">
-              Computed from {bank === "FED" ? "Fed Funds Futures" : "€STR OIS quotes"}
-            </div>
-            <Link
-              href="/methodology"
-              className="mt-1 inline-block text-xs text-emerald-400 hover:text-emerald-300"
-            >
-              How we calculate →
-            </Link>
-          </div>
         </div>
       </header>
 
-      {/* Path context: prior + next meeting */}
-      <section className="mb-8">
-        <MeetingContext prior={context.prior} next={context.next} />
+      <Rule />
+
+      {/* Key facts: rule-separated, no cards */}
+      <section className="my-10 grid gap-8 border-y border-ink/15 py-8 sm:grid-cols-3">
+        <div>
+          <SectionLabel>Most likely</SectionLabel>
+          <div className="mt-2 font-serif text-2xl font-medium text-ink">
+            {top.label === "Hold" ? "Hold rates" : `Move ${top.label}`}
+          </div>
+        </div>
+        <div>
+          <SectionLabel>Probability</SectionLabel>
+          <div className="mt-2 font-serif text-2xl font-medium">
+            <span className="font-mono tabular-nums">
+              {(top.probability * 100).toFixed(1)}%
+            </span>
+          </div>
+          {deltaLabel && (
+            <div className="mt-1 font-mono text-xs tabular-nums text-ink-mute">
+              {deltaLabel}
+            </div>
+          )}
+        </div>
+        <div>
+          <SectionLabel>Data source</SectionLabel>
+          <div className="mt-2 text-ink-soft">
+            Computed from{" "}
+            {bank === "FED" ? "Fed Funds Futures" : "€STR OIS quotes"}
+          </div>
+          <Link
+            href="/methodology"
+            className="mt-2 inline-block text-sm text-cut hover:text-ink underline-offset-4 hover:underline"
+          >
+            How we calculate →
+          </Link>
+        </div>
       </section>
 
+      <Rule tone="soft" />
+
+      {/* Path context: prior + next meeting */}
+      <section className="my-12">
+        <SectionLabel>Meeting context</SectionLabel>
+        <div className="mt-4">
+          <MeetingContext prior={context.prior} next={context.next} />
+        </div>
+      </section>
+
+      <Rule tone="soft" />
+
       {/* Full probability table + chart */}
-      <section className="mb-10">
+      <section className="my-12">
+        <SectionLabel>Full probability table</SectionLabel>
+        <h2 className="mt-2 mb-6 font-serif text-3xl font-medium text-ink">
+          Outcome distribution
+        </h2>
         <ProbabilityTable data={data} history={history} showDetailLink={false} />
       </section>
 
+      <Rule tone="soft" />
+
       {/* Share */}
-      <section className="mb-10">
-        <ShareButtons
-          meetingId={id}
-          title={`${bank} ${formatShortDate(data.meeting.meeting_date)} — ${Math.round(top.probability * 100)}% ${top.label === "Hold" ? "hold" : `move ${top.label}`}`}
-        />
+      <section className="my-12">
+        <SectionLabel>Share</SectionLabel>
+        <div className="mt-4">
+          <ShareButtons
+            meetingId={id}
+            title={`${bank} ${formatShortDate(data.meeting.meeting_date)} — ${Math.round(top.probability * 100)}% ${top.label === "Hold" ? "hold" : `move ${top.label}`}`}
+          />
+        </div>
       </section>
 
-      <footer className="border-t border-zinc-900 pt-8 text-sm text-zinc-500">
+      <Rule />
+
+      <footer className="mt-10 pt-8 text-sm text-ink-mute">
         <p>
           Probabilities update twice per business day (after US and European
           session close) and every 15 minutes on meeting days. See{" "}
-          <Link href="/methodology" className="text-zinc-300 hover:text-emerald-400">
+          <Link
+            href="/methodology"
+            className="text-cut hover:text-ink underline-offset-4 hover:underline"
+          >
             methodology
           </Link>{" "}
           for the full calculation. Not financial advice.
