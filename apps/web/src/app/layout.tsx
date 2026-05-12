@@ -1,16 +1,25 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, JetBrains_Mono, IBM_Plex_Serif } from "next/font/google";
 import { NavBar } from "@/components/NavBar";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const jetbrainsMono = JetBrains_Mono({
+  variable: "--font-jetbrains",
   subsets: ["latin"],
+  display: "swap",
+});
+
+const plexSerif = IBM_Plex_Serif({
+  variable: "--font-plex-serif",
+  weight: ["400", "500", "600"],
+  subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -41,9 +50,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${inter.variable} ${jetbrainsMono.variable} ${plexSerif.variable} h-full antialiased`}
     >
-      <body className="min-h-full bg-zinc-950 text-zinc-100 flex flex-col">
+      <body className="min-h-full bg-cream text-ink flex flex-col">
         <NavBar />
         <div className="flex-1">{children}</div>
       </body>
