@@ -1,0 +1,164 @@
+workflows:
+  ios-production:
+    name: iOS Production -> TestFlight
+    instance_type: mac_mini_m2
+    max_build_duration: 60
+    integrations:
+      app_store_connect: rateradar-asc
+    environment:
+      vars:
+        XCODE_WORKSPACE: "RateRadar.xcworkspace"
+        XCODE_SCHEME: "RateRadar"
+        BUNDLE_ID: "com.lawoflarge.rateradar"
+        # Replaced by asc-create-app.mjs after the ASC app record exists.
+        # If you see this literal in a build log, run:
+        #   node apps/ios-expo/scripts/asc-create-app.mjs
+        # then sed the printed id into this line and commit.
+        APP_STORE_APPLE_ID: __APP_STORE_APPLE_ID__
+        # Mirrors eas.json build.production.env — Codemagic doesn't read
+        # eas.json, so anything Expo's runtime expects via process.env.EXPO_PUBLIC_*
+        # MUST be re-declared here (gotcha #8). RateRadar's WebView URL is
+        # hard-coded in src/lib/constants.ts so we don't need an EXPO_PUBLIC_API_URL
+        # here. We DO mirror the AdMob disable flag for parity.
+        EXPO_PUBLIC_ADMOB_ENABLED: "false"
+      node: 20.18.0
+      xcode: latest
+      cocoapods: default
+
+    # Webhook auto-trigger. GitHub webhook delivery is unreliable for some
+    # private repos (gotcha #9 — was permanently broken on Relatably). If
+    # auto-trigger is silently dead for RateRadar too, kick builds manually
+    # from the Codemagic dashboard. Keeping the block in so that when the
+    # webhook eventually delivers, the build fires without YAML edits.
+    triggering:
+      events:
+        - push
+      branch_patterns:
+        - pattern: main
+          include: true
+        - pattern: ios-launch-v1
+          include: true
+
+    scripts:
+      - name: Install JS dependencies
+        working_directory: apps/ios-expo
+        script: |
+          set -e
+          # Gotcha #1: bypass Codemagic's stale-corepack pnpm shim
+          # (signature verification fails when corepack tries to fetch
+          # latest pnpm at runtime).
+          corepack disable 2>/dev/null || true
+          sudo rm -f /usr/local/bin/pnpm /usr/local/bin/pnpx 2>/dev/null || true
+          npm install -g pnpm@10.11.0
+          hash -r 2>/dev/null || true
+          which pnpm
+          pnpm --version
+          # Verbose reporter + network concurrency cap + retry caps so logs
+          # stream live and any registry stall self-recovers or fails the
+          # individual fetch (instead of the whole step hanging silently).
+          # Gotcha #2: NO bash `timeout` wrapper — macOS runners lack GNU coreutils.
+          # The workflow-level max_build_duration: 60 bounds total runtime.
+          export PNPM_HOME="$HOME/.local/share/pnpm"
+          export PATH="$PNPM_HOME:$PATH"
+          pnpm install \
+            --reporter=append-only \
+            --network-concurrency=8 \
+            --fetch-retries=3 \
+            --fetch-retry-mintimeout=10000 \
+            --fetch-retry-maxtimeout=60000
+
+      - name: Expo prebuild (generate native iOS project)
+        working_directory: apps/ios-expo
+        script: |
+          set -e
+          npx expo prebuild --platform ios --clean --no-install
+
+      - name: Pod install
+        working_directory: apps/ios-expo/ios
+        script: |
+          set -e
+          pod install
+
+      - name: Revoke stale distribution certs
+        script: |
+          set -e
+          # Why (gotcha #5 + #7): Codemagic destroys the keychain at end of
+          # each build, so the private key for any existing iOS Distribution
+          # cert in ASC is lost. The next build generates a fresh RSA key
+          # and tries to mint a new cert, but Apple caps active certs at 2:
+          #   "POST /v1/certificates returned 409: You already have a
+          #    current Distribution certificate or a pending certificate
+          #    request."
+          # Revoking ALL distribution certs before fetch-signing-files
+          # makes this build idempotent. Safe — does NOT affect installed
+          # TestFlight or App Store builds; only blocks NEW signing with
+          # the revoked cert (which we couldn't do anyway, no private key).
+          #
+          # Uses the ASC REST API directly (with the integration's key
+          # exposed via APP_STORE_CONNECT_* env vars) instead of the
+          # Codemagic CLI subcommand, because the CLI's certificate
+          # delete/list syntax is version-dependent and was unreliable.
+          node apps/ios-expo/scripts/asc-revoke-distribution-certs-ci.mjs
+
+      - name: Set up code signing
+        script: |
+          set -e
+          keychain initialize
+          # Gotcha #4: generate a fresh RSA private key so Codemagic can
+          # create a new iOS Distribution certificate it actually has the
+          # key for. The previous step revoked stale certs, so this --create
+          # won't hit Apple's 2-cert cap.
+          mkdir -p /tmp/codemagic-signing
+          openssl genrsa -out /tmp/codemagic-signing/cert_key.pem 2048
+          # Gotcha #3: Codemagic CLI requires the @file: prefix for
+          # path-based args (otherwise it tries to parse the path as the
+          # raw key contents).
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --platform IOS \
+            --type IOS_APP_STORE \
+            --certificate-key @file:/tmp/codemagic-signing/cert_key.pem \
+            --create
+          keychain add-certificates
+          xcode-project use-profiles
+
+      - name: Increment build number above latest in App Store Connect
+        working_directory: apps/ios-expo/ios
+        script: |
+          set -e
+          # Gotcha #6: get-latest-build-number returns the highest
+          # CFBundleVersion across BOTH TestFlight and App Store. The older
+          # get-latest-app-store-build-number variant ignores TestFlight,
+          # which causes collisions when a build is processing.
+          LATEST_BUILD_NUMBER=$(app-store-connect get-latest-build-number "$APP_STORE_APPLE_ID" 2>/dev/null || echo 0)
+          # Belt-and-suspenders floor. RateRadar has no prior TestFlight
+          # builds, so the floor is 1.
+          if [ "$LATEST_BUILD_NUMBER" -lt 1 ]; then
+            LATEST_BUILD_NUMBER=1
+          fi
+          NEXT_BUILD_NUMBER=$((LATEST_BUILD_NUMBER + 1))
+          echo "Latest CFBundleVersion in ASC: $LATEST_BUILD_NUMBER"
+          echo "Bumping CFBundleVersion to $NEXT_BUILD_NUMBER"
+          agvtool new-version -all "$NEXT_BUILD_NUMBER"
+          echo "Verifying agvtool result:"
+          agvtool what-version -terse
+
+      - name: Build .ipa archive
+        working_directory: apps/ios-expo/ios
+        script: |
+          set -e
+          xcode-project build-ipa \
+            --workspace "$XCODE_WORKSPACE" \
+            --scheme "$XCODE_SCHEME" \
+            --config Release
+
+    artifacts:
+      - apps/ios-expo/ios/build/ios/ipa/*.ipa
+      - /tmp/xcodebuild_logs/*.log
+      - $HOME/Library/Developer/Xcode/DerivedData/**/Build/**/*.app
+
+    publishing:
+      app_store_connect:
+        auth: integration
+        submit_to_testflight: true
+        beta_groups:
+          - Founders
