@@ -90,6 +90,21 @@ workflows:
           set -e
           pod install
 
+      - name: Enable Push Notifications capability on bundle id
+        script: |
+          set -e
+          # Why (gotcha #15): API-registered bundle ids start with ZERO
+          # capabilities. expo-notifications writes aps-environment into
+          # the entitlements at prebuild, so xcodebuild archive fails with:
+          #   "Provisioning profile doesn't include the Push Notifications
+          #    capability / aps-environment entitlement"
+          # Build #3 hit this. Idempotent — script no-ops if PUSH_NOTIFICATIONS
+          # is already enabled. When a capability changes on an App ID, Apple
+          # auto-invalidates existing provisioning profiles, so the next
+          # fetch-signing-files --create generates a fresh one with the new
+          # capability included.
+          node apps/ios-expo/scripts/asc-enable-push-notifications.mjs
+
       - name: Revoke stale distribution certs
         script: |
           set -e
