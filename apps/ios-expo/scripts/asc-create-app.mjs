@@ -263,6 +263,33 @@ async function main() {
           process.exit(1);
         }
         console.log(`      Resolved: id=${app.id}`);
+      } else if (createApp.status === 403) {
+        // Apple no longer permits app-record creation via REST API for
+        // most ASC API key roles — only manual ASC web UI creation works.
+        // Surface a clear next-step instruction.
+        console.log("");
+        console.log("=========================================================");
+        console.log("ASC REST API does not allow apps:CREATE for this API key.");
+        console.log("This is an Apple policy, not a script bug.");
+        console.log("");
+        console.log("The bundle id is already registered for you:");
+        console.log(`  Bundle ID         : ${BUNDLE_ID}`);
+        console.log(`  Bundle Record ID  : ${bundle.id}`);
+        console.log("");
+        console.log("Manual next step (~2 minutes):");
+        console.log("  1. Go to https://appstoreconnect.apple.com/apps");
+        console.log("  2. Click the blue '+' button -> 'New App'");
+        console.log("  3. Platform: iOS");
+        console.log(`  4. Name: ${APP_NAME}`);
+        console.log(`  5. Primary Language: English (U.S.)`);
+        console.log(`  6. Bundle ID: pick \"${BUNDLE_ID}\" from the dropdown`);
+        console.log(`  7. SKU: ${APP_SKU}`);
+        console.log("  8. User Access: Full Access");
+        console.log("");
+        console.log("Then re-run this script — it'll detect the new app");
+        console.log("record and finish persisting the id to .secrets/ + eas.json.");
+        console.log("=========================================================");
+        process.exit(2);
       } else {
         console.error(
           "      App CREATE FAILED:",
