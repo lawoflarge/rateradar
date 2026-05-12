@@ -11,3 +11,5 @@ android/
 .eas/
 __snapshots__/
 archive/
+
+.cache/
