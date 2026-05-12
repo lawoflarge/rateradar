@@ -36,6 +36,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# ad-hoc dev assets (screenshots, logs) — per Levin's dev asset storage convention
+/archive
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
