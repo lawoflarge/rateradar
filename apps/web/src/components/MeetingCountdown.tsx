@@ -6,13 +6,13 @@ interface Props {
   meetingDate: string; // ISO date (YYYY-MM-DD)
 }
 
-function computeLabel(meetingDate: string): string {
+function computeLabel(meetingDate: string): { prefix: string; value: string; suffix: string } {
   const target = new Date(meetingDate + "T00:00:00").getTime();
   const now = Date.now();
   const days = Math.max(0, Math.ceil((target - now) / (1000 * 60 * 60 * 24)));
-  if (days === 0) return "Today";
-  if (days === 1) return "Tomorrow";
-  return `in ${days} days`;
+  if (days === 0) return { prefix: "", value: "", suffix: "Today" };
+  if (days === 1) return { prefix: "", value: "", suffix: "Tomorrow" };
+  return { prefix: "in ", value: String(days), suffix: " days" };
 }
 
 function subscribe(onChange: () => void): () => void {
@@ -26,10 +26,18 @@ function subscribe(onChange: () => void): () => void {
  * mismatches, client hydrates with the live countdown.
  */
 export function MeetingCountdown({ meetingDate }: Props) {
-  const label = useSyncExternalStore(
+  const parts = useSyncExternalStore(
     subscribe,
     () => computeLabel(meetingDate),
-    () => "",
+    () => ({ prefix: "", value: "", suffix: "" }),
   );
-  return <span suppressHydrationWarning>{label}</span>;
+  return (
+    <span suppressHydrationWarning>
+      {parts.prefix}
+      {parts.value && (
+        <span className="font-mono tabular-nums">{parts.value}</span>
+      )}
+      {parts.suffix}
+    </span>
+  );
 }
