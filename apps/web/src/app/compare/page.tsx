@@ -9,11 +9,11 @@ import { CURRENT_POLICY_RATES } from "@/lib/policy-rates";
 export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: "Fed vs ECB — divergence in rate-cut pricing",
+  title: "Fed vs ECB · divergence in rate-cut pricing",
   description:
     "Side-by-side market-implied probabilities and forward rate paths for the Federal Reserve and the European Central Bank. Track divergence in real time.",
   openGraph: {
-    title: "Fed vs ECB — divergence in rate-cut pricing",
+    title: "Fed vs ECB · divergence in rate-cut pricing",
     description:
       "Side-by-side market-implied probabilities and forward rate paths for the Fed and the ECB.",
     type: "website",

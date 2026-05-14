@@ -7,6 +7,7 @@
  */
 
 import { MOCK_FED_PROBABILITIES } from "./mock-data";
+import { loadJsonSnapshot } from "./snapshots";
 import { getSupabase } from "./supabase";
 import type {
   BankCode,
@@ -20,6 +21,17 @@ function hasSupabaseConfig(): boolean {
     process.env.NEXT_PUBLIC_SUPABASE_URL &&
       process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
   );
+}
+
+/**
+ * Resolve the right fallback when Supabase is empty or unreachable.
+ * Tries the git-committed JSON snapshot first, then falls through to the
+ * hard-coded mock data (FED only, ECB returns empty).
+ */
+async function fallbackFor(bankCode: BankCode): Promise<MeetingProbabilities[]> {
+  const fromJson = await loadJsonSnapshot(bankCode);
+  if (fromJson && fromJson.length > 0) return fromJson;
+  return bankCode === "FED" ? MOCK_FED_PROBABILITIES : [];
 }
 
 interface LatestProbabilityRow {
@@ -49,8 +61,7 @@ interface MeetingRow {
 export async function getProbabilities(
   bankCode: BankCode,
 ): Promise<MeetingProbabilities[]> {
-  const fallback = bankCode === "FED" ? MOCK_FED_PROBABILITIES : [];
-  if (!hasSupabaseConfig()) return fallback;
+  if (!hasSupabaseConfig()) return fallbackFor(bankCode);
 
   try {
     const supabase = getSupabase();
@@ -66,7 +77,7 @@ export async function getProbabilities(
       .order("meeting_date", { ascending: true });
 
     if (mErr || !meetings || meetings.length === 0) {
-      return fallback;
+      return fallbackFor(bankCode);
     }
 
     // 2. For each meeting, pull its outcomes + latest snapshot via the view
@@ -79,7 +90,7 @@ export async function getProbabilities(
       .in("meeting_id", meetingIds);
 
     if (pErr || !probs) {
-      return fallback;
+      return fallbackFor(bankCode);
     }
 
     // 3. Group by meeting
@@ -118,14 +129,14 @@ export async function getProbabilities(
       };
     });
 
-    // Filter to only meetings that have at least one non-zero probability — avoids
-    // rendering empty rows when data hasn't flowed yet for a given meeting.
+    // Filter to only meetings that have at least one non-zero probability,
+    // avoiding empty rows when data hasn't flowed yet for a given meeting.
     const nonEmpty = result.filter((r) =>
       r.outcomes.some((o) => o.probability > 0),
     );
-    return nonEmpty.length > 0 ? nonEmpty : fallback;
+    return nonEmpty.length > 0 ? nonEmpty : await fallbackFor(bankCode);
   } catch {
-    return fallback;
+    return fallbackFor(bankCode);
   }
 }
 

@@ -4,14 +4,25 @@ Usage:
     python -m src.main --bank fed --year 2026 --source mock
     python -m src.main --bank ecb --year 2026 --source mock
     python -m src.main --bank fed --source yfinance --write
+    python -m src.main --bank fed --source mock --write \
+        --json-snapshot-dir services/data-pipeline/snapshots
 
 Flags:
-    --bank          fed | ecb
-    --year          Year to pull meetings from (default 2026)
-    --source        'mock' | 'yfinance' (default: mock for safety)
-    --current-rate  Current policy-rate midpoint (percent). Default auto-picks
-                    by bank: 4.375 for FED, 2.00 for ECB.
-    --write         If set, writes snapshots to Supabase via RR_DB_URL.
+    --bank               fed | ecb
+    --year               Year to pull meetings from (default 2026)
+    --source             'mock' | 'yfinance' (default: mock for safety)
+    --current-rate       Current policy-rate midpoint (percent). Default auto-picks
+                         by bank: 4.375 for FED, 2.00 for ECB.
+    --write              Best-effort Supabase upsert via RR_DB_URL. Database
+                         outages (paused project, DNS NXDOMAIN, refused
+                         connection) downgrade to a warning so the cron job
+                         stays green.
+    --require-db         Treat any DB outage as a hard failure. Useful for
+                         smoke-tests when you specifically want to assert the
+                         DB is reachable.
+    --json-snapshot-dir  When set, writes a JSON snapshot file per run.
+                         Always succeeds (no network). The web reads these
+                         files as a fallback when the DB is empty.
 """
 
 from __future__ import annotations
@@ -20,12 +31,14 @@ import argparse
 import logging
 import sys
 from datetime import UTC, datetime
+from pathlib import Path
 
 from .ecb_fetcher import run_ecb_fetch
 from .fed_fetcher import MeetingProbability, run_fed_fetch
 from .fetchers.base import PriceFetcher
 from .fetchers.ecb_mock_source import EcbMockFetcher
 from .fetchers.mock_source import MockFetcher
+from .json_writer import write_snapshot_files
 
 logger = logging.getLogger(__name__)
 
@@ -35,17 +48,18 @@ DEFAULT_RATES = {
     "ecb": 2.00,
 }
 
+METHODOLOGY_VERSION = "1.0.0"
+
 
 def build_fetcher(source: str, bank: str) -> PriceFetcher:
     if source == "mock":
         return EcbMockFetcher() if bank == "ecb" else MockFetcher()
     if source == "yfinance":
-        # Imported lazily so mock mode doesn't require yfinance/requests at runtime
         from .fetchers.yfinance_source import YFinanceFetcher
 
         if bank == "ecb":
             raise NotImplementedError(
-                "yfinance source not supported for ECB yet — use --source mock for now"
+                "yfinance source not supported for ECB yet, use --source mock for now."
             )
         return YFinanceFetcher()
     raise ValueError(f"Unknown source: {source}. Valid: mock, yfinance")
@@ -60,12 +74,74 @@ def print_probabilities(results: list[MeetingProbability]) -> None:
     for r in results:
         if r.meeting_date != current_meeting:
             current_meeting = r.meeting_date
-            print(f"\n-- Meeting: {r.meeting_date} --------------------------")
+            print(f"\n.. Meeting: {r.meeting_date} ..........................")
             print(f"  {'Outcome':>8}  {'Probability':>12}  {'Post-rate %':>12}")
             print(f"  {'-' * 8}  {'-' * 12}  {'-' * 12}")
         pct = f"{r.probability * 100:>10.2f}%"
         rate = f"{r.post_meeting_rate:>10.3f}%"
         print(f"  {r.outcome_label:>8}  {pct:>12}  {rate:>12}")
+
+
+def _is_pooler_tenant_missing(err: Exception) -> bool:
+    """Return True for the specific Supavisor 'tenant/user not found' error.
+
+    Supabase's pooler raises this when the project ref does not exist or the
+    project is paused. We treat it as a recoverable outage so the cron can
+    keep computing + writing JSON snapshots without going red.
+    """
+    msg = str(err).lower()
+    return "tenant" in msg and "not found" in msg
+
+
+def _is_network_outage(err: Exception) -> bool:
+    """Return True for connection-level failures (DNS NXDOMAIN, refused, timeout)."""
+    msg = str(err).lower()
+    signals = (
+        "could not translate host name",  # DNS failure
+        "name or service not known",
+        "nodename nor servname provided",
+        "connection refused",
+        "connection timed out",
+        "no route to host",
+        "network is unreachable",
+    )
+    return any(s in msg for s in signals)
+
+
+def write_to_supabase(
+    db_url: str,
+    results: list[MeetingProbability],
+    bank: str,
+    require_db: bool,
+) -> tuple[int, int] | None:
+    """Best-effort Supabase write. Returns (written, missing) or None on outage."""
+    import psycopg2
+    from psycopg2 import OperationalError
+
+    from .supabase_writer import write_probabilities
+
+    if "sslmode=" not in db_url:
+        db_url += "&sslmode=require" if "?" in db_url else "?sslmode=require"
+
+    try:
+        logger.info("Connecting to Supabase to upsert snapshots...")
+        conn = psycopg2.connect(db_url)
+    except OperationalError as exc:
+        if not require_db and (_is_pooler_tenant_missing(exc) or _is_network_outage(exc)):
+            logger.warning(
+                "Supabase write skipped (project paused, deleted, or unreachable): %s",
+                str(exc).splitlines()[0] if str(exc) else exc.__class__.__name__,
+            )
+            return None
+        raise
+
+    try:
+        written, missing = write_probabilities(
+            conn, results, bank_code=bank.upper(), source="pipeline"
+        )
+    finally:
+        conn.close()
+    return written, missing
 
 
 def main() -> int:
@@ -83,7 +159,18 @@ def main() -> int:
     parser.add_argument(
         "--write",
         action="store_true",
-        help="Write snapshots to Supabase (requires RR_DB_URL env var)",
+        help="Best-effort Supabase write (RR_DB_URL). Outages do not fail the job.",
+    )
+    parser.add_argument(
+        "--require-db",
+        action="store_true",
+        help="Treat any DB outage as a hard failure (overrides --write tolerance).",
+    )
+    parser.add_argument(
+        "--json-snapshot-dir",
+        type=Path,
+        default=None,
+        help="If set, write snapshot JSON files to this directory (always runs).",
     )
     parser.add_argument("--verbose", "-v", action="store_true", help="Enable debug logging")
     args = parser.parse_args()
@@ -103,7 +190,7 @@ def main() -> int:
         args.source,
         current_rate,
     )
-    started_at = datetime.now(UTC)
+    started_at = datetime.now(UTC).replace(microsecond=0)
     if args.bank == "fed":
         results = run_fed_fetch(
             fetcher=fetcher,
@@ -120,12 +207,19 @@ def main() -> int:
 
     print_probabilities(results)
 
+    if args.json_snapshot_dir is not None:
+        latest, history = write_snapshot_files(
+            snapshot_dir=args.json_snapshot_dir,
+            bank_code=args.bank.upper(),
+            probabilities=results,
+            snapshot_at=started_at,
+            methodology_version=METHODOLOGY_VERSION,
+        )
+        print(f"\nWrote JSON snapshot: {latest}")
+        print(f"Appended history:    {history}")
+
     if args.write:
         import os
-
-        import psycopg2
-
-        from .supabase_writer import write_probabilities
 
         db_url = os.environ.get("RR_DB_URL") or os.environ.get("SUPABASE_DB_URL")
         if not db_url:
@@ -135,18 +229,18 @@ def main() -> int:
                 file=sys.stderr,
             )
             return 3
-        if "sslmode=" not in db_url:
-            db_url += "&sslmode=require" if "?" in db_url else "?sslmode=require"
 
-        logger.info("Connecting to Supabase to upsert snapshots...")
-        conn = psycopg2.connect(db_url)
-        try:
-            written, missing = write_probabilities(
-                conn, results, bank_code=args.bank.upper(), source="pipeline"
+        outcome = write_to_supabase(db_url, results, args.bank, args.require_db)
+        if outcome is None:
+            print(
+                "\n[Supabase write skipped: project paused / unreachable. "
+                "JSON snapshot still written. Unpause the project at "
+                "https://supabase.com/dashboard to resume DB writes.]",
+                file=sys.stderr,
             )
-        finally:
-            conn.close()
-        print(f"\nWrote {written} probability snapshots to Supabase ({missing} unmatched).")
+        else:
+            written, missing = outcome
+            print(f"\nWrote {written} probability snapshots to Supabase ({missing} unmatched).")
 
     elapsed = (datetime.now(UTC) - started_at).total_seconds()
     logger.info("Done in %.2fs", elapsed)

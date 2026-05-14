@@ -1,5 +1,6 @@
 import { ImpliedRateCurve } from "@/components/ImpliedRateCurve";
 import { MeetingCountdown } from "@/components/MeetingCountdown";
+import { MethodologyBadge } from "@/components/MethodologyBadge";
 import { MostLikelyPath } from "@/components/MostLikelyPath";
 import { ProbabilityTable } from "@/components/ProbabilityTable";
 import { Rule } from "@/components/Rule";
@@ -10,6 +11,7 @@ import {
   getMeetingHistory,
 } from "@/lib/data";
 import { CURRENT_POLICY_RATES } from "@/lib/policy-rates";
+import { loadJsonSnapshotAt } from "@/lib/snapshots";
 import type { MeetingProbabilities, ProbabilitySeries } from "@/lib/types";
 
 export const revalidate = 300; // ISR: refresh every 5 minutes
@@ -42,9 +44,10 @@ export default async function Home() {
     getEcbProbabilities(),
   ]);
 
-  const [fedHistory, ecbHistory] = await Promise.all([
+  const [fedHistory, ecbHistory, fedSnapshotMeta] = await Promise.all([
     prefetchHistory(fed, 3),
     prefetchHistory(ecb, 3),
+    loadJsonSnapshotAt("FED"),
   ]);
 
   const next = soonestMeeting(fed, ecb);
@@ -52,19 +55,35 @@ export default async function Home() {
     ? [...next.outcomes].sort((a, b) => b.probability - a.probability)[0]
     : null;
 
+  const methodologyVersion = fedSnapshotMeta?.version ?? "1.0.0";
+  const latestSnapshotAt =
+    fedSnapshotMeta?.at ?? next?.snapshot_at ?? fed[0]?.snapshot_at ?? null;
+  const dataSource: "supabase" | "json" | "mock" = fedSnapshotMeta
+    ? "json"
+    : fed.length > 0
+      ? "supabase"
+      : "mock";
+
   return (
     <main className="mx-auto max-w-5xl px-6 py-16">
       <header className="mb-16">
         <SectionLabel>Real-time market-implied odds</SectionLabel>
         <h1 className="mt-4 max-w-3xl font-serif text-5xl font-medium leading-[1.05] tracking-tight text-ink sm:text-6xl">
-          See where rates are headed
-          <span className="block text-ink-mute">— before the meeting.</span>
+          See where rates are headed.
+          <span className="block text-ink-mute">Before the meeting.</span>
         </h1>
         <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink-soft">
           Market-implied probabilities for Fed and ECB interest-rate decisions, with
           historical tracking over days and weeks. Computed from Fed Funds Futures and
-          €STR OIS — not scraped.
+          €STR OIS. Never scraped.
         </p>
+        <div className="mt-6">
+          <MethodologyBadge
+            version={methodologyVersion}
+            snapshotAt={latestSnapshotAt}
+            source={dataSource}
+          />
+        </div>
       </header>
 
       <Rule />

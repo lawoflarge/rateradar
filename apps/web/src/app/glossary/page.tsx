@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Rule } from "@/components/Rule";
 
 export const metadata: Metadata = {
-  title: "Glossary — rate-decision terms explained",
+  title: "Glossary · rate-decision terms explained",
   description:
     "Plain-English definitions for the terms used on RateRadar: basis points, FOMC, DFR, hawkish, dovish, priced in, and more.",
   alternates: { canonical: "/glossary" },
@@ -11,11 +11,11 @@ export const metadata: Metadata = {
 const TERMS: { term: string; def: string }[] = [
   {
     term: "Basis point (bp / bps)",
-    def: "One hundredth of a percent. A 25 bps rate cut moves the target rate down by 0.25 percentage points — e.g., from 4.50% to 4.25%.",
+    def: "One hundredth of a percent. A 25 bps rate cut moves the target rate down by 0.25 percentage points (e.g., from 4.50% to 4.25%).",
   },
   {
     term: "FOMC",
-    def: "Federal Open Market Committee — the 12-member body at the Federal Reserve that sets the US policy interest rate. Meets 8 times per year.",
+    def: "Federal Open Market Committee. The 12-member body at the Federal Reserve that sets the US policy interest rate. Meets 8 times per year.",
   },
   {
     term: "Fed Funds Target Rate",
@@ -23,11 +23,11 @@ const TERMS: { term: string; def: string }[] = [
   },
   {
     term: "Deposit Facility Rate (DFR)",
-    def: "The interest rate the ECB pays on overnight deposits from banks. Since 2023, the operational 'policy rate' for markets — what our ECB probabilities track.",
+    def: "The interest rate the ECB pays on overnight deposits from banks. Since 2023, the operational 'policy rate' for markets, which is what our ECB probabilities track.",
   },
   {
     term: "€STR",
-    def: "Euro Short-Term Rate — the reference overnight rate in the eurozone, published by the ECB. Closely tracks the DFR (typically ~5-10 bps below).",
+    def: "Euro Short-Term Rate. The reference overnight rate in the eurozone, published by the ECB. Closely tracks the DFR (typically about 5 to 10 bps below).",
   },
   {
     term: "OIS (Overnight Index Swap)",
@@ -35,7 +35,7 @@ const TERMS: { term: string; def: string }[] = [
   },
   {
     term: "Fed Funds Futures",
-    def: "CME-traded futures contracts that settle to the monthly average of the daily effective Fed Funds rate. The source of Fed probability calculations — each contract month's price implies the market's average expected rate for that month.",
+    def: "CME-traded futures contracts that settle to the monthly average of the daily effective Fed Funds rate. The source of Fed probability calculations. Each contract month's price implies the market's average expected rate for that month.",
   },
   {
     term: "Priced in",

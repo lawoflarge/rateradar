@@ -24,7 +24,7 @@ const plexSerif = IBM_Plex_Serif({
 
 export const metadata: Metadata = {
   title: {
-    default: "RateRadar — Fed + ECB rate-decision probabilities",
+    default: "RateRadar · Fed + ECB rate-decision probabilities",
     template: "%s · RateRadar",
   },
   description:
@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: "RateRadar",
     description:
-      "Fed + ECB rate-decision probabilities with historical tracking. See where rates are headed — before the meeting.",
+      "Fed + ECB rate-decision probabilities with historical tracking. See where rates are headed before the meeting.",
     type: "website",
   },
   twitter: {

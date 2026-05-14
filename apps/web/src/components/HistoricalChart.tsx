@@ -93,7 +93,7 @@ export function HistoricalChart({
   if (chartData.length === 0) {
     return (
       <div className="h-40 rounded-lg border border-dashed border-ink/15 bg-cream-soft flex items-center justify-center text-sm text-ink-mute">
-        No history yet — come back after we capture more snapshots.
+        No history yet. Come back after we capture more snapshots.
       </div>
     );
   }

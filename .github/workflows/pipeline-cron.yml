@@ -1,26 +1,40 @@
 name: Pipeline cron
 
-# Runs the data pipeline twice per business day and every 15 min on FOMC/ECB
-# meeting days. The meeting-day refresh trigger is manual for now — automate
-# via an external scheduler or by extending this workflow with an event filter
-# once calendars are integrated.
+# Runs the data pipeline twice per business day.
+#
+# Resilience strategy:
+#   1. The pipeline always writes a JSON snapshot to services/data-pipeline/snapshots/.
+#      This makes history durable in git, immune to Supabase free-tier pauses.
+#   2. The pipeline ALSO tries to upsert to Supabase as a best-effort step.
+#      If the project is paused or unreachable, that step is logged and skipped
+#      (the workflow stays green; the JSON write is the source of truth).
+#   3. After both banks finish, this workflow commits any new snapshot files
+#      back to the same branch so the web can read them.
 #
 # Required repo secrets:
-#   RR_DB_URL  Supabase Postgres connection string with password.
+#   RR_DB_URL  Supabase Postgres connection string. Optional. If absent or
+#              unreachable, the pipeline still writes JSON snapshots.
 
 on:
   schedule:
-    # 22:00 UTC — after US close
+    # 22:00 UTC, after US close
     - cron: "0 22 * * 1-5"
-    # 18:00 UTC — after European close
+    # 18:00 UTC, after European close
     - cron: "0 18 * * 1-5"
   workflow_dispatch:
     inputs:
       bank:
-        description: "Bank to run"
+        description: "Bank to run (informational only; both banks always run)"
         type: choice
-        options: [fed, ecb]
-        default: fed
+        options: [fed, ecb, both]
+        default: both
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pipeline-cron-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
   run:
@@ -40,7 +54,57 @@ jobs:
           cache: pip
           cache-dependency-path: services/data-pipeline/requirements.txt
       - run: pip install -r requirements.txt
-      - name: Run ${{ matrix.bank }} pipeline with write
+      - name: Run ${{ matrix.bank }} pipeline with JSON + Supabase write
         env:
           RR_DB_URL: ${{ secrets.RR_DB_URL }}
-        run: python -m src.main --bank ${{ matrix.bank }} --source mock --write
+        run: |
+          python -m src.main \
+            --bank ${{ matrix.bank }} \
+            --source mock \
+            --write \
+            --json-snapshot-dir snapshots
+      - name: Upload snapshot artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: snapshot-${{ matrix.bank }}-${{ github.run_id }}
+          path: services/data-pipeline/snapshots/${{ matrix.bank }}/
+          retention-days: 30
+          if-no-files-found: warn
+
+  commit-snapshots:
+    needs: run
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download all snapshot artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Stage snapshot files
+        run: |
+          set -e
+          mkdir -p services/data-pipeline/snapshots
+          for bank in fed ecb; do
+            for dir in artifacts/snapshot-${bank}-*; do
+              if [ -d "$dir" ]; then
+                mkdir -p "services/data-pipeline/snapshots/${bank}"
+                cp -r "$dir"/. "services/data-pipeline/snapshots/${bank}/"
+              fi
+            done
+          done
+      - name: Commit and push snapshots
+        run: |
+          set -e
+          git config user.name  "rateradar-bot"
+          git config user.email "rateradar-bot@users.noreply.github.com"
+          git add services/data-pipeline/snapshots
+          if git diff --cached --quiet; then
+            echo "No snapshot changes to commit."
+            exit 0
+          fi
+          # Avoid race with concurrent pushes by rebasing onto the latest tip.
+          git pull --rebase --autostash origin "${GITHUB_REF_NAME}"
+          stamp=$(date -u +'%Y-%m-%dT%H:%MZ')
+          git commit -m "data(snapshot): pipeline cron @ ${stamp}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"

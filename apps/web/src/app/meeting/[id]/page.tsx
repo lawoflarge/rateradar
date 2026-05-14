@@ -41,7 +41,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const pct = Math.round(top.probability * 100);
   const action = top.label === "Hold" ? "hold" : `move ${top.label}`;
 
-  const title = `${bank} ${date} — markets price ${pct}% to ${action}`;
+  const title = `${bank} ${date} · markets price ${pct}% to ${action}`;
   const description =
     `Market-implied probabilities for the ${bank} ${date} rate decision, ` +
     `with 60 days of historical probability tracking.`;
@@ -181,7 +181,7 @@ export default async function MeetingPage({ params }: PageProps) {
         <div className="mt-4">
           <ShareButtons
             meetingId={id}
-            title={`${bank} ${formatShortDate(data.meeting.meeting_date)} — ${Math.round(top.probability * 100)}% ${top.label === "Hold" ? "hold" : `move ${top.label}`}`}
+            title={`${bank} ${formatShortDate(data.meeting.meeting_date)} · ${Math.round(top.probability * 100)}% ${top.label === "Hold" ? "hold" : `move ${top.label}`}`}
           />
         </div>
       </section>

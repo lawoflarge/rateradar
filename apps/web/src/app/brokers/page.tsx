@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Rule } from "@/components/Rule";
 
 export const metadata: Metadata = {
-  title: "Brokers — trade rate-sensitive instruments",
+  title: "Brokers · trade rate-sensitive instruments",
   description:
     "Broker partnerships for trading Fed Funds Futures, Treasuries, and rate-sensitive ETFs. Transparent affiliate partnerships that keep RateRadar free.",
   alternates: { canonical: "/brokers" },
@@ -31,7 +31,7 @@ const BROKERS = [
     name: "eToro",
     tagline: "Social trading with CFD access to rate-sensitive pairs.",
     markets: ["EU", "UK", "Global"],
-    notes: "CFDs only — good for EUR/USD moves around ECB/Fed decisions.",
+    notes: "CFDs only. Good for EUR/USD moves around ECB/Fed decisions.",
   },
   {
     slug: "plus500",

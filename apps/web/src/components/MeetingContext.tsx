@@ -68,7 +68,7 @@ export function MeetingContext({ prior, next }: Props) {
         )}
       </div>
       <p className="mt-3 text-xs text-ink-mute">
-        Market-implied probabilities chain meeting-to-meeting — today&apos;s odds
+        Market-implied probabilities chain meeting-to-meeting. Today&apos;s odds
         already account for the most-likely outcome of prior meetings. See{" "}
         <Link
           href="/methodology"

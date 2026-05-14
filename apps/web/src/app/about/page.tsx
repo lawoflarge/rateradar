@@ -4,7 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "About RateRadar",
   description:
-    "RateRadar is a modern, mobile-first tracker for Fed and ECB rate decisions — with the historical probability charts every other tool is missing.",
+    "RateRadar is a modern, mobile-first tracker for Fed and ECB rate decisions, with the historical probability charts every other tool is missing.",
   alternates: { canonical: "/about" },
 };
 
@@ -16,7 +16,7 @@ export default function AboutPage() {
           About RateRadar
         </h1>
         <p className="mt-6 text-lg leading-relaxed text-ink-soft">
-          See where rates are headed — before the meeting.
+          See where rates are headed. Before the meeting.
         </p>
       </header>
 

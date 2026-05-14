@@ -1,5 +1,8 @@
 import Link from "next/link";
+import { DownloadDataButton } from "./DownloadDataButton";
 import { HistoricalChart } from "./HistoricalChart";
+import { MovementChip } from "./MovementChip";
+import { computeMovements } from "@/lib/movement";
 import type { MeetingProbabilities, ProbabilitySeries } from "@/lib/types";
 
 interface Props {
@@ -34,27 +37,35 @@ function actionBarColor(label: string): string {
   return "bg-ink/40";
 }
 
+function meetingLabel(bank: "FED" | "ECB"): string {
+  return bank === "FED" ? "FOMC meeting" : "ECB Governing Council";
+}
+
 export function ProbabilityTable({ data, history, showDetailLink = true }: Props) {
   const topOutcome = [...data.outcomes].sort((a, b) => b.probability - a.probability)[0];
+  const movements = computeMovements(history, 7);
 
   return (
     <div className="space-y-4 rounded-none border border-ink/15 bg-cream-soft p-6">
-      <div className="mb-4 flex items-baseline justify-between">
+      <div className="mb-4 flex items-baseline justify-between gap-4">
         <div>
           <h3 className="text-lg font-semibold text-ink">
             {formatMeetingDate(data.meeting.meeting_date)}
           </h3>
           <p className="text-sm text-ink-mute">
-            FOMC meeting · {data.meeting.bank_code}
+            {meetingLabel(data.meeting.bank_code)} · {data.meeting.bank_code}
           </p>
         </div>
-        <div className="text-right">
-          <div className="text-xs uppercase tracking-wide text-ink-mute">Most likely</div>
-          <div className={`text-lg font-semibold ${actionTone(topOutcome.label)}`}>
-            <span className="font-mono tabular-nums">
-              {topOutcome.label} · {(topOutcome.probability * 100).toFixed(0)}%
-            </span>
+        <div className="flex items-start gap-3">
+          <div className="text-right">
+            <div className="text-xs uppercase tracking-wide text-ink-mute">Most likely</div>
+            <div className={`text-lg font-semibold ${actionTone(topOutcome.label)}`}>
+              <span className="font-mono tabular-nums">
+                {topOutcome.label} · {(topOutcome.probability * 100).toFixed(0)}%
+              </span>
+            </div>
           </div>
+          <DownloadDataButton data={data} />
         </div>
       </div>
 
@@ -64,6 +75,11 @@ export function ProbabilityTable({ data, history, showDetailLink = true }: Props
             <tr className="text-left text-xs uppercase tracking-wide text-ink-mute">
               <th className="px-4 py-3">Outcome</th>
               <th className="px-4 py-3 text-right">Probability</th>
+              <th className="px-4 py-3 text-right">
+                {movements
+                  ? `Moved · last ${movements.windowDays || 7}d`
+                  : "Moved"}
+              </th>
               <th className="px-4 py-3 text-right">Post-meeting rate</th>
               <th className="px-4 py-3" aria-label="probability bar" />
             </tr>
@@ -71,6 +87,7 @@ export function ProbabilityTable({ data, history, showDetailLink = true }: Props
           <tbody>
             {data.outcomes.map((o) => {
               const barWidth = Math.max(o.probability * 100, 0.5);
+              const move = movements?.byLabel[o.label];
               return (
                 <tr key={o.id} className="border-b border-ink/10 last:border-b-0">
                   <td className="px-4 py-3">
@@ -84,6 +101,13 @@ export function ProbabilityTable({ data, history, showDetailLink = true }: Props
                     <span className="font-mono tabular-nums font-medium">
                       {(o.probability * 100).toFixed(1)}%
                     </span>
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    {move ? (
+                      <MovementChip deltaPp={move.deltaPp} windowDays={move.windowDays} />
+                    ) : (
+                      <span className="font-mono text-[11px] text-ink-mute/60">·</span>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-right text-ink-mute">
                     <span className="font-mono tabular-nums">

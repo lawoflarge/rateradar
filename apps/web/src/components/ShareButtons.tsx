@@ -15,7 +15,7 @@ export function ShareButtons({ meetingId, title }: Props) {
       ? `https://rateradar-web.vercel.app/meeting/${meetingId}`
       : `${window.location.origin}/meeting/${meetingId}`;
 
-  const tweetText = encodeURIComponent(`${title} — via RateRadar`);
+  const tweetText = encodeURIComponent(`${title} · via RateRadar`);
   const encodedUrl = encodeURIComponent(url);
   const twitterHref = `https://twitter.com/intent/tweet?text=${tweetText}&url=${encodedUrl}`;
   const linkedinHref = `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Privacy Policy — RateRadar",
+  title: "Privacy Policy · RateRadar",
   description:
     "RateRadar's privacy policy. We collect almost nothing, we don't sell data, and we don't run third-party trackers.",
   alternates: { canonical: "/privacy" },
@@ -54,7 +54,7 @@ export default function PrivacyPage() {
             app, your device registers an Apple Push Notification token (APNs
             device token) with our server so we can deliver alerts. The token
             identifies your device, not you. We never link it to your name,
-            email, or any other identifier — RateRadar has no user accounts.
+            email, or any other identifier. RateRadar has no user accounts.
             Tokens are stored only for delivery and are rotated/revoked by iOS
             when you uninstall the app or disable notifications.
           </li>
@@ -101,17 +101,17 @@ export default function PrivacyPage() {
         </p>
         <ul className="my-4 list-disc space-y-2 pl-6 text-lg leading-relaxed text-ink-soft">
           <li>
-            <strong className="text-ink">Vercel</strong> — hosts the website
+            <strong className="text-ink">Vercel</strong> hosts the website
             and serverless functions. Sees standard HTTP request metadata.
           </li>
           <li>
-            <strong className="text-ink">Supabase</strong> — stores
+            <strong className="text-ink">Supabase</strong> stores
             probability snapshots and meeting metadata (public market data; no
             user information).
           </li>
           <li>
             <strong className="text-ink">Apple Push Notification Service</strong>{" "}
-            (APNs) — delivers iOS push notifications. Sees the device token
+            (APNs) delivers iOS push notifications. Sees the device token
             and message payload (no personal information).
           </li>
         </ul>
@@ -130,7 +130,7 @@ export default function PrivacyPage() {
         <p className="my-4 text-lg leading-relaxed text-ink-soft">
           You can disable push notifications in iOS Settings at any time. To
           remove your APNs token from our server entirely, simply uninstall
-          the app — iOS will notify our server and the token will be deleted.
+          the app, and iOS will notify our server so the token will be deleted.
           For any other request relating to your data (access, deletion, etc.),
           email{" "}
           <a

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Methodology — how RateRadar calculates probabilities",
+  title: "Methodology · how RateRadar calculates probabilities",
   description:
     "Transparent, step-by-step methodology for deriving market-implied probabilities of Fed and ECB rate decisions from futures and OIS prices.",
   alternates: { canonical: "/methodology" },

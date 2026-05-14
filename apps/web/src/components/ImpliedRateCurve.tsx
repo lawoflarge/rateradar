@@ -66,7 +66,7 @@ export function ImpliedRateCurve({ snapshots, startingRate, bankLabel }: Props) 
           Implied policy-rate path
         </div>
         <div className="mt-1 text-sm text-ink-mute">
-          {bankLabel} — expected rate at each upcoming meeting, derived from today&apos;s
+          {bankLabel}. Expected rate at each upcoming meeting, derived from today&apos;s
           probability distribution.
         </div>
       </div>
