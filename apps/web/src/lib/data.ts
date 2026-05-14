@@ -7,7 +7,11 @@
  */
 
 import { MOCK_FED_PROBABILITIES } from "./mock-data";
-import { loadJsonSnapshot } from "./snapshots";
+import {
+  loadJsonHistory,
+  loadJsonSnapshot,
+  loadJsonSnapshotById,
+} from "./snapshots";
 import { getSupabase } from "./supabase";
 import type {
   BankCode,
@@ -188,7 +192,8 @@ export async function getMeetingById(
   meetingId: string,
 ): Promise<MeetingProbabilities | null> {
   if (!hasSupabaseConfig()) {
-    // In mock mode, linear-search the mock list
+    const fromJson = await loadJsonSnapshotById(meetingId);
+    if (fromJson) return fromJson;
     return (
       MOCK_FED_PROBABILITIES.find((m) => m.meeting.id === meetingId) ?? null
     );
@@ -202,7 +207,11 @@ export async function getMeetingById(
       .select("id, meeting_date, status, bank_id, central_banks!inner(code)")
       .eq("id", meetingId)
       .maybeSingle();
-    if (mErr || !meeting) return null;
+    if (mErr || !meeting) {
+      const fromJson = await loadJsonSnapshotById(meetingId);
+      if (fromJson) return fromJson;
+      return null;
+    }
 
     const typed = meeting as unknown as MeetingRow;
 
@@ -259,7 +268,9 @@ export async function getMeetingHistory(
   meetingId: string,
   windowDays = 60,
 ): Promise<ProbabilitySeries[]> {
-  if (!hasSupabaseConfig()) return [];
+  if (!hasSupabaseConfig()) {
+    return loadJsonHistory(meetingId, windowDays);
+  }
 
   try {
     const supabase = getSupabase();
@@ -271,7 +282,7 @@ export async function getMeetingHistory(
       .select("id, label, delta_bps")
       .eq("meeting_id", meetingId)
       .order("delta_bps", { ascending: true });
-    if (oErr || !outcomes) return [];
+    if (oErr || !outcomes) return loadJsonHistory(meetingId, windowDays);
 
     // 2. Get all snapshots for those outcomes in the window
     const outcomeIds = outcomes.map((o) => o.id as string);
@@ -281,7 +292,7 @@ export async function getMeetingHistory(
       .in("outcome_id", outcomeIds)
       .gte("snapshot_at", since)
       .order("snapshot_at", { ascending: true });
-    if (sErr || !snaps) return [];
+    if (sErr || !snaps) return loadJsonHistory(meetingId, windowDays);
 
     const typedSnaps = snaps as unknown as HistoryRow[];
 
@@ -301,8 +312,11 @@ export async function getMeetingHistory(
       };
     });
 
+    if (series.every((s) => s.series.length === 0)) {
+      return loadJsonHistory(meetingId, windowDays);
+    }
     return series;
   } catch {
-    return [];
+    return loadJsonHistory(meetingId, windowDays);
   }
 }

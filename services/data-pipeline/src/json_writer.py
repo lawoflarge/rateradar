@@ -78,6 +78,11 @@ def write_snapshot_files(
         encoding="utf-8",
     )
 
+    # Rebuild the per-bank time series file by aggregating every history file.
+    # The web reads this single file to render the historical chart without
+    # needing a directory listing.
+    _rebuild_series(bank_dir, bank_code.upper())
+
     logger.info(
         "Wrote %d snapshot rows for %s to %s",
         len(rows),
@@ -85,3 +90,56 @@ def write_snapshot_files(
         history_path.name,
     )
     return latest_path, history_path
+
+
+def _rebuild_series(bank_dir: Path, bank_code: str) -> Path:
+    """Aggregate every history file under `bank_dir/history/` into series.json.
+
+    Format:
+      {
+        "bank_code": "FED",
+        "series": {
+           "2026-06-17": [
+             { "snapshot_at": "...", "outcome_label": "Hold", "delta_bps": 0,
+               "probability": 0.81, "post_meeting_rate": 4.375 },
+             ...
+           ],
+           ...
+        }
+      }
+    """
+    history_dir = bank_dir / "history"
+    by_meeting: dict[str, list[dict]] = {}
+    if history_dir.exists():
+        for path in sorted(history_dir.iterdir()):
+            if not path.name.endswith(".json"):
+                continue
+            try:
+                file_payload = json.loads(path.read_text(encoding="utf-8"))
+            except Exception:
+                continue
+            snap_at = file_payload.get("snapshot_at")
+            for row in file_payload.get("rows", []):
+                meeting = row.get("meeting_date")
+                if not meeting:
+                    continue
+                point = {
+                    "snapshot_at": snap_at,
+                    "outcome_label": row.get("outcome_label"),
+                    "delta_bps": row.get("outcome_delta_bps"),
+                    "probability": row.get("probability"),
+                    "post_meeting_rate": row.get("post_meeting_rate"),
+                }
+                by_meeting.setdefault(str(meeting), []).append(point)
+
+    series_path = bank_dir / "series.json"
+    series_path.write_text(
+        json.dumps(
+            {"bank_code": bank_code, "series": by_meeting},
+            indent=2,
+            default=_serialize,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    return series_path

@@ -16,7 +16,12 @@
 
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import type { BankCode, MeetingProbabilities, Outcome } from "./types";
+import type {
+  BankCode,
+  MeetingProbabilities,
+  Outcome,
+  ProbabilitySeries,
+} from "./types";
 
 interface SnapshotRow {
   meeting_date: string;
@@ -135,4 +140,126 @@ export async function loadJsonSnapshotAt(
   const file = (await readLocal(bankLower)) ?? (await readRemote(bankLower));
   if (!file) return null;
   return { at: file.snapshot_at, version: file.methodology_version ?? null };
+}
+
+/**
+ * Synthetic meeting ID format used by the JSON fallback: `<BANK>-<YYYY-MM-DD>`.
+ * Real Supabase UUIDs and JSON IDs can both flow through the meeting detail
+ * page; the JSON loaders only resolve the synthetic form.
+ */
+function parseSyntheticId(
+  meetingId: string,
+): { bank: BankCode; meetingDate: string } | null {
+  const m = meetingId.match(/^(FED|ECB)-(\d{4}-\d{2}-\d{2})$/);
+  if (!m) return null;
+  return { bank: m[1] as BankCode, meetingDate: m[2] };
+}
+
+export async function loadJsonSnapshotById(
+  meetingId: string,
+): Promise<MeetingProbabilities | null> {
+  const parsed = parseSyntheticId(meetingId);
+  if (!parsed) return null;
+  const all = await loadJsonSnapshot(parsed.bank);
+  if (!all) return null;
+  return all.find((m) => m.meeting.meeting_date === parsed.meetingDate) ?? null;
+}
+
+interface SeriesFile {
+  bank_code: string;
+  series: Record<
+    string,
+    Array<{
+      snapshot_at: string;
+      outcome_label: string;
+      delta_bps: number;
+      probability: number;
+      post_meeting_rate: number;
+    }>
+  >;
+}
+
+async function readLocalSeries(bankLower: string): Promise<SeriesFile | null> {
+  const candidates = [
+    path.resolve(
+      /* turbopackIgnore: true */ process.cwd(),
+      "../../services/data-pipeline/snapshots",
+      bankLower,
+      "series.json",
+    ),
+    path.resolve(
+      /* turbopackIgnore: true */ process.cwd(),
+      "services/data-pipeline/snapshots",
+      bankLower,
+      "series.json",
+    ),
+  ];
+  for (const p of candidates) {
+    try {
+      const txt = await fs.readFile(p, "utf-8");
+      return JSON.parse(txt) as SeriesFile;
+    } catch {
+      // try next
+    }
+  }
+  return null;
+}
+
+async function readRemoteSeries(bankLower: string): Promise<SeriesFile | null> {
+  try {
+    const url = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${REPO_BRANCH}/services/data-pipeline/snapshots/${bankLower}/series.json`;
+    const res = await fetch(url, { next: { revalidate: 300 } });
+    if (!res.ok) return null;
+    return (await res.json()) as SeriesFile;
+  } catch {
+    return null;
+  }
+}
+
+export async function loadJsonHistory(
+  meetingId: string,
+  windowDays: number,
+): Promise<ProbabilitySeries[]> {
+  const parsed = parseSyntheticId(meetingId);
+  if (!parsed) return [];
+  const bankLower = parsed.bank.toLowerCase();
+  const series =
+    (await readLocalSeries(bankLower)) ?? (await readRemoteSeries(bankLower));
+  if (!series) return [];
+
+  const points = series.series[parsed.meetingDate];
+  if (!points || points.length === 0) return [];
+
+  const cutoffMs = Date.now() - windowDays * 24 * 60 * 60 * 1000;
+  const byOutcome = new Map<
+    number,
+    { label: string; points: { snapshot_at: string; probability: number }[] }
+  >();
+
+  for (const p of points) {
+    if (new Date(p.snapshot_at).getTime() < cutoffMs) continue;
+    const slot = byOutcome.get(p.delta_bps) ?? {
+      label: p.outcome_label,
+      points: [],
+    };
+    slot.points.push({
+      snapshot_at: p.snapshot_at,
+      probability: p.probability,
+    });
+    byOutcome.set(p.delta_bps, slot);
+  }
+
+  const result: ProbabilitySeries[] = [];
+  for (const [delta_bps, slot] of byOutcome) {
+    result.push({
+      outcome_id: `${parsed.bank}-${parsed.meetingDate}-${delta_bps}`,
+      label: slot.label,
+      delta_bps,
+      series: slot.points.sort((a, b) =>
+        a.snapshot_at < b.snapshot_at ? -1 : 1,
+      ),
+    });
+  }
+  result.sort((a, b) => a.delta_bps - b.delta_bps);
+  return result;
 }
