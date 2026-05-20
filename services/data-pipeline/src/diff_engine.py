@@ -349,6 +349,12 @@ def compute_scoreboard(
         "longest_streak": int,                  # consecutive most-recent hits
         "history": [ { meeting_id, bank_code, hit: bool, meeting_date }, ... ]
       }
+
+    miss_magnitude semantics: for a row in `biggest_misses`, the spec formula
+    `|day_before_top_prob - 1{actual == top}|` reduces to `day_before_top_prob`
+    because `actual != top` for every miss. So `miss_magnitude` equals the
+    day-before probability the market assigned to the (wrong) top outcome —
+    higher = market was more confidently wrong.
     """
     by_bank = {"FED": fed_series, "ECB": ecb_series}
 

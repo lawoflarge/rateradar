@@ -362,3 +362,43 @@ def test_compute_scoreboard_one_meeting_market_was_wrong_records_miss():
     assert miss["actual_decision_bps"] == -25
     assert miss["day_before_top_outcome_delta_bps"] == 0
     assert miss["day_before_top_probability"] == pytest.approx(0.70)
+
+
+def test_compute_scoreboard_sorts_biggest_misses_by_confidence():
+    """Misses are ranked by how confident the market was in the wrong outcome."""
+    from src.diff_engine import Actual, compute_scoreboard
+
+    fed_series = {
+        # Meeting A: market 90% Hold, actual was -25bp cut. High-confidence miss.
+        "2026-05-01": [
+            _make_series_point("2026-04-30T22:00:00+00:00", 0, 0.90),
+            _make_series_point("2026-04-30T22:00:00+00:00", -25, 0.10),
+        ],
+        # Meeting B: market 55% Hold, actual was -25bp cut. Lower-confidence miss.
+        "2026-06-01": [
+            _make_series_point("2026-05-31T22:00:00+00:00", 0, 0.55),
+            _make_series_point("2026-05-31T22:00:00+00:00", -25, 0.45),
+        ],
+    }
+    actuals = [
+        Actual(
+            meeting_id="FED-2026-05-01",
+            decision="cut_25",
+            decision_bps=-25,
+            effective_date="2026-05-01",
+        ),
+        Actual(
+            meeting_id="FED-2026-06-01",
+            decision="cut_25",
+            decision_bps=-25,
+            effective_date="2026-06-01",
+        ),
+    ]
+    out = compute_scoreboard(actuals=actuals, fed_series=fed_series, ecb_series={})
+    assert out["total_meetings"] == 2
+    assert len(out["biggest_misses"]) == 2
+    # High-confidence miss (0.90) must come first.
+    assert out["biggest_misses"][0]["meeting_id"] == "FED-2026-05-01"
+    assert out["biggest_misses"][0]["day_before_top_probability"] == pytest.approx(0.90)
+    assert out["biggest_misses"][1]["meeting_id"] == "FED-2026-06-01"
+    assert out["biggest_misses"][1]["day_before_top_probability"] == pytest.approx(0.55)
