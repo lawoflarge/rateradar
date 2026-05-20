@@ -5,6 +5,7 @@ import { NavBar } from "@/components/NavBar";
 import "./globals.css";
 
 const adsenseClient = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
+const fundingChoicesId = adsenseClient?.replace(/^ca-/, "");
 
 const inter = Inter({
   variable: "--font-inter",
@@ -59,6 +60,19 @@ export default function RootLayout({
       className={`${inter.variable} ${jetbrainsMono.variable} ${plexSerif.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-cream text-ink flex flex-col">
+        {fundingChoicesId && (
+          <>
+            <Script
+              id="funding-choices-loader"
+              async
+              src={`https://fundingchoicesmessages.google.com/i/${fundingChoicesId}?ers=1`}
+              strategy="beforeInteractive"
+            />
+            <Script id="funding-choices-presence" strategy="beforeInteractive">
+              {`(function(){function s(){if(!window.frames['googlefcPresent']){if(document.body){var i=document.createElement('iframe');i.style='width:0;height:0;border:none;z-index:-1000;left:-1000px;top:-1000px;display:none';i.name='googlefcPresent';document.body.appendChild(i);}else{setTimeout(s,0);}}}s();})();`}
+            </Script>
+          </>
+        )}
         {adsenseClient && (
           <Script
             id="adsense-loader"
