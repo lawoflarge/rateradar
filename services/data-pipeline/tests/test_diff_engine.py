@@ -402,3 +402,44 @@ def test_compute_scoreboard_sorts_biggest_misses_by_confidence():
     assert out["biggest_misses"][0]["day_before_top_probability"] == pytest.approx(0.90)
     assert out["biggest_misses"][1]["meeting_id"] == "FED-2026-06-01"
     assert out["biggest_misses"][1]["day_before_top_probability"] == pytest.approx(0.55)
+
+
+def test_render_embed_svg_contains_expected_substrings():
+    from src.diff_engine import render_embed_svg
+
+    snap = _make_snapshot(
+        "FED",
+        "2026-05-20T22:00:00+00:00",
+        [
+            {"meeting_date": "2026-06-17", "outcome_label": "Hold",
+             "outcome_delta_bps": 0, "probability": 0.55},
+            {"meeting_date": "2026-06-17", "outcome_label": "-25bp",
+             "outcome_delta_bps": -25, "probability": 0.45},
+        ],
+    )
+    series = {
+        "2026-06-17": [
+            _make_series_point("2026-04-20T22:00:00+00:00", 0, 0.30),
+            _make_series_point("2026-05-10T22:00:00+00:00", 0, 0.45),
+            _make_series_point("2026-05-19T22:00:00+00:00", 0, 0.50),
+            _make_series_point("2026-05-20T22:00:00+00:00", 0, 0.55),
+        ]
+    }
+
+    svg = render_embed_svg("FED", "2026-06-17", snap, series)
+    assert svg.startswith("<?xml") or svg.startswith("<svg")
+    assert "viewBox" in svg
+    assert "600" in svg
+    assert "200" in svg
+    assert "FED" in svg
+    assert "55%" in svg or "55" in svg  # current top probability
+    assert "Powered by RateRadar" in svg  # attribution required
+    assert len(svg.encode("utf-8")) < 5 * 1024  # under 5KB target
+
+
+def test_render_embed_svg_meeting_not_in_snapshot_returns_minimal():
+    from src.diff_engine import render_embed_svg
+
+    snap = _make_snapshot("FED", "2026-05-20T22:00:00+00:00", [])
+    svg = render_embed_svg("FED", "2026-06-17", snap, {})
+    assert "no data" in svg.lower() or "RateRadar" in svg

@@ -422,3 +422,107 @@ def compute_scoreboard(
         "longest_streak": longest,
         "history": history,
     }
+
+
+# Wire Room palette (mirrors apps/web/src/app/globals.css tokens).
+_WIRE = {
+    "paper": "#F5F1E8",
+    "ink": "#0E0E0E",
+    "ink_soft": "#3C3935",
+    "ink_mute": "#7A7570",
+    "cut": "#C8841C",
+    "hike": "#A8312A",
+    "hold": "#3E5640",
+    "rule": "#0E0E0E33",
+}
+
+
+def _outcome_color(delta_bps: int) -> str:
+    if delta_bps < 0:
+        return _WIRE["cut"]
+    if delta_bps > 0:
+        return _WIRE["hike"]
+    return _WIRE["hold"]
+
+
+def _sparkline_path(
+    points: list[float], x0: int, y0: int, width: int, height: int
+) -> str:
+    if len(points) < 2:
+        return ""
+    lo, hi = 0.0, 1.0  # probabilities are always [0, 1]
+    n = len(points)
+    coords = []
+    for i, p in enumerate(points):
+        x = x0 + (i / (n - 1)) * width
+        y = y0 + height - ((p - lo) / (hi - lo)) * height
+        coords.append(f"{x:.1f},{y:.1f}")
+    return "M " + " L ".join(coords)
+
+
+def _short_date(meeting_date: str) -> str:
+    """`2026-06-17` -> `Jun 17, 2026`."""
+    dt = datetime.fromisoformat(meeting_date + "T00:00:00+00:00")
+    return dt.strftime("%b %d, %Y")
+
+
+def render_embed_svg(
+    bank_code: str,
+    meeting_date: str,
+    snapshot: Snapshot,
+    series: dict[str, list[SeriesPoint]],
+) -> str:
+    """Render a 600x200 Wire Room embed card. Returns the full SVG text.
+
+    Contract: must include "Powered by RateRadar" and stay under 5KB.
+    """
+    rows_for_meeting = [r for r in snapshot.rows if r.meeting_date == meeting_date]
+    if not rows_for_meeting:
+        return (
+            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 200" '
+            'width="600" height="200">'
+            f'<rect width="600" height="200" fill="{_WIRE["paper"]}"/>'
+            f'<text x="300" y="100" text-anchor="middle" font-family="sans-serif" '
+            f'font-size="14" fill="{_WIRE["ink_mute"]}">No data available</text>'
+            f'<text x="300" y="175" text-anchor="middle" font-family="sans-serif" '
+            f'font-size="10" fill="{_WIRE["ink_mute"]}">Powered by RateRadar</text>'
+            "</svg>"
+        )
+
+    top = max(rows_for_meeting, key=lambda r: r.probability)
+    color = _outcome_color(top.outcome_delta_bps)
+
+    pts = series.get(meeting_date, [])
+    top_pts = sorted(
+        (p for p in pts if p.delta_bps == top.outcome_delta_bps),
+        key=lambda p: p.snapshot_at,
+    )
+    sparkline_d = _sparkline_path(
+        [p.probability for p in top_pts], x0=360, y0=60, width=220, height=80
+    )
+
+    pct = round(top.probability * 100)
+    bank_label = "Federal Reserve" if bank_code == "FED" else "European Central Bank"
+    outcome_word = "Hold rates" if top.outcome_label == "Hold" else f"Move {top.outcome_label}"
+
+    return (
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 200" '
+        'width="600" height="200" role="img" '
+        f'aria-label="RateRadar live odds for {bank_code} {meeting_date}">'
+        f'<rect width="600" height="200" fill="{_WIRE["paper"]}"/>'
+        f'<text x="20" y="30" font-family="sans-serif" font-size="11" '
+        f'letter-spacing="1.5" fill="{_WIRE["ink_mute"]}">'
+        f"{bank_label.upper()} · {_short_date(meeting_date).upper()}</text>"
+        f'<text x="20" y="80" font-family="Georgia, serif" font-size="32" '
+        f'fill="{_WIRE["ink"]}">{outcome_word}</text>'
+        f'<text x="20" y="130" font-family="monospace" font-size="42" '
+        f'fill="{color}">{pct}%</text>'
+        f'<text x="20" y="155" font-family="sans-serif" font-size="11" '
+        f'fill="{_WIRE["ink_mute"]}">market-implied probability</text>'
+        f'<path d="{sparkline_d}" stroke="{color}" stroke-width="1.5" fill="none"/>'
+        f'<line x1="20" y1="180" x2="580" y2="180" stroke="{_WIRE["rule"]}"/>'
+        f'<text x="20" y="195" font-family="sans-serif" font-size="10" '
+        f'fill="{_WIRE["ink_mute"]}">Powered by RateRadar · '
+        f'rateradar-web.vercel.app</text>'
+        "</svg>"
+    )
