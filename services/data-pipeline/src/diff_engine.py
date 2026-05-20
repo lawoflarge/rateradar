@@ -35,6 +35,7 @@ import json
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import Any
 
 
 @dataclass(frozen=True)
@@ -152,10 +153,11 @@ def _pick_prior_point(
     series_points: list[SeriesPoint], delta_bps: int, now: datetime
 ) -> SeriesPoint | None:
     """Most recent point with matching delta_bps and snapshot_at <= now - 18h."""
-    cutoff = (now - timedelta(hours=PRIOR_MIN_AGE_HOURS)).isoformat()
+    cutoff_dt = now - timedelta(hours=PRIOR_MIN_AGE_HOURS)
     candidates = [
         p for p in series_points
-        if p.delta_bps == delta_bps and p.snapshot_at <= cutoff
+        if p.delta_bps == delta_bps
+        and datetime.fromisoformat(p.snapshot_at) <= cutoff_dt
     ]
     if not candidates:
         return None
@@ -169,7 +171,7 @@ def compute_brief(
     ecb_series: dict[str, list[SeriesPoint]],
     *,
     now: datetime | None = None,
-) -> dict:
+) -> dict[str, Any]:
     """Return the Daily Brief JSON for `now` (defaults to UTC now).
 
     Schema:
@@ -193,7 +195,7 @@ def compute_brief(
     now = now or datetime.now(UTC)
     today = now.date().isoformat()
 
-    shifts: list[dict] = []
+    shifts: list[dict[str, Any]] = []
     for snap, series in ((fed_snapshot, fed_series), (ecb_snapshot, ecb_series)):
         for row in snap.rows:
             points = series.get(row.meeting_date) or []

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
@@ -155,9 +156,6 @@ def test_load_actuals_normalises_lowercase_bank_prefix(tmp_path: Path):
     assert actuals[0].meeting_id == "FED-2026-06-17"  # normalised
 
 
-from datetime import datetime, timedelta, timezone
-
-
 def _make_snapshot(bank: str, snapshot_at: str, rows: list[dict]):
     from src.diff_engine import Snapshot, SnapshotRow
 
@@ -180,7 +178,7 @@ def _make_snapshot(bank: str, snapshot_at: str, rows: list[dict]):
 def _make_series_point(snapshot_at: str, delta_bps: int, prob: float):
     from src.diff_engine import SeriesPoint
 
-    label = "Hold" if delta_bps == 0 else f"{delta_bps:+d}bp".replace("+", "+")
+    label = "Hold" if delta_bps == 0 else f"{delta_bps:+d}bp"
     return SeriesPoint(
         snapshot_at=snapshot_at,
         outcome_label=label,
@@ -192,7 +190,7 @@ def _make_series_point(snapshot_at: str, delta_bps: int, prob: float):
 def test_compute_brief_picks_largest_abs_shift_as_headline():
     from src.diff_engine import compute_brief
 
-    now = datetime(2026, 5, 20, 23, 0, tzinfo=timezone.utc)
+    now = datetime(2026, 5, 20, 23, 0, tzinfo=UTC)
     prior = (now - timedelta(hours=24)).isoformat()
 
     fed_snap = _make_snapshot(
@@ -228,7 +226,7 @@ def test_compute_brief_picks_largest_abs_shift_as_headline():
 def test_compute_brief_empty_when_no_prior_history():
     from src.diff_engine import compute_brief
 
-    now = datetime(2026, 5, 20, 23, 0, tzinfo=timezone.utc)
+    now = datetime(2026, 5, 20, 23, 0, tzinfo=UTC)
     fed_snap = _make_snapshot(
         "FED",
         now.isoformat(),
@@ -248,7 +246,7 @@ def test_compute_brief_ignores_series_points_inside_18h_window():
     """Prior must be at least 18h ago to count as 'yesterday's number'."""
     from src.diff_engine import compute_brief
 
-    now = datetime(2026, 5, 20, 23, 0, tzinfo=timezone.utc)
+    now = datetime(2026, 5, 20, 23, 0, tzinfo=UTC)
     too_recent = (now - timedelta(hours=6)).isoformat()  # 6h ago — too recent
 
     fed_snap = _make_snapshot(
