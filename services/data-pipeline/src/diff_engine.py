@@ -114,16 +114,27 @@ def load_series(
 
 
 def load_actuals(path: Path) -> list[Actual]:
-    """Read actuals.json. Returns [] if file missing or empty array."""
+    """Read actuals.json. Returns [] if file missing or empty array.
+
+    Normalises meeting_id so the bank prefix is uppercase, since the canonical
+    synthetic id format is <UPPERCASE_BANK>-<YYYY-MM-DD>. This protects against
+    a silent join failure if someone appends a row with a lowercase prefix.
+    """
     if not path.exists():
         return []
     data = json.loads(path.read_text(encoding="utf-8"))
     return [
         Actual(
-            meeting_id=str(row["meeting_id"]),
+            meeting_id=_normalise_meeting_id(str(row["meeting_id"])),
             decision=str(row["decision"]),
             decision_bps=int(row["decision_bps"]),
             effective_date=str(row["effective_date"]),
         )
         for row in data
     ]
+
+
+def _normalise_meeting_id(meeting_id: str) -> str:
+    """Force the bank prefix to uppercase: 'fed-2026-06-17' -> 'FED-2026-06-17'."""
+    bank, _, rest = meeting_id.partition("-")
+    return f"{bank.upper()}-{rest}" if rest else meeting_id
