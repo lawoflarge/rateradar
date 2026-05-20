@@ -33,6 +33,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 
@@ -138,3 +139,89 @@ def _normalise_meeting_id(meeting_id: str) -> str:
     """Force the bank prefix to uppercase: 'fed-2026-06-17' -> 'FED-2026-06-17'."""
     bank, _, rest = meeting_id.partition("-")
     return f"{bank.upper()}-{rest}" if rest else meeting_id
+
+
+# Minimum age of the "prior" snapshot point we compare against.
+# Cron runs twice a day (~18h and ~22h UTC). To get a true "yesterday vs today"
+# delta — not "this morning vs this afternoon" — require the prior point to
+# be at least PRIOR_MIN_AGE_HOURS old.
+PRIOR_MIN_AGE_HOURS = 18
+
+
+def _pick_prior_point(
+    series_points: list[SeriesPoint], delta_bps: int, now: datetime
+) -> SeriesPoint | None:
+    """Most recent point with matching delta_bps and snapshot_at <= now - 18h."""
+    cutoff = (now - timedelta(hours=PRIOR_MIN_AGE_HOURS)).isoformat()
+    candidates = [
+        p for p in series_points
+        if p.delta_bps == delta_bps and p.snapshot_at <= cutoff
+    ]
+    if not candidates:
+        return None
+    return max(candidates, key=lambda p: p.snapshot_at)
+
+
+def compute_brief(
+    fed_snapshot: Snapshot,
+    ecb_snapshot: Snapshot,
+    fed_series: dict[str, list[SeriesPoint]],
+    ecb_series: dict[str, list[SeriesPoint]],
+    *,
+    now: datetime | None = None,
+) -> dict:
+    """Return the Daily Brief JSON for `now` (defaults to UTC now).
+
+    Schema:
+      {
+        "date": "YYYY-MM-DD",
+        "generated_at": "<ISO>",
+        "headline": {
+          "meeting_id": "FED-2026-06-17",
+          "bank_code": "FED",
+          "meeting_date": "2026-06-17",
+          "outcome_label": "Hold",
+          "outcome_delta_bps": 0,
+          "prior_probability": 0.45,
+          "current_probability": 0.55,
+          "delta_pp": 10.0
+        },
+        "top_shifts": [<up to 3 same-shape entries>],
+        "calendar_context": []   # populated in PR-3 by FRED lookup
+      }
+    """
+    now = now or datetime.now(UTC)
+    today = now.date().isoformat()
+
+    shifts: list[dict] = []
+    for snap, series in ((fed_snapshot, fed_series), (ecb_snapshot, ecb_series)):
+        for row in snap.rows:
+            points = series.get(row.meeting_date) or []
+            prior = _pick_prior_point(points, row.outcome_delta_bps, now)
+            if prior is None:
+                continue
+            delta_pp = (row.probability - prior.probability) * 100.0
+            shifts.append(
+                {
+                    "meeting_id": f"{snap.bank_code}-{row.meeting_date}",
+                    "bank_code": snap.bank_code,
+                    "meeting_date": row.meeting_date,
+                    "outcome_label": row.outcome_label,
+                    "outcome_delta_bps": row.outcome_delta_bps,
+                    "prior_probability": prior.probability,
+                    "current_probability": row.probability,
+                    "delta_pp": delta_pp,
+                }
+            )
+
+    shifts.sort(key=lambda s: abs(s["delta_pp"]), reverse=True)
+    headline = shifts[0] if shifts else None
+    top_shifts = shifts[:3]
+
+    return {
+        "date": today,
+        "generated_at": now.isoformat(),
+        "headline": headline,
+        "top_shifts": top_shifts,
+        "calendar_context": [],
+    }

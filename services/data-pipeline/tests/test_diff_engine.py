@@ -153,3 +153,114 @@ def test_load_actuals_normalises_lowercase_bank_prefix(tmp_path: Path):
     )
     actuals = load_actuals(p)
     assert actuals[0].meeting_id == "FED-2026-06-17"  # normalised
+
+
+from datetime import datetime, timedelta, timezone
+
+
+def _make_snapshot(bank: str, snapshot_at: str, rows: list[dict]):
+    from src.diff_engine import Snapshot, SnapshotRow
+
+    return Snapshot(
+        bank_code=bank,
+        snapshot_at=snapshot_at,
+        rows=[
+            SnapshotRow(
+                meeting_date=r["meeting_date"],
+                outcome_label=r["outcome_label"],
+                outcome_delta_bps=r["outcome_delta_bps"],
+                probability=r["probability"],
+                post_meeting_rate=r.get("post_meeting_rate", 0.0),
+            )
+            for r in rows
+        ],
+    )
+
+
+def _make_series_point(snapshot_at: str, delta_bps: int, prob: float):
+    from src.diff_engine import SeriesPoint
+
+    label = "Hold" if delta_bps == 0 else f"{delta_bps:+d}bp".replace("+", "+")
+    return SeriesPoint(
+        snapshot_at=snapshot_at,
+        outcome_label=label,
+        delta_bps=delta_bps,
+        probability=prob,
+    )
+
+
+def test_compute_brief_picks_largest_abs_shift_as_headline():
+    from src.diff_engine import compute_brief
+
+    now = datetime(2026, 5, 20, 23, 0, tzinfo=timezone.utc)
+    prior = (now - timedelta(hours=24)).isoformat()
+
+    fed_snap = _make_snapshot(
+        "FED",
+        now.isoformat(),
+        [
+            {"meeting_date": "2026-06-17", "outcome_label": "Hold",
+             "outcome_delta_bps": 0, "probability": 0.55},
+            {"meeting_date": "2026-06-17", "outcome_label": "-25bp",
+             "outcome_delta_bps": -25, "probability": 0.45},
+        ],
+    )
+    fed_series = {
+        "2026-06-17": [
+            _make_series_point(prior, 0, 0.45),    # delta = +10pp on Hold
+            _make_series_point(prior, -25, 0.55),  # delta = -10pp on -25bp
+        ]
+    }
+
+    ecb_snap = _make_snapshot("ECB", now.isoformat(), [])
+    ecb_series: dict = {}
+
+    brief = compute_brief(fed_snap, ecb_snap, fed_series, ecb_series, now=now)
+
+    assert brief["date"] == "2026-05-20"
+    assert brief["headline"] is not None
+    assert abs(brief["headline"]["delta_pp"]) == pytest.approx(10.0, abs=0.1)
+    assert brief["headline"]["meeting_id"] == "FED-2026-06-17"
+    assert len(brief["top_shifts"]) == 2
+    assert brief["calendar_context"] == []  # populated in PR-3
+
+
+def test_compute_brief_empty_when_no_prior_history():
+    from src.diff_engine import compute_brief
+
+    now = datetime(2026, 5, 20, 23, 0, tzinfo=timezone.utc)
+    fed_snap = _make_snapshot(
+        "FED",
+        now.isoformat(),
+        [
+            {"meeting_date": "2026-06-17", "outcome_label": "Hold",
+             "outcome_delta_bps": 0, "probability": 0.55}
+        ],
+    )
+    ecb_snap = _make_snapshot("ECB", now.isoformat(), [])
+    brief = compute_brief(fed_snap, ecb_snap, {}, {}, now=now)
+
+    assert brief["headline"] is None
+    assert brief["top_shifts"] == []
+
+
+def test_compute_brief_ignores_series_points_inside_18h_window():
+    """Prior must be at least 18h ago to count as 'yesterday's number'."""
+    from src.diff_engine import compute_brief
+
+    now = datetime(2026, 5, 20, 23, 0, tzinfo=timezone.utc)
+    too_recent = (now - timedelta(hours=6)).isoformat()  # 6h ago — too recent
+
+    fed_snap = _make_snapshot(
+        "FED",
+        now.isoformat(),
+        [
+            {"meeting_date": "2026-06-17", "outcome_label": "Hold",
+             "outcome_delta_bps": 0, "probability": 0.55}
+        ],
+    )
+    fed_series = {"2026-06-17": [_make_series_point(too_recent, 0, 0.45)]}
+    ecb_snap = _make_snapshot("ECB", now.isoformat(), [])
+
+    brief = compute_brief(fed_snap, ecb_snap, fed_series, {}, now=now)
+    assert brief["headline"] is None
