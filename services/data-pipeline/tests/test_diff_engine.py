@@ -298,3 +298,67 @@ def test_compute_meeting_timeline_empty_series_returns_empty():
     out = compute_meeting_timeline("FED", "2026-06-17", [])
     assert out["series"] == {}
     assert out["top_shifts"] == []
+
+
+def test_compute_scoreboard_no_actuals_returns_zero_stats():
+    from src.diff_engine import compute_scoreboard
+
+    out = compute_scoreboard(actuals=[], fed_series={}, ecb_series={})
+    assert out["total_meetings"] == 0
+    assert out["overall_hit_rate"] is None
+    assert out["per_bank"] == {"FED": None, "ECB": None}
+    assert out["biggest_misses"] == []
+    assert out["longest_streak"] == 0
+
+
+def test_compute_scoreboard_one_meeting_market_was_right():
+    from src.diff_engine import Actual, compute_scoreboard
+
+    # Day-before market: 70% Hold (which actually happened).
+    fed_series = {
+        "2026-05-01": [
+            _make_series_point("2026-04-30T22:00:00+00:00", 0, 0.70),
+            _make_series_point("2026-04-30T22:00:00+00:00", -25, 0.30),
+        ]
+    }
+    actuals = [
+        Actual(
+            meeting_id="FED-2026-05-01",
+            decision="hold",
+            decision_bps=0,
+            effective_date="2026-05-01",
+        )
+    ]
+    out = compute_scoreboard(actuals=actuals, fed_series=fed_series, ecb_series={})
+    assert out["total_meetings"] == 1
+    assert out["overall_hit_rate"] == pytest.approx(1.0)
+    assert out["per_bank"]["FED"] == pytest.approx(1.0)
+    assert out["longest_streak"] == 1
+
+
+def test_compute_scoreboard_one_meeting_market_was_wrong_records_miss():
+    from src.diff_engine import Actual, compute_scoreboard
+
+    # Day-before market: 70% Hold. Actual: -25bp cut. Miss.
+    fed_series = {
+        "2026-05-01": [
+            _make_series_point("2026-04-30T22:00:00+00:00", 0, 0.70),
+            _make_series_point("2026-04-30T22:00:00+00:00", -25, 0.30),
+        ]
+    }
+    actuals = [
+        Actual(
+            meeting_id="FED-2026-05-01",
+            decision="cut_25",
+            decision_bps=-25,
+            effective_date="2026-05-01",
+        )
+    ]
+    out = compute_scoreboard(actuals=actuals, fed_series=fed_series, ecb_series={})
+    assert out["overall_hit_rate"] == pytest.approx(0.0)
+    assert len(out["biggest_misses"]) == 1
+    miss = out["biggest_misses"][0]
+    assert miss["meeting_id"] == "FED-2026-05-01"
+    assert miss["actual_decision_bps"] == -25
+    assert miss["day_before_top_outcome_delta_bps"] == 0
+    assert miss["day_before_top_probability"] == pytest.approx(0.70)

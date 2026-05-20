@@ -288,3 +288,131 @@ def compute_meeting_timeline(
         "series": series_out,
         "top_shifts": shifts[:3],
     }
+
+
+# Window in hours: a series point counts as "day-before snapshot" if its
+# snapshot_at falls between (meeting_midnight - DAY_BEFORE_MAX_HOURS) and
+# (meeting_midnight - DAY_BEFORE_MIN_HOURS).
+DAY_BEFORE_MIN_HOURS = 12
+DAY_BEFORE_MAX_HOURS = 48
+
+
+def _day_before_snapshot(
+    series_points: list[SeriesPoint], meeting_date: str
+) -> list[SeriesPoint] | None:
+    """Return the snapshot row set taken 12-48h before meeting midnight UTC.
+
+    Returns the list of points (one per outcome) sharing the latest qualifying
+    snapshot_at, or None if no qualifying point exists.
+
+    Uses datetime parsing for the cross-source comparison (cutoffs vs series
+    points) — the lexicographic string compare would silently break if any
+    series point ever carried a non-UTC offset.
+    """
+    # Anchor to meeting noon (12:00 UTC) — central bank decisions happen during
+    # the day, not at midnight. This places evening-before snapshots (e.g. 22:00
+    # the prior day = 14h before noon) squarely inside the 12-48h window.
+    meeting_dt = datetime.fromisoformat(meeting_date + "T12:00:00+00:00")
+    upper_dt = meeting_dt - timedelta(hours=DAY_BEFORE_MIN_HOURS)
+    lower_dt = meeting_dt - timedelta(hours=DAY_BEFORE_MAX_HOURS)
+
+    qualifying = [
+        p for p in series_points
+        if lower_dt <= datetime.fromisoformat(p.snapshot_at) <= upper_dt
+    ]
+    if not qualifying:
+        return None
+    chosen_at = max(qualifying, key=lambda p: p.snapshot_at).snapshot_at
+    return [p for p in qualifying if p.snapshot_at == chosen_at]
+
+
+def compute_scoreboard(
+    *,
+    actuals: list[Actual],
+    fed_series: dict[str, list[SeriesPoint]],
+    ecb_series: dict[str, list[SeriesPoint]],
+) -> dict[str, Any]:
+    """Return scoreboard JSON aggregated from actuals + series.
+
+    Schema:
+      {
+        "generated_at": "<ISO>",
+        "total_meetings": int,                  # how many actuals had a usable snapshot
+        "overall_hit_rate": float | null,       # null if total_meetings == 0
+        "per_bank": { "FED": float|null, "ECB": float|null },
+        "biggest_misses": [
+          { "meeting_id", "bank_code", "actual_decision_bps",
+            "day_before_top_outcome_delta_bps",
+            "day_before_top_probability", "miss_magnitude" },
+          ... top 5 ...
+        ],
+        "longest_streak": int,                  # consecutive most-recent hits
+        "history": [ { meeting_id, bank_code, hit: bool, meeting_date }, ... ]
+      }
+    """
+    by_bank = {"FED": fed_series, "ECB": ecb_series}
+
+    history: list[dict[str, Any]] = []
+    misses: list[dict[str, Any]] = []
+
+    for actual in actuals:
+        bank, _, _ = actual.meeting_id.partition("-")
+        series = by_bank.get(bank, {})
+        meeting_date = actual.meeting_id.split("-", 1)[1]
+        day_before = _day_before_snapshot(series.get(meeting_date, []), meeting_date)
+        if day_before is None:
+            continue  # no usable snapshot — exclude from stats
+        top = max(day_before, key=lambda p: p.probability)
+        hit = top.delta_bps == actual.decision_bps
+        history.append(
+            {
+                "meeting_id": actual.meeting_id,
+                "bank_code": bank,
+                "meeting_date": meeting_date,
+                "hit": hit,
+            }
+        )
+        if not hit:
+            misses.append(
+                {
+                    "meeting_id": actual.meeting_id,
+                    "bank_code": bank,
+                    "actual_decision_bps": actual.decision_bps,
+                    "day_before_top_outcome_delta_bps": top.delta_bps,
+                    "day_before_top_probability": top.probability,
+                    "miss_magnitude": top.probability,
+                }
+            )
+
+    history.sort(key=lambda h: h["meeting_date"])
+
+    total = len(history)
+    hits = sum(1 for h in history if h["hit"])
+    overall: float | None = (hits / total) if total else None
+
+    per_bank: dict[str, float | None] = {"FED": None, "ECB": None}
+    for bank in per_bank.keys():
+        bank_rows = [h for h in history if h["bank_code"] == bank]
+        if bank_rows:
+            per_bank[bank] = sum(1 for h in bank_rows if h["hit"]) / len(bank_rows)
+
+    longest = 0
+    streak = 0
+    for h in reversed(history):
+        if h["hit"]:
+            streak += 1
+            longest = max(longest, streak)
+        else:
+            streak = 0
+
+    misses.sort(key=lambda m: m["miss_magnitude"], reverse=True)
+
+    return {
+        "generated_at": datetime.now(UTC).isoformat(),
+        "total_meetings": total,
+        "overall_hit_rate": overall,
+        "per_bank": per_bank,
+        "biggest_misses": misses[:5],
+        "longest_streak": longest,
+        "history": history,
+    }
