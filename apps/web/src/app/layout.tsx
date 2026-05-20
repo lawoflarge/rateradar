@@ -43,6 +43,9 @@ export const metadata: Metadata = {
     title: "RateRadar",
     description: "Fed + ECB rate-decision probabilities with historical tracking.",
   },
+  other: adsenseClient
+    ? { "google-adsense-account": adsenseClient }
+    : undefined,
 };
 
 export default function RootLayout({
