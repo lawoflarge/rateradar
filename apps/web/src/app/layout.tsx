@@ -58,10 +58,11 @@ export default function RootLayout({
       <body className="min-h-full bg-cream text-ink flex flex-col">
         {adsenseClient && (
           <Script
+            id="adsense-loader"
             async
             src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseClient}`}
             crossOrigin="anonymous"
-            strategy="afterInteractive"
+            strategy="beforeInteractive"
           />
         )}
         <NavBar />
