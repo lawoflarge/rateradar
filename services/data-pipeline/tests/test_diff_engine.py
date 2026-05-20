@@ -262,3 +262,39 @@ def test_compute_brief_ignores_series_points_inside_18h_window():
 
     brief = compute_brief(fed_snap, ecb_snap, fed_series, {}, now=now)
     assert brief["headline"] is None
+
+
+def test_compute_meeting_timeline_emits_full_series_and_top3_shifts():
+    from src.diff_engine import compute_meeting_timeline
+
+    bank = "FED"
+    meeting_date = "2026-06-17"
+    series = [
+        _make_series_point("2026-05-15T22:00:00+00:00", 0, 0.30),
+        _make_series_point("2026-05-16T22:00:00+00:00", 0, 0.30),
+        _make_series_point("2026-05-17T22:00:00+00:00", 0, 0.40),  # +10pp jump
+        _make_series_point("2026-05-18T22:00:00+00:00", 0, 0.41),
+        _make_series_point("2026-05-19T22:00:00+00:00", 0, 0.55),  # +14pp jump
+        _make_series_point("2026-05-15T22:00:00+00:00", -25, 0.70),
+        _make_series_point("2026-05-19T22:00:00+00:00", -25, 0.45),  # -25pp drop
+    ]
+    timeline = compute_meeting_timeline(bank, meeting_date, series)
+
+    assert timeline["meeting_id"] == "FED-2026-06-17"
+    assert timeline["bank_code"] == "FED"
+    assert timeline["meeting_date"] == "2026-06-17"
+    # All series points pass through, grouped by outcome
+    assert set(timeline["series"].keys()) == {0, -25}
+    assert len(timeline["series"][0]) == 5
+    # Top 3 shifts ordered by absolute size
+    top = timeline["top_shifts"]
+    assert len(top) == 3
+    assert abs(top[0]["delta_pp"]) >= abs(top[1]["delta_pp"]) >= abs(top[2]["delta_pp"])
+
+
+def test_compute_meeting_timeline_empty_series_returns_empty():
+    from src.diff_engine import compute_meeting_timeline
+
+    out = compute_meeting_timeline("FED", "2026-06-17", [])
+    assert out["series"] == {}
+    assert out["top_shifts"] == []

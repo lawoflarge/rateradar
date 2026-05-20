@@ -227,3 +227,64 @@ def compute_brief(
         "top_shifts": top_shifts,
         "calendar_context": [],
     }
+
+
+def compute_meeting_timeline(
+    bank_code: str, meeting_date: str, series_points: list[SeriesPoint]
+) -> dict[str, Any]:
+    """Return per-meeting annotated timeline JSON.
+
+    Schema:
+      {
+        "meeting_id": "FED-2026-06-17",
+        "bank_code": "FED",
+        "meeting_date": "2026-06-17",
+        "series": { -25: [{snapshot_at, probability}, ...], 0: [...], ... },
+        "top_shifts": [
+          { "from_snapshot_at": "...", "to_snapshot_at": "...",
+            "outcome_label": "Hold", "outcome_delta_bps": 0,
+            "from_probability": 0.30, "to_probability": 0.55,
+            "delta_pp": 25.0 },
+          ... up to 3 ...
+        ]
+      }
+    """
+    by_outcome: dict[int, list[SeriesPoint]] = {}
+    for p in series_points:
+        by_outcome.setdefault(p.delta_bps, []).append(p)
+    for k in by_outcome:
+        by_outcome[k].sort(key=lambda p: p.snapshot_at)
+
+    series_out: dict[int, list[dict[str, Any]]] = {}
+    for delta_bps, points in by_outcome.items():
+        series_out[delta_bps] = [
+            {"snapshot_at": p.snapshot_at, "probability": p.probability}
+            for p in points
+        ]
+
+    shifts: list[dict[str, Any]] = []
+    for delta_bps, points in by_outcome.items():
+        for prev, cur in zip(points, points[1:]):
+            delta_pp = (cur.probability - prev.probability) * 100.0
+            if abs(delta_pp) < 0.5:  # ignore noise below 0.5pp
+                continue
+            shifts.append(
+                {
+                    "from_snapshot_at": prev.snapshot_at,
+                    "to_snapshot_at": cur.snapshot_at,
+                    "outcome_label": cur.outcome_label,
+                    "outcome_delta_bps": delta_bps,
+                    "from_probability": prev.probability,
+                    "to_probability": cur.probability,
+                    "delta_pp": delta_pp,
+                }
+            )
+    shifts.sort(key=lambda s: abs(s["delta_pp"]), reverse=True)
+
+    return {
+        "meeting_id": f"{bank_code.upper()}-{meeting_date}",
+        "bank_code": bank_code.upper(),
+        "meeting_date": meeting_date,
+        "series": series_out,
+        "top_shifts": shifts[:3],
+    }
