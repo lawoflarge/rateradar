@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono, IBM_Plex_Serif } from "next/font/google";
+import Script from "next/script";
 import { NavBar } from "@/components/NavBar";
 import "./globals.css";
+
+const adsenseClient = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
 
 const inter = Inter({
   variable: "--font-inter",
@@ -53,6 +56,14 @@ export default function RootLayout({
       className={`${inter.variable} ${jetbrainsMono.variable} ${plexSerif.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-cream text-ink flex flex-col">
+        {adsenseClient && (
+          <Script
+            async
+            src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseClient}`}
+            crossOrigin="anonymous"
+            strategy="afterInteractive"
+          />
+        )}
         <NavBar />
         <div className="flex-1">{children}</div>
       </body>
