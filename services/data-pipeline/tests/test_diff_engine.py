@@ -197,15 +197,23 @@ def test_compute_brief_picks_largest_abs_shift_as_headline():
         "FED",
         now.isoformat(),
         [
-            {"meeting_date": "2026-06-17", "outcome_label": "Hold",
-             "outcome_delta_bps": 0, "probability": 0.55},
-            {"meeting_date": "2026-06-17", "outcome_label": "-25bp",
-             "outcome_delta_bps": -25, "probability": 0.45},
+            {
+                "meeting_date": "2026-06-17",
+                "outcome_label": "Hold",
+                "outcome_delta_bps": 0,
+                "probability": 0.55,
+            },
+            {
+                "meeting_date": "2026-06-17",
+                "outcome_label": "-25bp",
+                "outcome_delta_bps": -25,
+                "probability": 0.45,
+            },
         ],
     )
     fed_series = {
         "2026-06-17": [
-            _make_series_point(prior, 0, 0.45),    # delta = +10pp on Hold
+            _make_series_point(prior, 0, 0.45),  # delta = +10pp on Hold
             _make_series_point(prior, -25, 0.55),  # delta = -10pp on -25bp
         ]
     }
@@ -231,8 +239,12 @@ def test_compute_brief_empty_when_no_prior_history():
         "FED",
         now.isoformat(),
         [
-            {"meeting_date": "2026-06-17", "outcome_label": "Hold",
-             "outcome_delta_bps": 0, "probability": 0.55}
+            {
+                "meeting_date": "2026-06-17",
+                "outcome_label": "Hold",
+                "outcome_delta_bps": 0,
+                "probability": 0.55,
+            }
         ],
     )
     ecb_snap = _make_snapshot("ECB", now.isoformat(), [])
@@ -253,8 +265,12 @@ def test_compute_brief_ignores_series_points_inside_18h_window():
         "FED",
         now.isoformat(),
         [
-            {"meeting_date": "2026-06-17", "outcome_label": "Hold",
-             "outcome_delta_bps": 0, "probability": 0.55}
+            {
+                "meeting_date": "2026-06-17",
+                "outcome_label": "Hold",
+                "outcome_delta_bps": 0,
+                "probability": 0.55,
+            }
         ],
     )
     fed_series = {"2026-06-17": [_make_series_point(too_recent, 0, 0.45)]}
@@ -411,10 +427,18 @@ def test_render_embed_svg_contains_expected_substrings():
         "FED",
         "2026-05-20T22:00:00+00:00",
         [
-            {"meeting_date": "2026-06-17", "outcome_label": "Hold",
-             "outcome_delta_bps": 0, "probability": 0.55},
-            {"meeting_date": "2026-06-17", "outcome_label": "-25bp",
-             "outcome_delta_bps": -25, "probability": 0.45},
+            {
+                "meeting_date": "2026-06-17",
+                "outcome_label": "Hold",
+                "outcome_delta_bps": 0,
+                "probability": 0.55,
+            },
+            {
+                "meeting_date": "2026-06-17",
+                "outcome_label": "-25bp",
+                "outcome_delta_bps": -25,
+                "probability": 0.45,
+            },
         ],
     )
     series = {
@@ -461,9 +485,13 @@ def test_run_writes_all_expected_files(tmp_path: Path):
                 "snapshot_at": "2026-05-20T22:00:00+00:00",
                 "methodology_version": "1.0.0",
                 "rows": [
-                    {"meeting_date": "2026-06-17", "outcome_label": "Hold",
-                     "outcome_delta_bps": 0, "probability": 0.55,
-                     "post_meeting_rate": 4.375}
+                    {
+                        "meeting_date": "2026-06-17",
+                        "outcome_label": "Hold",
+                        "outcome_delta_bps": 0,
+                        "probability": 0.55,
+                        "post_meeting_rate": 4.375,
+                    }
                 ],
             }
         ),
@@ -475,12 +503,20 @@ def test_run_writes_all_expected_files(tmp_path: Path):
                 "bank_code": "FED",
                 "series": {
                     "2026-06-17": [
-                        {"snapshot_at": "2026-05-19T04:00:00+00:00",
-                         "outcome_label": "Hold", "delta_bps": 0,
-                         "probability": 0.45, "post_meeting_rate": 4.375},
-                        {"snapshot_at": "2026-05-20T22:00:00+00:00",
-                         "outcome_label": "Hold", "delta_bps": 0,
-                         "probability": 0.55, "post_meeting_rate": 4.375},
+                        {
+                            "snapshot_at": "2026-05-19T04:00:00+00:00",
+                            "outcome_label": "Hold",
+                            "delta_bps": 0,
+                            "probability": 0.45,
+                            "post_meeting_rate": 4.375,
+                        },
+                        {
+                            "snapshot_at": "2026-05-20T22:00:00+00:00",
+                            "outcome_label": "Hold",
+                            "delta_bps": 0,
+                            "probability": 0.55,
+                            "post_meeting_rate": 4.375,
+                        },
                     ]
                 },
             }
@@ -490,8 +526,10 @@ def test_run_writes_all_expected_files(tmp_path: Path):
     (snapshots / "ecb" / "latest.json").write_text(
         json.dumps(
             {
-                "bank_code": "ECB", "snapshot_at": "2026-05-20T22:00:00+00:00",
-                "methodology_version": "1.0.0", "rows": []
+                "bank_code": "ECB",
+                "snapshot_at": "2026-05-20T22:00:00+00:00",
+                "methodology_version": "1.0.0",
+                "rows": [],
             }
         ),
         encoding="utf-8",

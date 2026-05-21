@@ -94,9 +94,7 @@ def load_snapshot(snapshots_dir: Path, bank: str) -> Snapshot | None:
     )
 
 
-def load_series(
-    snapshots_dir: Path, bank: str
-) -> dict[str, list[SeriesPoint]]:
+def load_series(snapshots_dir: Path, bank: str) -> dict[str, list[SeriesPoint]]:
     """Read <snapshots_dir>/<bank>/series.json. Returns {} if missing."""
     path = snapshots_dir / bank.lower() / "series.json"
     if not path.exists():
@@ -156,9 +154,9 @@ def _pick_prior_point(
     """Most recent point with matching delta_bps and snapshot_at <= now - 18h."""
     cutoff_dt = now - timedelta(hours=PRIOR_MIN_AGE_HOURS)
     candidates = [
-        p for p in series_points
-        if p.delta_bps == delta_bps
-        and datetime.fromisoformat(p.snapshot_at) <= cutoff_dt
+        p
+        for p in series_points
+        if p.delta_bps == delta_bps and datetime.fromisoformat(p.snapshot_at) <= cutoff_dt
     ]
     if not candidates:
         return None
@@ -259,13 +257,12 @@ def compute_meeting_timeline(
     series_out: dict[int, list[dict[str, Any]]] = {}
     for delta_bps, points in by_outcome.items():
         series_out[delta_bps] = [
-            {"snapshot_at": p.snapshot_at, "probability": p.probability}
-            for p in points
+            {"snapshot_at": p.snapshot_at, "probability": p.probability} for p in points
         ]
 
     shifts: list[dict[str, Any]] = []
     for delta_bps, points in by_outcome.items():
-        for prev, cur in zip(points, points[1:]):
+        for prev, cur in zip(points, points[1:], strict=False):
             delta_pp = (cur.probability - prev.probability) * 100.0
             if abs(delta_pp) < 0.5:  # ignore noise below 0.5pp
                 continue
@@ -318,8 +315,7 @@ def _day_before_snapshot(
     lower_dt = meeting_dt - timedelta(hours=DAY_BEFORE_MAX_HOURS)
 
     qualifying = [
-        p for p in series_points
-        if lower_dt <= datetime.fromisoformat(p.snapshot_at) <= upper_dt
+        p for p in series_points if lower_dt <= datetime.fromisoformat(p.snapshot_at) <= upper_dt
     ]
     if not qualifying:
         return None
@@ -446,9 +442,7 @@ def _outcome_color(delta_bps: int) -> str:
     return _WIRE["hold"]
 
 
-def _sparkline_path(
-    points: list[float], x0: int, y0: int, width: int, height: int
-) -> str:
+def _sparkline_path(points: list[float], x0: int, y0: int, width: int, height: int) -> str:
     if len(points) < 2:
         return ""
     lo, hi = 0.0, 1.0  # probabilities are always [0, 1]
@@ -524,7 +518,7 @@ def render_embed_svg(
         f'<line x1="20" y1="180" x2="580" y2="180" stroke="{_WIRE["rule"]}"/>'
         f'<text x="20" y="195" font-family="sans-serif" font-size="10" '
         f'fill="{_WIRE["ink_mute"]}">Powered by RateRadar · '
-        f'rateradar-web.vercel.app</text>'
+        f"rateradar-web.vercel.app</text>"
         "</svg>"
     )
 
@@ -559,9 +553,7 @@ def run(
     Multiple runs per day intentionally clobber earlier briefs; the latest
     snapshot is the source of truth for that day.
     """
-    now = (
-        datetime.fromisoformat(now_iso) if now_iso else datetime.now(UTC)
-    )
+    now = datetime.fromisoformat(now_iso) if now_iso else datetime.now(UTC)
 
     fed_snap = load_snapshot(snapshots_dir, "FED")
     ecb_snap = load_snapshot(snapshots_dir, "ECB")
@@ -571,9 +563,7 @@ def run(
 
     # --- Brief ---
     if fed_snap and ecb_snap:
-        brief = compute_brief(
-            fed_snap, ecb_snap, fed_series, ecb_series, now=now
-        )
+        brief = compute_brief(fed_snap, ecb_snap, fed_series, ecb_series, now=now)
         _write_json(content_dir / "briefs" / f"{brief['date']}.json", brief)
 
         index_entries = _read_existing_brief_index(content_dir)
@@ -605,18 +595,14 @@ def run(
             if md < today_iso:
                 continue  # skip past meetings; data is frozen
             tl = compute_meeting_timeline(snap.bank_code, md, series.get(md, []))
-            _write_json(
-                content_dir / "meetings" / tl["meeting_id"] / "timeline.json", tl
-            )
+            _write_json(content_dir / "meetings" / tl["meeting_id"] / "timeline.json", tl)
             svg = render_embed_svg(snap.bank_code, md, snap, series)
             embed_path = content_dir / "embed" / f"{tl['meeting_id']}.svg"
             embed_path.parent.mkdir(parents=True, exist_ok=True)
             embed_path.write_text(svg, encoding="utf-8")
 
     # --- Scoreboard ---
-    scoreboard = compute_scoreboard(
-        actuals=actuals, fed_series=fed_series, ecb_series=ecb_series
-    )
+    scoreboard = compute_scoreboard(actuals=actuals, fed_series=fed_series, ecb_series=ecb_series)
     _write_json(content_dir / "scoreboard.json", scoreboard)
 
 
