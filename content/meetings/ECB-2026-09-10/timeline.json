@@ -1,0 +1,258 @@
+{
+  "meeting_id": "ECB-2026-09-10",
+  "bank_code": "ECB",
+  "meeting_date": "2026-09-10",
+  "series": {
+    "-50": [
+      {
+        "snapshot_at": "2026-05-14T09:56:40+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-14T10:11:23+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-14T10:15:57+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-14T19:45:06+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-14T23:04:38+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-15T19:28:24+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-15T23:02:57+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-18T19:44:17+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-18T23:12:40+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-19T19:52:10+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-19T23:12:35+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-20T20:13:51+00:00",
+        "probability": 0.0
+      }
+    ],
+    "-25": [
+      {
+        "snapshot_at": "2026-05-14T09:56:40+00:00",
+        "probability": 0.07657894736816484
+      },
+      {
+        "snapshot_at": "2026-05-14T10:11:23+00:00",
+        "probability": 0.07657894736816484
+      },
+      {
+        "snapshot_at": "2026-05-14T10:15:57+00:00",
+        "probability": 0.07657894736816484
+      },
+      {
+        "snapshot_at": "2026-05-14T19:45:06+00:00",
+        "probability": 0.07657894736816484
+      },
+      {
+        "snapshot_at": "2026-05-14T23:04:38+00:00",
+        "probability": 0.07657894736816484
+      },
+      {
+        "snapshot_at": "2026-05-15T19:28:24+00:00",
+        "probability": 0.07657894736816484
+      },
+      {
+        "snapshot_at": "2026-05-15T23:02:57+00:00",
+        "probability": 0.07657894736816484
+      },
+      {
+        "snapshot_at": "2026-05-18T19:44:17+00:00",
+        "probability": 0.07657894736816484
+      },
+      {
+        "snapshot_at": "2026-05-18T23:12:40+00:00",
+        "probability": 0.07657894736816484
+      },
+      {
+        "snapshot_at": "2026-05-19T19:52:10+00:00",
+        "probability": 0.07657894736816484
+      },
+      {
+        "snapshot_at": "2026-05-19T23:12:35+00:00",
+        "probability": 0.07657894736816484
+      },
+      {
+        "snapshot_at": "2026-05-20T20:13:51+00:00",
+        "probability": 0.07657894736816484
+      }
+    ],
+    "0": [
+      {
+        "snapshot_at": "2026-05-14T09:56:40+00:00",
+        "probability": 0.9234210526318352
+      },
+      {
+        "snapshot_at": "2026-05-14T10:11:23+00:00",
+        "probability": 0.9234210526318352
+      },
+      {
+        "snapshot_at": "2026-05-14T10:15:57+00:00",
+        "probability": 0.9234210526318352
+      },
+      {
+        "snapshot_at": "2026-05-14T19:45:06+00:00",
+        "probability": 0.9234210526318352
+      },
+      {
+        "snapshot_at": "2026-05-14T23:04:38+00:00",
+        "probability": 0.9234210526318352
+      },
+      {
+        "snapshot_at": "2026-05-15T19:28:24+00:00",
+        "probability": 0.9234210526318352
+      },
+      {
+        "snapshot_at": "2026-05-15T23:02:57+00:00",
+        "probability": 0.9234210526318352
+      },
+      {
+        "snapshot_at": "2026-05-18T19:44:17+00:00",
+        "probability": 0.9234210526318352
+      },
+      {
+        "snapshot_at": "2026-05-18T23:12:40+00:00",
+        "probability": 0.9234210526318352
+      },
+      {
+        "snapshot_at": "2026-05-19T19:52:10+00:00",
+        "probability": 0.9234210526318352
+      },
+      {
+        "snapshot_at": "2026-05-19T23:12:35+00:00",
+        "probability": 0.9234210526318352
+      },
+      {
+        "snapshot_at": "2026-05-20T20:13:51+00:00",
+        "probability": 0.9234210526318352
+      }
+    ],
+    "25": [
+      {
+        "snapshot_at": "2026-05-14T09:56:40+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-14T10:11:23+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-14T10:15:57+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-14T19:45:06+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-14T23:04:38+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-15T19:28:24+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-15T23:02:57+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-18T19:44:17+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-18T23:12:40+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-19T19:52:10+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-19T23:12:35+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-20T20:13:51+00:00",
+        "probability": 0.0
+      }
+    ],
+    "50": [
+      {
+        "snapshot_at": "2026-05-14T09:56:40+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-14T10:11:23+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-14T10:15:57+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-14T19:45:06+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-14T23:04:38+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-15T19:28:24+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-15T23:02:57+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-18T19:44:17+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-18T23:12:40+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-19T19:52:10+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-19T23:12:35+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-20T20:13:51+00:00",
+        "probability": 0.0
+      }
+    ]
+  },
+  "top_shifts": []
+}

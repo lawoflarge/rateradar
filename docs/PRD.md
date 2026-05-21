@@ -179,3 +179,13 @@ See `docs/METHODOLOGY.md` for the full probability calculation. In short:
 - Fed: pull 30-Day Fed Funds Futures (ZQ) prices via yfinance; compute `implied_rate = 100 - price`; decompose into outcome probabilities via step-function over consecutive meetings.
 - ECB: pull €STR OIS quotes via Stooq; same step-function decomposition anchored to the Deposit Facility Rate.
 - Snapshots written to Supabase twice per business day + every 15 min on meeting days.
+
+## Growth content surfaces (added 2026-05-20)
+
+In addition to the live odds dashboard, the data pipeline emits derived content
+for visitor acquisition: a deterministic Daily Brief per cron run, per-meeting
+annotated timelines, a market-vs-actual scoreboard, and SVG embed widgets. All
+outputs are static files committed to `content/` by the same cron that writes
+snapshots — no new runtime cost surface.
+
+Spec: `docs/superpowers/specs/2026-05-20-rateradar-growth-bundle-design.md`.

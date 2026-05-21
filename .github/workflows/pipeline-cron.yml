@@ -77,6 +77,9 @@ jobs:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
       - name: Download all snapshot artifacts
         uses: actions/download-artifact@v4
         with:
@@ -93,18 +96,26 @@ jobs:
               fi
             done
           done
-      - name: Commit and push snapshots
+      - name: Run diff engine
+        working-directory: services/data-pipeline
+        run: |
+          set -e
+          python -m src.diff_engine \
+            --snapshots-dir snapshots \
+            --actuals-path actuals.json \
+            --content-dir ../../content
+      - name: Commit and push snapshots + derived content
         run: |
           set -e
           git config user.name  "rateradar-bot"
           git config user.email "rateradar-bot@users.noreply.github.com"
-          git add services/data-pipeline/snapshots
+          git add services/data-pipeline/snapshots content
           if git diff --cached --quiet; then
-            echo "No snapshot changes to commit."
+            echo "No snapshot or content changes to commit."
             exit 0
           fi
           # Avoid race with concurrent pushes by rebasing onto the latest tip.
           git pull --rebase --autostash origin "${GITHUB_REF_NAME}"
           stamp=$(date -u +'%Y-%m-%dT%H:%MZ')
-          git commit -m "data(snapshot): pipeline cron @ ${stamp}"
+          git commit -m "data(snapshot+content): pipeline cron @ ${stamp}"
           git push origin "HEAD:${GITHUB_REF_NAME}"

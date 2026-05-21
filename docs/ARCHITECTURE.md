@@ -187,3 +187,13 @@ Total fixed: ~$5/month infra + domain. Scales linearly only when traffic justifi
 - **Web:** Vercel Analytics for perf, Sentry for JS errors, PostHog for funnels
 - **iOS:** Firebase Crashlytics (free), PostHog iOS SDK for product analytics
 - **Uptime:** BetterStack or UptimeRobot on homepage + key API endpoints
+
+## Diff engine (added 2026-05-20)
+
+`services/data-pipeline/src/diff_engine.py` is a pure-Python module with no
+network I/O. It runs inside the existing pipeline cron immediately after the
+snapshot artifacts are downloaded and before the commit step, reading from
+`services/data-pipeline/snapshots/` and the manual `actuals.json`, and writing
+derived JSON + SVG to `content/`. Consumers in `apps/web/` read the `content/`
+tree using the same git-fallback pattern that `apps/web/src/lib/snapshots.ts`
+uses for snapshots.
