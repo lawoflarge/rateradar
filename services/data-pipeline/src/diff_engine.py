@@ -31,6 +31,7 @@ actuals.json schema (one object per past meeting, manually appended by Levin):
 
 from __future__ import annotations
 
+import argparse
 import json
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
@@ -526,3 +527,130 @@ def render_embed_svg(
         f'rateradar-web.vercel.app</text>'
         "</svg>"
     )
+
+
+def _write_json(path: Path, data: dict[str, Any] | list[Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
+
+
+def _read_existing_brief_index(content_dir: Path) -> list[dict[str, Any]]:
+    """Read content/briefs/index.json if it exists, else return []."""
+    p = content_dir / "briefs" / "index.json"
+    if not p.exists():
+        return []
+    try:
+        data = json.loads(p.read_text(encoding="utf-8"))
+        return list(data.get("briefs", []))
+    except Exception:
+        return []
+
+
+def run(
+    *,
+    snapshots_dir: Path,
+    actuals_path: Path,
+    content_dir: Path,
+    now_iso: str | None = None,
+) -> None:
+    """Run the full diff engine: read snapshots, write all derived content.
+
+    Idempotent within a UTC second — overwrites today's brief on each run.
+    Multiple runs per day intentionally clobber earlier briefs; the latest
+    snapshot is the source of truth for that day.
+    """
+    now = (
+        datetime.fromisoformat(now_iso) if now_iso else datetime.now(UTC)
+    )
+
+    fed_snap = load_snapshot(snapshots_dir, "FED")
+    ecb_snap = load_snapshot(snapshots_dir, "ECB")
+    fed_series = load_series(snapshots_dir, "FED")
+    ecb_series = load_series(snapshots_dir, "ECB")
+    actuals = load_actuals(actuals_path)
+
+    # --- Brief ---
+    if fed_snap and ecb_snap:
+        brief = compute_brief(
+            fed_snap, ecb_snap, fed_series, ecb_series, now=now
+        )
+        _write_json(content_dir / "briefs" / f"{brief['date']}.json", brief)
+
+        index_entries = _read_existing_brief_index(content_dir)
+        existing_dates = {e["date"] for e in index_entries}
+        if brief["date"] not in existing_dates:
+            index_entries.append({"date": brief["date"]})
+        # Sort newest first; also overwrite headline summary in index for today.
+        for e in index_entries:
+            if e["date"] == brief["date"]:
+                e["headline_meeting_id"] = (
+                    brief["headline"]["meeting_id"] if brief["headline"] else None
+                )
+                e["headline_delta_pp"] = (
+                    brief["headline"]["delta_pp"] if brief["headline"] else None
+                )
+        index_entries.sort(key=lambda e: e["date"], reverse=True)
+        _write_json(
+            content_dir / "briefs" / "index.json",
+            {"generated_at": now.isoformat(), "briefs": index_entries},
+        )
+
+    # --- Per-meeting timelines + embed SVGs (one of each per upcoming meeting) ---
+    today_iso = now.date().isoformat()
+    for snap, series in ((fed_snap, fed_series), (ecb_snap, ecb_series)):
+        if snap is None:
+            continue
+        meeting_dates = sorted({r.meeting_date for r in snap.rows})
+        for md in meeting_dates:
+            if md < today_iso:
+                continue  # skip past meetings; data is frozen
+            tl = compute_meeting_timeline(snap.bank_code, md, series.get(md, []))
+            _write_json(
+                content_dir / "meetings" / tl["meeting_id"] / "timeline.json", tl
+            )
+            svg = render_embed_svg(snap.bank_code, md, snap, series)
+            embed_path = content_dir / "embed" / f"{tl['meeting_id']}.svg"
+            embed_path.parent.mkdir(parents=True, exist_ok=True)
+            embed_path.write_text(svg, encoding="utf-8")
+
+    # --- Scoreboard ---
+    scoreboard = compute_scoreboard(
+        actuals=actuals, fed_series=fed_series, ecb_series=ecb_series
+    )
+    _write_json(content_dir / "scoreboard.json", scoreboard)
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="RateRadar diff engine")
+    parser.add_argument(
+        "--snapshots-dir",
+        type=Path,
+        default=Path("services/data-pipeline/snapshots"),
+        help="Root snapshots dir (contains fed/, ecb/).",
+    )
+    parser.add_argument(
+        "--actuals-path",
+        type=Path,
+        default=Path("services/data-pipeline/actuals.json"),
+        help="Manually-maintained actuals file.",
+    )
+    parser.add_argument(
+        "--content-dir",
+        type=Path,
+        default=Path("content"),
+        help="Output content dir (will be created).",
+    )
+    args = parser.parse_args()
+
+    run(
+        snapshots_dir=args.snapshots_dir,
+        actuals_path=args.actuals_path,
+        content_dir=args.content_dir,
+    )
+    return 0
+
+
+if __name__ == "__main__":
+    import sys
+
+    sys.exit(main())

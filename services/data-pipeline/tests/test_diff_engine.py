@@ -443,3 +443,92 @@ def test_render_embed_svg_meeting_not_in_snapshot_returns_minimal():
     snap = _make_snapshot("FED", "2026-05-20T22:00:00+00:00", [])
     svg = render_embed_svg("FED", "2026-06-17", snap, {})
     assert "no data" in svg.lower() or "RateRadar" in svg
+
+
+def test_run_writes_all_expected_files(tmp_path: Path):
+    """Full end-to-end: feed the engine real snapshot data, assert it writes
+    every output file the consumers need."""
+    from src.diff_engine import run
+
+    # Layout the inputs.
+    snapshots = tmp_path / "snapshots"
+    for bank in ("fed", "ecb"):
+        (snapshots / bank).mkdir(parents=True)
+    (snapshots / "fed" / "latest.json").write_text(
+        json.dumps(
+            {
+                "bank_code": "FED",
+                "snapshot_at": "2026-05-20T22:00:00+00:00",
+                "methodology_version": "1.0.0",
+                "rows": [
+                    {"meeting_date": "2026-06-17", "outcome_label": "Hold",
+                     "outcome_delta_bps": 0, "probability": 0.55,
+                     "post_meeting_rate": 4.375}
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+    (snapshots / "fed" / "series.json").write_text(
+        json.dumps(
+            {
+                "bank_code": "FED",
+                "series": {
+                    "2026-06-17": [
+                        {"snapshot_at": "2026-05-19T04:00:00+00:00",
+                         "outcome_label": "Hold", "delta_bps": 0,
+                         "probability": 0.45, "post_meeting_rate": 4.375},
+                        {"snapshot_at": "2026-05-20T22:00:00+00:00",
+                         "outcome_label": "Hold", "delta_bps": 0,
+                         "probability": 0.55, "post_meeting_rate": 4.375},
+                    ]
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+    (snapshots / "ecb" / "latest.json").write_text(
+        json.dumps(
+            {
+                "bank_code": "ECB", "snapshot_at": "2026-05-20T22:00:00+00:00",
+                "methodology_version": "1.0.0", "rows": []
+            }
+        ),
+        encoding="utf-8",
+    )
+    (snapshots / "ecb" / "series.json").write_text(
+        json.dumps({"bank_code": "ECB", "series": {}}), encoding="utf-8"
+    )
+
+    actuals_path = tmp_path / "actuals.json"
+    actuals_path.write_text("[]", encoding="utf-8")
+
+    content_dir = tmp_path / "content"
+    now_iso = "2026-05-20T23:00:00+00:00"
+
+    run(
+        snapshots_dir=snapshots,
+        actuals_path=actuals_path,
+        content_dir=content_dir,
+        now_iso=now_iso,
+    )
+
+    # Brief
+    assert (content_dir / "briefs" / "2026-05-20.json").exists()
+    brief = json.loads((content_dir / "briefs" / "2026-05-20.json").read_text(encoding="utf-8"))
+    assert brief["date"] == "2026-05-20"
+    # Brief index
+    assert (content_dir / "briefs" / "index.json").exists()
+    index = json.loads((content_dir / "briefs" / "index.json").read_text(encoding="utf-8"))
+    assert any(b["date"] == "2026-05-20" for b in index["briefs"])
+    # Per-meeting timeline
+    timeline_path = content_dir / "meetings" / "FED-2026-06-17" / "timeline.json"
+    assert timeline_path.exists()
+    timeline = json.loads(timeline_path.read_text(encoding="utf-8"))
+    assert timeline["meeting_id"] == "FED-2026-06-17"
+    # Scoreboard
+    assert (content_dir / "scoreboard.json").exists()
+    # Embed SVG
+    embed_path = content_dir / "embed" / "FED-2026-06-17.svg"
+    assert embed_path.exists()
+    assert "Powered by RateRadar" in embed_path.read_text(encoding="utf-8")
