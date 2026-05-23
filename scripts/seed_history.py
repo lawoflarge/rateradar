@@ -9,7 +9,7 @@ real market, not a synthetic straight line.
 Idempotent: skips outcomes that already have > 5 historical snapshots.
 
 Usage:
-    export RR_DB_URL="$(cat /c/Users/levin/.rr_db_url)"
+    export RR_DB_URL="postgresql://postgres.<project_ref>:<password>@..."
     python scripts/seed_history.py [--days 60]
 """
 

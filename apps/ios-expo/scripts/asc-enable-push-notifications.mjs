@@ -19,10 +19,10 @@
  * Idempotent — checks existing capabilities first, no-op if already enabled.
  *
  * Auth modes:
- *   - Local: reads .p8 from `.secrets/AuthKey_8XWLD2B2RQ.p8`.
+ *   - Local: reads .p8 from `.secrets/AuthKey_<ASC_KEY_ID>.p8`.
  *   - CI: reads APP_STORE_CONNECT_PRIVATE_KEY / _KEY_IDENTIFIER / _ISSUER_ID
- *         env vars injected by Codemagic's `relatably-asc` integration.
- *         Same battle-tested PEM normalization + signing logic as
+ *         env vars injected by the Codemagic Apple Developer Portal
+ *         integration. Same PEM normalization + signing logic as
  *         `asc-revoke-distribution-certs-ci.mjs` (handles all three of
  *         Codemagic's .p8 serialization quirks).
  */
@@ -46,10 +46,10 @@ const CI_ISSUER = process.env.APP_STORE_CONNECT_ISSUER_ID;
 
 const LOCAL_KEY_PATH =
   process.env.ASC_KEY_PATH ||
-  path.resolve(ROOT, ".secrets", "AuthKey_8XWLD2B2RQ.p8");
-const LOCAL_KEY_ID = process.env.ASC_KEY_ID || "8XWLD2B2RQ";
+  path.resolve(ROOT, ".secrets", "AuthKey_<ASC_KEY_ID>.p8");
+const LOCAL_KEY_ID = process.env.ASC_KEY_ID;
 const LOCAL_ISSUER =
-  process.env.ASC_ISSUER_ID || "538cb0d4-b8c6-4bc7-8b59-75da5d2b9411";
+  process.env.ASC_ISSUER_ID || process.env.ASC_ISSUER_ID;
 
 // Resolve and normalize the PEM. Codemagic's app_store_connect integration
 // can expose APP_STORE_CONNECT_PRIVATE_KEY in FOUR different formats

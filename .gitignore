@@ -104,6 +104,5 @@ yarn-error.log*
 # Expo
 .expo/
 
-# Dev asset storage convention: scratch screenshots, logs, ad-hoc captures
-# (see brain/30_Resources/conventions/Dev Asset Storage.md)
+# Scratch screenshots, logs, ad-hoc captures
 archive/

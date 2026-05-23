@@ -5,8 +5,8 @@
 //
 // Codemagic env vars from the `rateradar-asc` integration:
 //   APP_STORE_CONNECT_PRIVATE_KEY     — raw .p8 contents (with BEGIN/END lines)
-//   APP_STORE_CONNECT_KEY_IDENTIFIER  — e.g. "8XWLD2B2RQ"
-//   APP_STORE_CONNECT_ISSUER_ID       — e.g. "538cb0d4-b8c6-4bc7-8b59-75da5d2b9411"
+//   APP_STORE_CONNECT_KEY_IDENTIFIER  — e.g. process.env.ASC_KEY_ID
+//   APP_STORE_CONNECT_ISSUER_ID       — e.g. process.env.ASC_ISSUER_ID
 //
 // Same purpose as the local script: revoke every IOS_DISTRIBUTION cert
 // so the next `fetch-signing-files --create` doesn't hit Apple's HTTP 409

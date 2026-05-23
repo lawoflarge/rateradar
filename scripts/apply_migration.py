@@ -5,7 +5,7 @@ Reads the DB URL from the `RR_DB_URL` environment variable so credentials never
 appear in shell command arguments.
 
 Usage:
-    export RR_DB_URL="$(cat /c/Users/levin/.rr_db_url)"
+    export RR_DB_URL="postgresql://postgres.<project_ref>:<password>@..."
     python scripts/apply_migration.py supabase/migrations/20260421000000_initial.sql
 """
 

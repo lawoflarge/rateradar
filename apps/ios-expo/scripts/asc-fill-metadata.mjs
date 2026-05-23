@@ -23,9 +23,9 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const KEY_PATH = path.resolve(__dirname, "..", ".secrets", "AuthKey_8XWLD2B2RQ.p8");
-const KEY_ID = "8XWLD2B2RQ";
-const ISSUER_ID = "538cb0d4-b8c6-4bc7-8b59-75da5d2b9411";
+const KEY_PATH = path.resolve(__dirname, "..", ".secrets", "AuthKey_<ASC_KEY_ID>.p8");
+const KEY_ID = process.env.ASC_KEY_ID;
+const ISSUER_ID = process.env.ASC_ISSUER_ID;
 
 // Resolve APP_ID from .secrets/asc-app-id.txt (written by asc-create-app.mjs).
 function loadAppId() {
@@ -115,15 +115,15 @@ No accounts, no tracking, no subscription tiers. We make money from broker affil
 Live odds on every upcoming Fed and ECB rate decision, with 60 days of probability history so you can see how expectations have moved.
 
 Free, ad-supported, no signup.`,
-  copyright: "© 2026 Levin Schwab",
-  reviewContactFirstName: "Levin",
-  reviewContactLastName: "Schwab",
-  reviewContactPhone: "+49 157 379 65607",
-  reviewContactEmail: "levin.schwab@gmx.de",
+  copyright: process.env.ASC_COPYRIGHT,
+  reviewContactFirstName: process.env.ASC_CONTACT_FIRST_NAME,
+  reviewContactLastName: process.env.ASC_CONTACT_LAST_NAME,
+  reviewContactPhone: process.env.ASC_CONTACT_PHONE,
+  reviewContactEmail: process.env.ASC_CONTACT_EMAIL,
   reviewNotes: `No login required — RateRadar is an anonymous public market data viewer.
 Push notifications are opt-in (asked once at first launch).
 No in-app purchases, no subscriptions.
-Contact: levin.schwab@gmx.de.`,
+Contact: ${process.env.ASC_CONTACT_EMAIL ?? "(set ASC_CONTACT_EMAIL)"}.`,
 };
 
 (async () => {

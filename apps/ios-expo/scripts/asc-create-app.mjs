@@ -25,10 +25,10 @@ const ROOT = path.resolve(__dirname, "..");
 
 const KEY_PATH =
   process.env.ASC_KEY_PATH ||
-  path.resolve(ROOT, ".secrets", "AuthKey_8XWLD2B2RQ.p8");
-const KEY_ID = process.env.ASC_KEY_ID || "8XWLD2B2RQ";
+  path.resolve(ROOT, ".secrets", "AuthKey_<ASC_KEY_ID>.p8");
+const KEY_ID = process.env.ASC_KEY_ID;
 const ISSUER_ID =
-  process.env.ASC_ISSUER_ID || "538cb0d4-b8c6-4bc7-8b59-75da5d2b9411";
+  process.env.ASC_ISSUER_ID || process.env.ASC_ISSUER_ID;
 
 const BUNDLE_ID = "com.lawoflarge.rateradar";
 const APP_NAME = "RateRadar";

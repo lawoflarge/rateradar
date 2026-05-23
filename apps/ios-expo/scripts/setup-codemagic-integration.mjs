@@ -25,12 +25,12 @@ import { fileURLToPath } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const IOS_ROOT = path.resolve(__dirname, "..");
 
-const KEY_FILE = path.join(IOS_ROOT, ".secrets", "AuthKey_8XWLD2B2RQ.p8");
+const KEY_FILE = path.join(IOS_ROOT, ".secrets", "AuthKey_<ASC_KEY_ID>.p8");
 const PROFILE_DIR = path.join(IOS_ROOT, ".cache", "codemagic-profile");
 
 const INTEGRATION_NAME = "rateradar-asc";
-const KEY_ID = "8XWLD2B2RQ";
-const ISSUER_ID = "538cb0d4-b8c6-4bc7-8b59-75da5d2b9411";
+const KEY_ID = process.env.ASC_KEY_ID;
+const ISSUER_ID = process.env.ASC_ISSUER_ID;
 
 if (!fs.existsSync(KEY_FILE)) {
   console.error(`ERROR: .p8 key not found at ${KEY_FILE}`);

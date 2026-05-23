@@ -8,7 +8,7 @@ something to render before the live pipeline is running. This mock snapshot is
 labeled `source = 'seed'` so we can distinguish it from pipeline data later.
 
 Usage:
-    export RR_DB_URL="$(cat /c/Users/levin/.rr_db_url)"
+    export RR_DB_URL="postgresql://postgres.<project_ref>:<password>@..."
     python scripts/seed_supabase.py
 """
 
