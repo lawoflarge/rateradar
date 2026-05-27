@@ -5,7 +5,9 @@ import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 
 import { useAppStatePause } from "@/hooks/useAppStatePause";
+import { BannerAdSlot } from "@/components/BannerAdSlot";
 import { OnboardingScreen } from "@/components/OnboardingScreen";
+import { initAds } from "@/lib/ads";
 import { hasCompletedOnboarding } from "@/lib/onboardingStore";
 import { WebViewHost, WebViewHandle } from "@/WebViewHost";
 
@@ -22,6 +24,7 @@ export default function App() {
 
   useEffect(() => {
     activateKeepAwakeAsync().catch(() => {});
+    initAds().catch(() => {});
     return () => {
       deactivateKeepAwake();
     };
@@ -52,7 +55,12 @@ export default function App() {
       <StatusBar style="dark" />
       {phase === "loading" && <View style={styles.empty} />}
       {phase === "onboarding" && <OnboardingScreen onDone={handleOnboardingDone} />}
-      {phase === "web" && <WebViewHost ref={webRef} onLoadEnd={onFirstPaint} />}
+      {phase === "web" && (
+        <>
+          <WebViewHost ref={webRef} onLoadEnd={onFirstPaint} />
+          <BannerAdSlot />
+        </>
+      )}
     </SafeAreaView>
   );
 }

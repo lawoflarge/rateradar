@@ -18,7 +18,8 @@
       "autoIncrement": true,
       "channel": "production",
       "env": {
-        "EXPO_PUBLIC_ADMOB_ENABLED": "false"
+        "EXPO_PUBLIC_ADMOB_ENABLED": "true",
+        "EXPO_PUBLIC_ADMOB_BANNER_UNIT_ID": "ca-app-pub-6563643868702361/6751953637"
       }
     }
   },

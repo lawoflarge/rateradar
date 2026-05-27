@@ -28,7 +28,8 @@ workflows:
         # MUST be re-declared here (gotcha #8). RateRadar's WebView URL is
         # hard-coded in src/lib/constants.ts so we don't need an EXPO_PUBLIC_API_URL
         # here. We DO mirror the AdMob disable flag for parity.
-        EXPO_PUBLIC_ADMOB_ENABLED: "false"
+        EXPO_PUBLIC_ADMOB_ENABLED: "true"
+        EXPO_PUBLIC_ADMOB_BANNER_UNIT_ID: "ca-app-pub-6563643868702361/6751953637"
       node: 20.18.0
       xcode: latest
       cocoapods: default

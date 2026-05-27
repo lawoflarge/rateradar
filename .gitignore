@@ -106,3 +106,5 @@ yarn-error.log*
 
 # Scratch screenshots, logs, ad-hoc captures
 archive/
+.vercel
+.env*
