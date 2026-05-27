@@ -6,18 +6,21 @@
   "main": "index.js",
   "scripts": {
     "start": "expo start",
-    "ios": "expo start --ios",
+    "ios": "expo run:ios",
     "build:preview": "eas build --platform ios --profile preview",
     "build:production": "eas build --platform ios --profile production",
     "submit": "eas submit --platform ios",
     "test": "jest --passWithNoTests",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "android": "expo run:android"
   },
   "dependencies": {
+    "@babel/runtime": "^7.29.7",
     "@react-native-async-storage/async-storage": "2.2.0",
     "expo": "~54.0.0",
     "expo-asset": "~12.0.13",
     "expo-keep-awake": "~15.0.8",
+    "expo-modules-core": "^56.0.13",
     "expo-notifications": "~0.32.0",
     "expo-splash-screen": "~31.0.13",
     "expo-status-bar": "~3.0.9",
