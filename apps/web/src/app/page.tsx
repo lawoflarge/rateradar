@@ -1,3 +1,4 @@
+import { AdSlot } from "@/components/AdSlot";
 import { ImpliedRateCurve } from "@/components/ImpliedRateCurve";
 import { MeetingCountdown } from "@/components/MeetingCountdown";
 import { MethodologyBadge } from "@/components/MethodologyBadge";
@@ -132,6 +133,10 @@ export default async function Home() {
       </section>
 
       <Rule tone="soft" />
+
+      <section className="my-10" aria-label="Sponsored">
+        <AdSlot slot="4397253039" format="auto" />
+      </section>
 
       <section className="my-12">
         <SectionLabel>Implied rate curves</SectionLabel>
