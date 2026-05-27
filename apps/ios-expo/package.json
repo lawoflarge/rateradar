@@ -20,7 +20,6 @@
     "expo": "~54.0.0",
     "expo-asset": "~12.0.13",
     "expo-keep-awake": "~15.0.8",
-    "expo-modules-core": "^56.0.13",
     "expo-notifications": "~0.32.0",
     "expo-splash-screen": "~31.0.13",
     "expo-status-bar": "~3.0.9",

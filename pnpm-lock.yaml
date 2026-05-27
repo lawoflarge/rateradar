@@ -35,9 +35,6 @@ importers:
       expo-keep-awake:
         specifier: ~15.0.8
         version: 15.0.8(expo@54.0.34(@babel/core@7.29.0)(react-native-webview@13.15.0(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)(typescript@5.9.3))(react@19.1.0)
-      expo-modules-core:
-        specifier: ^56.0.13
-        version: 56.0.13(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)
       expo-notifications:
         specifier: ~0.32.0
         version: 0.32.17(expo@54.0.34(@babel/core@7.29.0)(react-native-webview@13.15.0(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)(typescript@5.9.3))(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)(typescript@5.9.3)
@@ -745,9 +742,6 @@ packages:
 
   '@expo/env@2.0.11':
     resolution: {integrity: sha512-xV+ps6YCW7XIPVUwFVCRN2nox09dnRwy8uIjwHWTODu0zFw4kp4omnVkl0OOjuu2XOe7tdgAHxikrkJt9xB/7Q==}
-
-  '@expo/expo-modules-macros-plugin@0.0.9':
-    resolution: {integrity: sha512-odai6D7ng/gA7At8ukFcWcauNEeDdyVqzVPbQxDkyU2NTJ4kgphA4I5iigS5C4LXFicSIzEt2nzdlLM8sjsTdA==}
 
   '@expo/fingerprint@0.15.5':
     resolution: {integrity: sha512-mdVoAMcux1WlM6kd1RoWiHRNqKqS+J6mKmWQ/BKgeh937S/fcW58EE68O6nc4KDXtWi3PBeNHskOFcgyIuD4hw==}
@@ -2664,21 +2658,6 @@ packages:
     resolution: {integrity: sha512-a6IrpAn/Jbmwxi9L+hMmXKpNqnkUpoF7WHOpn02rVLyax2J0gB1vvCVE5rNydplEnt41Q6WxQwvcOjZaIkcSUg==}
     peerDependencies:
       react: '*'
-      react-native: '*'
-
-  expo-modules-core@56.0.13:
-    resolution: {integrity: sha512-3Hgpi9Q1O0XqoesQtgFY7qhfDsNA3bJtdCJotEqdE42+N8Zv/LJACbNgIyFN/XrnMDzfF5rozh0vNWaRT0/eXQ==}
-    peerDependencies:
-      react: '*'
-      react-native: '*'
-      react-native-worklets: ^0.7.4 || ^0.8.0
-    peerDependenciesMeta:
-      react-native-worklets:
-        optional: true
-
-  expo-modules-jsi@56.0.7:
-    resolution: {integrity: sha512-iBAj4Xeh/8HT201VVxFlmf+VBfmtQV1ZUoJdLQQENm0+j9gnD2QswZLJyNo3CmNNXl46esJeLR5lpGpYZts/zA==}
-    peerDependencies:
       react-native: '*'
 
   expo-notifications@0.32.17:
@@ -5874,8 +5853,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@expo/expo-modules-macros-plugin@0.0.9': {}
-
   '@expo/fingerprint@0.15.5':
     dependencies:
       '@expo/spawn-async': 1.7.2
@@ -8143,18 +8120,6 @@ snapshots:
     dependencies:
       invariant: 2.2.4
       react: 19.1.0
-      react-native: 0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0)
-
-  expo-modules-core@56.0.13(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0):
-    dependencies:
-      '@expo/expo-modules-macros-plugin': 0.0.9
-      expo-modules-jsi: 56.0.7(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))
-      invariant: 2.2.4
-      react: 19.1.0
-      react-native: 0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0)
-
-  expo-modules-jsi@56.0.7(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0)):
-    dependencies:
       react-native: 0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0)
 
   expo-notifications@0.32.17(expo@54.0.34(@babel/core@7.29.0)(react-native-webview@13.15.0(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0))(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)(typescript@5.9.3))(react-native@0.81.5(@babel/core@7.29.0)(@types/react@19.1.17)(react@19.1.0))(react@19.1.0)(typescript@5.9.3):
