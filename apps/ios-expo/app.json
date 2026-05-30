@@ -15,14 +15,13 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.lawoflarge.rateradar",
-      "buildNumber": "2",
+      "buildNumber": "3",
       "requireFullScreen": false,
       "infoPlist": {
         "CFBundleDisplayName": "RateRadar",
         "ITSAppUsesNonExemptEncryption": false,
-        "NSPrivacyTracking": true,
+        "NSPrivacyTracking": false,
         "NSPrivacyTrackingDomains": [],
-        "NSUserTrackingUsageDescription": "This identifier is used to show more relevant ads and to detect ad fraud.",
         "UIStatusBarStyle": "UIStatusBarStyleDefault",
         "SKAdNetworkItems": [],
         "UIBackgroundModes": ["remote-notification"]
@@ -42,8 +41,7 @@
       [
         "react-native-google-mobile-ads",
         {
-          "iosAppId": "ca-app-pub-6563643868702361~4467051169",
-          "userTrackingUsageDescription": "This identifier is used to show more relevant ads and to detect ad fraud."
+          "iosAppId": "ca-app-pub-6563643868702361~4467051169"
         }
       ]
     ],
