@@ -20,7 +20,7 @@
       "infoPlist": {
         "CFBundleDisplayName": "RateRadar",
         "ITSAppUsesNonExemptEncryption": false,
-        "NSPrivacyTracking": false,
+        "NSPrivacyTracking": true,
         "NSPrivacyTrackingDomains": [],
         "UIStatusBarStyle": "UIStatusBarStyleDefault",
         "SKAdNetworkItems": [],
@@ -41,7 +41,8 @@
       [
         "react-native-google-mobile-ads",
         {
-          "iosAppId": "ca-app-pub-6563643868702361~4467051169"
+          "iosAppId": "ca-app-pub-6563643868702361~4467051169",
+          "userTrackingUsageDescription": "This identifier is used to show more relevant ads and to detect ad fraud."
         }
       ]
     ],

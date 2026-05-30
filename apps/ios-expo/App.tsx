@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { SafeAreaView, StyleSheet, View } from "react-native";
+import { AppState, AppStateStatus, SafeAreaView, StyleSheet, View } from "react-native";
 import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
@@ -24,10 +24,25 @@ export default function App() {
 
   useEffect(() => {
     activateKeepAwakeAsync().catch(() => {});
-    initAds().catch(() => {});
     return () => {
       deactivateKeepAwake();
     };
+  }, []);
+
+  // Request ATT + init AdMob only once the app is foreground-active. iOS
+  // silently drops the ATT prompt if it is requested before the app reaches
+  // the active state (e.g. during the cold-launch splash) — that was the cause
+  // of the Guideline 2.1 rejection where App Review never saw the prompt.
+  const adInitRef = useRef(false);
+  useEffect(() => {
+    const maybeInit = (state: AppStateStatus) => {
+      if (state !== "active" || adInitRef.current) return;
+      adInitRef.current = true;
+      setTimeout(() => initAds().catch(() => {}), 600);
+    };
+    maybeInit(AppState.currentState);
+    const sub = AppState.addEventListener("change", maybeInit);
+    return () => sub.remove();
   }, []);
 
   useEffect(() => {

@@ -17,7 +17,7 @@ export function BannerAdSlot({ testID }: { testID?: string }) {
       <BannerAd
         unitId={getBannerUnitId()}
         size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
-        requestOptions={{ requestNonPersonalizedAdsOnly: true }}
+        requestOptions={{ requestNonPersonalizedAdsOnly: false }}
       />
     </View>
   );
