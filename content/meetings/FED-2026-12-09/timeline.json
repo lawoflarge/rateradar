@@ -91,6 +91,30 @@
       {
         "snapshot_at": "2026-05-26T23:16:18+00:00",
         "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-27T20:15:55+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-27T23:22:43+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-28T20:21:58+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-28T23:23:55+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-29T20:24:36+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-29T23:20:43+00:00",
+        "probability": 0.0
       }
     ],
     "-25": [
@@ -180,6 +204,30 @@
       },
       {
         "snapshot_at": "2026-05-26T23:16:18+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-27T20:15:55+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-27T23:22:43+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-28T20:21:58+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-28T23:23:55+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-29T20:24:36+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-29T23:20:43+00:00",
         "probability": 0.0
       }
     ],
@@ -271,6 +319,30 @@
       {
         "snapshot_at": "2026-05-26T23:16:18+00:00",
         "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-27T20:15:55+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-27T23:22:43+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-28T20:21:58+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-28T23:23:55+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-29T20:24:36+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-29T23:20:43+00:00",
+        "probability": 0.0
       }
     ],
     "25": [
@@ -361,6 +433,30 @@
       {
         "snapshot_at": "2026-05-26T23:16:18+00:00",
         "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-27T20:15:55+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-27T23:22:43+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-28T20:21:58+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-28T23:23:55+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-29T20:24:36+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-05-29T23:20:43+00:00",
+        "probability": 0.0
       }
     ],
     "50": [
@@ -450,6 +546,30 @@
       },
       {
         "snapshot_at": "2026-05-26T23:16:18+00:00",
+        "probability": 1.0
+      },
+      {
+        "snapshot_at": "2026-05-27T20:15:55+00:00",
+        "probability": 1.0
+      },
+      {
+        "snapshot_at": "2026-05-27T23:22:43+00:00",
+        "probability": 1.0
+      },
+      {
+        "snapshot_at": "2026-05-28T20:21:58+00:00",
+        "probability": 1.0
+      },
+      {
+        "snapshot_at": "2026-05-28T23:23:55+00:00",
+        "probability": 1.0
+      },
+      {
+        "snapshot_at": "2026-05-29T20:24:36+00:00",
+        "probability": 1.0
+      },
+      {
+        "snapshot_at": "2026-05-29T23:20:43+00:00",
         "probability": 1.0
       }
     ]
