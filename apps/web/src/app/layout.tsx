@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono, IBM_Plex_Serif } from "next/font/google";
 import Script from "next/script";
 import { NavBar } from "@/components/NavBar";
+import { NativeNavBridge } from "@/components/NativeNavBridge";
 import "./globals.css";
 
 const adsenseClient = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
@@ -82,6 +83,7 @@ export default function RootLayout({
             strategy="beforeInteractive"
           />
         )}
+        <NativeNavBridge />
         <NavBar />
         <div className="flex-1">{children}</div>
       </body>
