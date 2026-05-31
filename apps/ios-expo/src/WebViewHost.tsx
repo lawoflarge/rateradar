@@ -14,10 +14,11 @@ interface WebViewHostProps {
   source?: string;
   testID?: string;
   onLoadEnd?: () => void;
+  onBridgeMessage?: (msg: { type: string; [key: string]: unknown }) => void;
 }
 
 export const WebViewHost = forwardRef<WebViewHandle, WebViewHostProps>(
-  function WebViewHost({ source, testID, onLoadEnd }, ref) {
+  function WebViewHost({ source, testID, onLoadEnd, onBridgeMessage }, ref) {
     const webRef = useRef<WebView | null>(null);
 
     useImperativeHandle(ref, () => ({
@@ -48,6 +49,14 @@ export const WebViewHost = forwardRef<WebViewHandle, WebViewHostProps>(
         decelerationRate="normal"
         bounces
         onLoadEnd={onLoadEnd}
+        onMessage={(e) => {
+          try {
+            const msg = JSON.parse(e.nativeEvent.data);
+            if (msg && typeof msg.type === "string") onBridgeMessage?.(msg);
+          } catch {
+            // ignore non-JSON messages
+          }
+        }}
       />
     );
   },

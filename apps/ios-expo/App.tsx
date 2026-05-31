@@ -8,6 +8,7 @@ import { useAppStatePause } from "@/hooks/useAppStatePause";
 import { BannerAdSlot } from "@/components/BannerAdSlot";
 import { OnboardingScreen } from "@/components/OnboardingScreen";
 import { initAds } from "@/lib/ads";
+import { preloadInterstitial, onQualifyingEvent } from "@/lib/interstitial";
 import { hasCompletedOnboarding } from "@/lib/onboardingStore";
 import { WebViewHost, WebViewHandle } from "@/WebViewHost";
 
@@ -38,7 +39,13 @@ export default function App() {
     const maybeInit = (state: AppStateStatus) => {
       if (state !== "active" || adInitRef.current) return;
       adInitRef.current = true;
-      setTimeout(() => initAds().catch(() => {}), 600);
+      setTimeout(
+        () =>
+          initAds()
+            .then(() => preloadInterstitial())
+            .catch(() => {}),
+        600,
+      );
     };
     maybeInit(AppState.currentState);
     const sub = AppState.addEventListener("change", maybeInit);
@@ -65,6 +72,15 @@ export default function App() {
     SplashScreen.hideAsync().catch(() => {});
   }, []);
 
+  const handleBridgeMessage = useCallback(
+    (msg: { type: string; [key: string]: unknown }) => {
+      if (msg.type === "rr-nav" && typeof msg.route === "string") {
+        onQualifyingEvent(msg.route).catch(() => {});
+      }
+    },
+    [],
+  );
+
   return (
     <SafeAreaView style={styles.root}>
       <StatusBar style="dark" />
@@ -72,7 +88,11 @@ export default function App() {
       {phase === "onboarding" && <OnboardingScreen onDone={handleOnboardingDone} />}
       {phase === "web" && (
         <>
-          <WebViewHost ref={webRef} onLoadEnd={onFirstPaint} />
+          <WebViewHost
+            ref={webRef}
+            onLoadEnd={onFirstPaint}
+            onBridgeMessage={handleBridgeMessage}
+          />
           <BannerAdSlot />
         </>
       )}
