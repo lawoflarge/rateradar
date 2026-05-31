@@ -30,6 +30,7 @@ workflows:
         # here. We DO mirror the AdMob disable flag for parity.
         EXPO_PUBLIC_ADMOB_ENABLED: "true"
         EXPO_PUBLIC_ADMOB_BANNER_UNIT_ID: "ca-app-pub-6563643868702361/6751953637"
+        EXPO_PUBLIC_ADMOB_INTERSTITIAL_UNIT_ID: "ca-app-pub-6563643868702361/7124163774"
       node: 20.18.0
       xcode: latest
       cocoapods: default
