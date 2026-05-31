@@ -1,6 +1,13 @@
 import mobileAds, {
   MaxAdContentRating,
+  AdsConsent,
+  AdsConsentStatus,
 } from "react-native-google-mobile-ads";
+import {
+  getTrackingPermissionsAsync,
+  requestTrackingPermissionsAsync,
+} from "expo-tracking-transparency";
+import { Platform } from "react-native";
 
 const ENABLED = process.env.EXPO_PUBLIC_ADMOB_ENABLED === "true";
 
@@ -23,11 +30,36 @@ let initialized = false;
 
 export async function initAds(): Promise<void> {
   if (!ENABLED || initialized) return;
+  initialized = true;
+
+  // Request App Tracking Transparency before any ad loads. App.tsx fires this
+  // only once the app is foreground-active — iOS silently no-ops the prompt if
+  // it is requested during the cold-launch splash, which was the cause of the
+  // Guideline 2.1 rejection where App Review never saw the prompt.
+  if (Platform.OS === "ios") {
+    try {
+      const { status } = await getTrackingPermissionsAsync();
+      if (status === "undetermined") {
+        await requestTrackingPermissionsAsync();
+      }
+    } catch {}
+  }
+
+  // EEA consent (UMP): show the Google-hosted consent form when required.
+  try {
+    const consentInfo = await AdsConsent.requestInfoUpdate();
+    if (
+      consentInfo.isConsentFormAvailable &&
+      consentInfo.status === AdsConsentStatus.REQUIRED
+    ) {
+      await AdsConsent.loadAndShowConsentFormIfRequired();
+    }
+  } catch {}
+
   await mobileAds().setRequestConfiguration({
     maxAdContentRating: MaxAdContentRating.PG,
     tagForChildDirectedTreatment: false,
     tagForUnderAgeOfConsent: false,
   });
   await mobileAds().initialize();
-  initialized = true;
 }
