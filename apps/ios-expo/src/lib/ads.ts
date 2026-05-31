@@ -26,6 +26,18 @@ export function getBannerUnitId(): string {
   return BANNER_UNIT_ID;
 }
 
+// Google's official iOS test interstitial. Replace via env once a real
+// Interstitial unit is created in admob.google.com → RateRadar app.
+const TEST_INTERSTITIAL_UNIT_ID = "ca-app-pub-3940256099942544/4411468910";
+
+const INTERSTITIAL_UNIT_ID =
+  process.env.EXPO_PUBLIC_ADMOB_INTERSTITIAL_UNIT_ID ||
+  TEST_INTERSTITIAL_UNIT_ID;
+
+export function getInterstitialUnitId(): string {
+  return INTERSTITIAL_UNIT_ID;
+}
+
 let initialized = false;
 
 export async function initAds(): Promise<void> {
