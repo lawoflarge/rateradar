@@ -15,6 +15,7 @@ interface Props {
   snapshots: MeetingProbabilities[];
   startingRate: number; // percent, e.g. 4.375 for Fed mid-2026
   bankLabel: string;
+  anchorLabel?: string; // x-axis label for the starting point (default "Now")
 }
 
 function formatShort(iso: string): string {
@@ -27,7 +28,12 @@ function formatShort(iso: string): string {
  * starting from the current policy rate and chaining per-meeting expected
  * changes (Σ p_i · Δ_i).
  */
-export function ImpliedRateCurve({ snapshots, startingRate, bankLabel }: Props) {
+export function ImpliedRateCurve({
+  snapshots,
+  startingRate,
+  bankLabel,
+  anchorLabel = "Now",
+}: Props) {
   if (snapshots.length === 0) return null;
 
   // Use reduce instead of a mutable `let` counter — React 19's purity rule
@@ -53,7 +59,7 @@ export function ImpliedRateCurve({ snapshots, startingRate, bankLabel }: Props) 
         },
       ];
     },
-    [{ label: "Now", fullLabel: "Today", rate: startingRate }],
+    [{ label: anchorLabel, fullLabel: anchorLabel, rate: startingRate }],
   );
 
   const min = Math.min(...data.map((d) => d.rate)) - 0.25;
