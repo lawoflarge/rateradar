@@ -13,7 +13,9 @@ interface Props {
 const SNAPSHOT_CACHE = new Map<string, { prefix: string; value: string; suffix: string }>();
 
 function computeLabel(meetingDate: string): { prefix: string; value: string; suffix: string } {
-  const target = new Date(meetingDate + "T00:00:00").getTime();
+  // Anchor to UTC midnight so the day-count is identical for every viewer
+  // regardless of their local timezone (Fed/ECB dates are calendar dates).
+  const target = new Date(meetingDate + "T00:00:00Z").getTime();
   const now = Date.now();
   const days = Math.max(0, Math.ceil((target - now) / (1000 * 60 * 60 * 24)));
   const key = `${meetingDate}|${days}`;
