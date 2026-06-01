@@ -30,6 +30,7 @@ const plexSerif = IBM_Plex_Serif({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://rateradar-web.vercel.app"),
   title: {
     default: "RateRadar · Fed + ECB rate-decision probabilities",
     template: "%s · RateRadar",
