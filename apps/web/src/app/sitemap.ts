@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getEcbProbabilities, getFedProbabilities } from "@/lib/data";
+import { TERMS } from "@/lib/glossary-terms";
 
 const BASE_URL = "https://rateradar-web.vercel.app";
 
@@ -16,9 +17,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     },
     { url: `${BASE_URL}/glossary`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
+    { url: `${BASE_URL}/scenarios`, lastModified: now, changeFrequency: "hourly", priority: 0.7 },
     { url: `${BASE_URL}/brokers`, lastModified: now, changeFrequency: "weekly", priority: 0.6 },
     { url: `${BASE_URL}/about`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
   ];
+
+  const glossaryTerms: MetadataRoute.Sitemap = TERMS.map((t) => ({
+    url: `${BASE_URL}/glossary/${t.slug}`,
+    lastModified: now,
+    changeFrequency: "monthly" as const,
+    priority: 0.5,
+  }));
 
   let meetings: MetadataRoute.Sitemap = [];
   try {
@@ -36,5 +45,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Ignore — sitemap still valid without meeting pages
   }
 
-  return [...staticPages, ...meetings];
+  return [...staticPages, ...glossaryTerms, ...meetings];
 }
