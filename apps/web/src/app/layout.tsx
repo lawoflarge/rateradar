@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono, IBM_Plex_Serif } from "next/font/google";
 import Script from "next/script";
+import { JsonLd } from "@/components/JsonLd";
 import { NavBar } from "@/components/NavBar";
 import { NativeNavBridge } from "@/components/NativeNavBridge";
 import "./globals.css";
@@ -61,6 +62,16 @@ export default function RootLayout({
       className={`${inter.variable} ${jetbrainsMono.variable} ${plexSerif.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-cream text-ink flex flex-col">
+        <JsonLd
+          data={{
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: "RateRadar",
+            url: "https://rateradar-web.vercel.app",
+            description:
+              "Market-implied probabilities for Fed and ECB interest-rate decisions, with historical tracking.",
+          }}
+        />
         {fundingChoicesId && (
           <>
             <Script
