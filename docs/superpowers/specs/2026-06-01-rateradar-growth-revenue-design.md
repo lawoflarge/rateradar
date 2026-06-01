@@ -80,25 +80,18 @@ Lighthouse.
 - **Verify:** Component test with a fixture mixing populated + empty series;
   assert empty ones don't render.
 
-### B3 — ScenarioBuilder empty/stale outcome state
-- **File:** `apps/web/src/components/ScenarioBuilder.tsx` (~lines 25-55)
-- **Problem:** When a bank has no snapshots, `snapshots[0]` access and
-  `outcomeId` fallback can yield a crash or a stale/empty selection after a bank
-  switch (notably ECB-empty accounts).
-- **Fix:** Guard `activeMeeting?.outcomes[0]?.id ?? ""`; when the active list is
-  empty, render a disabled "No meetings available" state instead of indexing.
-- **Verify:** Component test with an empty ECB list; assert no crash + disabled
-  state; manual bank-switch on `/scenarios`.
+### B3 — ScenarioBuilder empty/stale outcome state — DROPPED (verified safe during planning)
+- `ScenarioBuilder.tsx` already guards `snapshots.length === 0` (renders
+  "No meetings available for this bank yet.", line 88) and uses optional-chaining
+  with `outcomes[0]` fallbacks throughout. The ECB toggle is disabled when ECB is
+  empty, so there is no switch-to-empty crash path and no stale selection.
+  **No real defect. No change.**
 
-### B4 — AdSlot push lifecycle
-- **File:** `apps/web/src/components/AdSlot.tsx` (~lines 30-47)
-- **Problem:** `pushed` is an instance ref; on re-mount (route change) a slot can
-  push again, and a no-fill/early-load isn't cleanly retried — wastes requests.
-- **Fix:** Track push per slot element (guard against double `push({})` on the
-  same `<ins>`), and only push once the `adsbygoogle` script is present. Keep the
-  iOS suppression (`isNativeApp`) intact. Minimal change — don't redesign.
-- **Verify:** Mount/unmount/remount test; confirm a single push per slot
-  instance; manual check no console errors and one request per slot.
+### B4 — AdSlot push lifecycle — DROPPED (marginal; current code is correct)
+- `pushed` is a per-`<ins>` instance ref, which is exactly correct AdSense usage:
+  one `adsbygoogle.push({})` per slot element. The "wasted requests" claim does
+  not hold. iOS suppression already correct. **No change.** (Adding 5 more slots
+  in A1 reuses this component as-is.)
 
 ## 2. SEO / ASO / Share (Priority 2)
 
@@ -162,12 +155,18 @@ Lighthouse.
 
 ## Phase 1 verification gate (definition of done)
 
-- All new/affected unit + component tests pass; existing Jest suite green.
-- Web build green; TypeScript strict, no `any`.
+> **Note (verified during planning):** `apps/web` has **no test runner** (no Jest/
+> Vitest, zero test files). Adding one was deemed out of scope in a prior session.
+> Phase 1 verification is therefore **build + lint + visual (Safari) + Lighthouse +
+> structured-data validation**, not unit tests. A test runner is a separate Phase 2
+> infra item.
+
+- `pnpm --filter web build` green (Next.js typecheck); `pnpm --filter web lint` clean.
+- TypeScript strict, no `any`.
 - Lighthouse mobile (homepage + one meeting page): Perf ≥ 85, SEO ≥ 95, A11y ≥ 90.
 - Safari visual pass: homepage, a meeting page, `/compare`, `/scenarios`,
-  `/glossary` — bugs B1–B4 confirmed fixed, ad units render outside the WebView
-  only, structured data present in `<head>`.
+  `/glossary` — B1 (timezone) + B2 (chart) confirmed fixed, ad units render
+  outside the WebView only, structured data present in `<head>`.
 - One PR off `origin/main`; conventional commits; CI green.
 
 ---
