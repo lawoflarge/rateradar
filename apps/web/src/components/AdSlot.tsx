@@ -35,16 +35,19 @@ export function AdSlot({
     typeof window !== "undefined" && window.NATIVE_PLATFORM === "ios";
 
   useEffect(() => {
-    if (!ADSENSE_CLIENT_ID || pushed.current || isNativeApp) return;
+    if (!ADSENSE_CLIENT_ID || !slot || pushed.current || isNativeApp) return;
     try {
       (window.adsbygoogle = window.adsbygoogle || []).push({});
       pushed.current = true;
     } catch {
       // adsbygoogle not loaded yet; will retry on next mount
     }
-  }, [isNativeApp]);
+  }, [isNativeApp, slot]);
 
-  if (!ADSENSE_CLIENT_ID || isNativeApp) return null;
+  // No slot id configured (e.g. a placement whose AdSense unit hasn't been
+  // created yet) → render nothing rather than an empty <ins>, which would be a
+  // policy violation.
+  if (!ADSENSE_CLIENT_ID || !slot || isNativeApp) return null;
 
   return (
     <ins

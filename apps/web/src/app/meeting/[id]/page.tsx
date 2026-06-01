@@ -1,12 +1,15 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { AdSlot } from "@/components/AdSlot";
+import { JsonLd } from "@/components/JsonLd";
 import { MeetingContext } from "@/components/MeetingContext";
 import { MeetingCountdown } from "@/components/MeetingCountdown";
 import { ProbabilityTable } from "@/components/ProbabilityTable";
 import { Rule } from "@/components/Rule";
 import { SectionLabel } from "@/components/SectionLabel";
 import { ShareButtons } from "@/components/ShareButtons";
+import { AD_SLOTS } from "@/lib/ad-slots";
 import { getMeetingById, getMeetingContext, getMeetingHistory } from "@/lib/data";
 
 interface PageProps {
@@ -93,6 +96,37 @@ export default async function MeetingPage({ params }: PageProps) {
 
   return (
     <main className="mx-auto max-w-4xl px-6 py-16">
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "Article",
+          headline: `${bank} ${formatShortDate(data.meeting.meeting_date)} rate decision · market-implied probabilities`,
+          description: `Market-implied probabilities for the ${bank} ${formatShortDate(data.meeting.meeting_date)} rate decision, with 60 days of historical tracking.`,
+          author: { "@type": "Organization", name: "RateRadar" },
+          publisher: { "@type": "Organization", name: "RateRadar" },
+          mainEntityOfPage: `https://rateradar-web.vercel.app/meeting/${id}`,
+        }}
+      />
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "BreadcrumbList",
+          itemListElement: [
+            {
+              "@type": "ListItem",
+              position: 1,
+              name: "Home",
+              item: "https://rateradar-web.vercel.app/",
+            },
+            {
+              "@type": "ListItem",
+              position: 2,
+              name: `${bank} ${formatShortDate(data.meeting.meeting_date)}`,
+              item: `https://rateradar-web.vercel.app/meeting/${id}`,
+            },
+          ],
+        }}
+      />
       <nav className="mb-8 text-sm text-ink-mute">
         <Link href="/" className="hover:text-cut underline-offset-4 hover:underline">
           ← Back to all meetings
@@ -184,6 +218,10 @@ export default async function MeetingPage({ params }: PageProps) {
             title={`${bank} ${formatShortDate(data.meeting.meeting_date)} · ${Math.round(top.probability * 100)}% ${top.label === "Hold" ? "hold" : `move ${top.label}`}`}
           />
         </div>
+      </section>
+
+      <section className="my-10" aria-label="Advertisement">
+        <AdSlot slot={AD_SLOTS.meeting} format="auto" />
       </section>
 
       <Rule />

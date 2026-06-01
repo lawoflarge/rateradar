@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 
+import { AdSlot } from "@/components/AdSlot";
 import { ScenarioBuilder } from "@/components/ScenarioBuilder";
 import { Rule } from "@/components/Rule";
 import { SectionLabel } from "@/components/SectionLabel";
+import { AD_SLOTS } from "@/lib/ad-slots";
 import { getEcbProbabilities, getFedProbabilities } from "@/lib/data";
 
 export const revalidate = 300;
@@ -41,6 +43,9 @@ export default async function ScenariosPage() {
       <div className="mt-6">
         <ScenarioBuilder fed={fed} ecb={ecb} />
       </div>
+      <section className="my-10" aria-label="Advertisement">
+        <AdSlot slot={AD_SLOTS.scenarios} format="auto" />
+      </section>
     </main>
   );
 }

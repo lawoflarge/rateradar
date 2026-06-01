@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { AdSlot } from "@/components/AdSlot";
 import { ImpliedRateCurve } from "@/components/ImpliedRateCurve";
 import { MeetingCountdown } from "@/components/MeetingCountdown";
@@ -14,6 +15,19 @@ import {
 import { CURRENT_POLICY_RATES } from "@/lib/policy-rates";
 import { loadJsonSnapshotAt } from "@/lib/snapshots";
 import type { MeetingProbabilities, ProbabilitySeries } from "@/lib/types";
+
+export const metadata: Metadata = {
+  title: "Fed + ECB rate-decision probabilities, with history",
+  description:
+    "Live market-implied probabilities for Fed and ECB interest-rate decisions, with 60 days of historical charts showing how expectations shifted into each meeting.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: "RateRadar · Fed + ECB rate-decision probabilities",
+    description:
+      "See where rates are headed before the meeting. Fed + ECB probabilities with historical tracking.",
+    type: "website",
+  },
+};
 
 export const revalidate = 300; // ISR: refresh every 5 minutes
 

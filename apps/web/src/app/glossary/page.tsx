@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import { AdSlot } from "@/components/AdSlot";
+import { JsonLd } from "@/components/JsonLd";
 import { Rule } from "@/components/Rule";
+import { AD_SLOTS } from "@/lib/ad-slots";
 
 export const metadata: Metadata = {
   title: "Glossary · rate-decision terms explained",
@@ -66,6 +69,17 @@ const TERMS: { term: string; def: string }[] = [
 export default function GlossaryPage() {
   return (
     <main className="mx-auto max-w-3xl px-6 py-16">
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: TERMS.map(({ term, def }) => ({
+            "@type": "Question",
+            name: term,
+            acceptedAnswer: { "@type": "Answer", text: def },
+          })),
+        }}
+      />
       <header className="mb-10">
         <h1 className="font-serif text-5xl font-medium tracking-tight text-ink">
           Glossary
@@ -89,6 +103,9 @@ export default function GlossaryPage() {
           </div>
         ))}
       </dl>
+      <section className="my-10" aria-label="Advertisement">
+        <AdSlot slot={AD_SLOTS.glossary} format="auto" />
+      </section>
     </main>
   );
 }

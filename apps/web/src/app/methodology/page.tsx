@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { JsonLd } from "@/components/JsonLd";
 
 export const metadata: Metadata = {
   title: "Methodology · how RateRadar calculates probabilities",
@@ -10,6 +11,18 @@ export const metadata: Metadata = {
 export default function MethodologyPage() {
   return (
     <main className="mx-auto max-w-3xl px-6 py-16">
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "Dataset",
+          name: "RateRadar Fed & ECB rate-decision probability history",
+          description:
+            "Historical time series of market-implied probabilities for Federal Reserve and European Central Bank interest-rate decisions, computed in-house from public futures/OIS prices and snapshotted at least twice per business day.",
+          creator: { "@type": "Organization", name: "RateRadar" },
+          url: "https://rateradar-web.vercel.app/methodology",
+          isAccessibleForFree: true,
+        }}
+      />
       <header className="mb-10">
         <h1 className="font-serif text-5xl font-medium tracking-tight text-ink">
           Methodology

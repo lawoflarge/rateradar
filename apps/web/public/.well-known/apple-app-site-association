@@ -1,0 +1,11 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "R95M36AU2X.com.lawoflarge.rateradar",
+        "paths": ["/meeting/*", "/compare", "/scenarios", "/glossary", "/brokers", "/"]
+      }
+    ]
+  }
+}
