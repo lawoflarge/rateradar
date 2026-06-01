@@ -40,11 +40,13 @@ export const metadata: Metadata = {
     description:
       "Fed + ECB rate-decision probabilities with historical tracking. See where rates are headed before the meeting.",
     type: "website",
+    images: ["/api/og/default"],
   },
   twitter: {
     card: "summary_large_image",
     title: "RateRadar",
     description: "Fed + ECB rate-decision probabilities with historical tracking.",
+    images: ["/api/og/default"],
   },
   other: adsenseClient
     ? { "google-adsense-account": adsenseClient }
