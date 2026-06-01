@@ -4,6 +4,7 @@ import Script from "next/script";
 import { JsonLd } from "@/components/JsonLd";
 import { NavBar } from "@/components/NavBar";
 import { NativeNavBridge } from "@/components/NativeNavBridge";
+import { StickyAnchorAd } from "@/components/StickyAnchorAd";
 import "./globals.css";
 
 const adsenseClient = process.env.NEXT_PUBLIC_ADSENSE_CLIENT_ID;
@@ -100,6 +101,7 @@ export default function RootLayout({
         <NativeNavBridge />
         <NavBar />
         <div className="flex-1">{children}</div>
+        <StickyAnchorAd />
       </body>
     </html>
   );

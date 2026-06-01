@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { AdSlot } from "@/components/AdSlot";
 import { ImpliedRateCurve } from "@/components/ImpliedRateCurve";
 import { MostLikelyPath } from "@/components/MostLikelyPath";
 import { Rule } from "@/components/Rule";
 import { SectionLabel } from "@/components/SectionLabel";
+import { AD_SLOTS } from "@/lib/ad-slots";
 import { getEcbProbabilities, getFedProbabilities } from "@/lib/data";
 import { CURRENT_POLICY_RATES } from "@/lib/policy-rates";
 
@@ -143,6 +145,10 @@ export default async function ComparePage() {
             />
           </div>
         </div>
+      </section>
+
+      <section className="my-10" aria-label="Advertisement">
+        <AdSlot slot={AD_SLOTS.compare} format="auto" />
       </section>
 
       <Rule />

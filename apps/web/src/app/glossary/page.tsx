@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import { AdSlot } from "@/components/AdSlot";
 import { JsonLd } from "@/components/JsonLd";
 import { Rule } from "@/components/Rule";
+import { AD_SLOTS } from "@/lib/ad-slots";
 
 export const metadata: Metadata = {
   title: "Glossary · rate-decision terms explained",
@@ -101,6 +103,9 @@ export default function GlossaryPage() {
           </div>
         ))}
       </dl>
+      <section className="my-10" aria-label="Advertisement">
+        <AdSlot slot={AD_SLOTS.glossary} format="auto" />
+      </section>
     </main>
   );
 }
