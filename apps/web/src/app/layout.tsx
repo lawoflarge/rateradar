@@ -48,6 +48,7 @@ export const metadata: Metadata = {
     description: "Fed + ECB rate-decision probabilities with historical tracking.",
     images: ["/api/og/default"],
   },
+  itunes: { appId: "6768628917" },
   other: adsenseClient
     ? { "google-adsense-account": adsenseClient }
     : undefined,
