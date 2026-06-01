@@ -6,6 +6,12 @@ export const metadata: Metadata = {
   description:
     "Broker partnerships for trading Fed Funds Futures, Treasuries, and rate-sensitive ETFs. Transparent affiliate partnerships that keep RateRadar free.",
   alternates: { canonical: "/brokers" },
+  openGraph: {
+    title: "Brokers · trade rate-sensitive instruments",
+    description:
+      "Broker partnerships for trading Fed Funds Futures, Treasuries, and rate-sensitive ETFs.",
+    type: "website",
+  },
 };
 
 // Placeholders — real affiliate URLs + creatives to be wired once partner

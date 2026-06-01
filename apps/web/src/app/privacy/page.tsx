@@ -5,6 +5,12 @@ export const metadata: Metadata = {
   description:
     "RateRadar's privacy policy. What we collect, what we don't, and how Google AdSense advertising works on this site.",
   alternates: { canonical: "/privacy" },
+  openGraph: {
+    title: "Privacy Policy · RateRadar",
+    description:
+      "What RateRadar collects, what we don't, and how Google AdSense advertising works on this site.",
+    type: "website",
+  },
 };
 
 const LAST_UPDATED = "2026-05-20";
