@@ -81,7 +81,17 @@ export function HistoricalChart({
     );
   }, [series]);
 
-  const visibleLabels = useMemo(() => series.map((s) => s.label), [series]);
+  // Only outcomes that actually have historical points should appear in the
+  // legend and as chart lines — otherwise an outcome with no snapshots yet
+  // renders a legend dot with no corresponding line.
+  const populatedSeries = useMemo(
+    () => series.filter((s) => s.series.length > 0),
+    [series],
+  );
+  const visibleLabels = useMemo(
+    () => populatedSeries.map((s) => s.label),
+    [populatedSeries],
+  );
 
   if (loading && chartData.length === 0) {
     return (
@@ -105,7 +115,7 @@ export function HistoricalChart({
           Probability history · last {windowDays} days
         </div>
         <div className="flex flex-wrap gap-2 text-xs">
-          {series.map((s) => {
+          {populatedSeries.map((s) => {
             const color = OUTCOME_COLORS[s.delta_bps] ?? "#1A1A1A";
             return (
               <span
@@ -167,7 +177,7 @@ export function HistoricalChart({
             />
             {visibleLabels.map((label) => {
               const delta =
-                series.find((s) => s.label === label)?.delta_bps ?? 0;
+                populatedSeries.find((s) => s.label === label)?.delta_bps ?? 0;
               return (
                 <Line
                   key={label}
