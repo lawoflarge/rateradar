@@ -138,3 +138,23 @@ def test_decompose_single_outcome_always_certain():
     outcomes = [Outcome(label="Hold", delta_bps=0, post_meeting_rate=4.50)]
     probs = decompose_probabilities(4.00, outcomes)
     assert probs == [1.0]
+
+
+def test_post_rate_from_bracketing_contract_is_identity():
+    # When the month AFTER the meeting holds no FOMC meeting, that month's
+    # implied monthly-average IS the post-meeting rate (no tail division).
+    from src.probability_calc import post_rate_from_bracketing_contract
+
+    # Aug 2026 has no meeting; its implied average 3.620 -> post-July rate 3.620.
+    post = post_rate_from_bracketing_contract(next_month_implied_avg=3.620)
+    assert post == pytest.approx(3.620)
+
+
+def test_post_rate_from_bracketing_contract_stable_to_noise():
+    # A 1bp wobble in the bracketing contract stays a 1bp wobble in the post rate
+    # (this is the whole point of the cross-contract fix vs the tail division).
+    from src.probability_calc import post_rate_from_bracketing_contract
+
+    base = post_rate_from_bracketing_contract(next_month_implied_avg=3.625)
+    wobbled = post_rate_from_bracketing_contract(next_month_implied_avg=3.615)
+    assert abs(wobbled - base) == pytest.approx(0.010)  # 1.0 bp, not ~15 bp

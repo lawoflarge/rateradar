@@ -129,3 +129,15 @@ def decompose_probabilities(
     if total > 0:
         probs = [p / total for p in probs]
     return probs
+
+
+def post_rate_from_bracketing_contract(next_month_implied_avg: float) -> float:
+    """Post-meeting rate when the *next* month holds no FOMC meeting.
+
+    Per METHODOLOGY.md §10: if the month after a meeting contains no meeting,
+    that month's contract settles to the (constant) post-meeting rate for the
+    whole month, so its implied monthly-average equals the post-meeting rate
+    directly. This avoids dividing the meeting-month's average by the tiny
+    post-meeting weight (the late-month-meeting noise-amplification bug).
+    """
+    return next_month_implied_avg
