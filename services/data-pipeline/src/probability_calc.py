@@ -161,9 +161,7 @@ def solve_post_meeting_rate_in_month(
     if days_in_month <= 0:
         raise ValueError(f"days_in_month must be > 0, got {days_in_month}")
     if not 0 <= meeting_day <= days_in_month:
-        raise ValueError(
-            f"meeting_day {meeting_day} out of range for month of {days_in_month}"
-        )
+        raise ValueError(f"meeting_day {meeting_day} out of range for month of {days_in_month}")
     post_weight = (days_in_month - meeting_day) / days_in_month
     if post_weight < min_post_weight:
         raise ValueError(
