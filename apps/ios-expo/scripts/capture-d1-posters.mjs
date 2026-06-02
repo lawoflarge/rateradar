@@ -239,6 +239,10 @@ try {
     await ctx.addInitScript(() => {
       window.NATIVE_PLATFORM = "ios";
     });
+    // Posters are pre-sized at full physical px (size.w × size.h), so they must
+    // render at deviceScaleFactor 1 — the dpr-3 tile context would otherwise
+    // triple the output and break Apple's exact-dimension requirement.
+    const posterCtx = await browser.newContext({ deviceScaleFactor: 1 });
     const page = await ctx.newPage();
 
     let movedPath = null;
@@ -282,7 +286,7 @@ try {
       const tileDataUri = `data:image/png;base64,${tileBuf.toString("base64")}`;
 
       // Composite the poster.
-      const poster = await ctx.newPage();
+      const poster = await posterCtx.newPage();
       await poster.setViewportSize({ width: size.w, height: size.h });
       await poster.setContent(
         posterHtml({ w: size.w, h: size.h, label: shot.label, headline: shot.headline, tileDataUri }),
@@ -296,6 +300,7 @@ try {
       console.log(`  ✓ ${shot.id} → ${out}`);
     }
     await ctx.close();
+    await posterCtx.close();
   }
 } finally {
   await browser.close();
