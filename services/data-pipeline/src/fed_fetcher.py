@@ -63,14 +63,27 @@ def symbol_for_month(contract_month: date) -> str:
 
 
 def contracts_covering_meetings(meetings: list[date]) -> list[str]:
-    """Return ZQ contract symbols for each meeting's month."""
-    seen = set()
-    result = []
+    """Return ZQ contract symbols for each meeting's month AND the following month.
+
+    The following-month contract is the §10 bracketing contract: when the month
+    after a meeting holds no FOMC meeting, that month's implied average is the
+    post-meeting rate directly (see `compute_meeting_probabilities`). Fetching it
+    lets late-month meetings (tiny post-meeting tail) solve via the bracket
+    identity instead of being skipped. Order preserved, duplicates removed.
+    """
+    seen: set[str] = set()
+    result: list[str] = []
     for meeting in meetings:
-        sym = symbol_for_month(date(meeting.year, meeting.month, 1))
-        if sym not in seen:
-            seen.add(sym)
-            result.append(sym)
+        first_of_month = date(meeting.year, meeting.month, 1)
+        if meeting.month == 12:
+            next_month = date(meeting.year + 1, 1, 1)
+        else:
+            next_month = date(meeting.year, meeting.month + 1, 1)
+        for month_start in (first_of_month, next_month):
+            sym = symbol_for_month(month_start)
+            if sym not in seen:
+                seen.add(sym)
+                result.append(sym)
     return result
 
 

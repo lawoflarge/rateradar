@@ -39,9 +39,10 @@ def test_symbol_for_month():
 
 
 def test_contracts_covering_meetings_deduplicates():
+    # Each meeting contributes its own month AND its bracketing next month, deduped.
     meetings = [date(2026, 6, 15), date(2026, 6, 30), date(2026, 7, 10)]
     contracts = contracts_covering_meetings(meetings)
-    assert contracts == ["ZQM26", "ZQN26"]
+    assert contracts == ["ZQM26", "ZQN26", "ZQQ26"]
 
 
 def test_outcomes_around_standard_range():
@@ -259,6 +260,21 @@ def test_easing_scenario_smooth_cut_skew():
         assert by_label["+50bp"] == pytest.approx(0.0, abs=1e-9)
         # No 100% spike anywhere.
         assert max(by_label.values()) < 0.999, f"{meeting} spiked: {by_label}"
+
+
+def test_contracts_covering_meetings_includes_bracket_month():
+    # The §10 bracket identity needs the month AFTER each meeting. A late-month
+    # July meeting must pull the August contract (ZQQ26) so the bracket can fire.
+    meetings = [date(2026, 7, 29), date(2026, 10, 28), date(2026, 12, 9)]
+    contracts = contracts_covering_meetings(meetings)
+    # Meeting months:
+    assert "ZQN26" in contracts  # Jul
+    assert "ZQV26" in contracts  # Oct
+    assert "ZQZ26" in contracts  # Dec
+    # Bracketing (next) months — the whole point of this change:
+    assert "ZQQ26" in contracts  # Aug (after Jul-29)
+    assert "ZQX26" in contracts  # Nov (after Oct-28)
+    assert "ZQF27" in contracts  # Jan-2027 (after Dec-09, year rollover)
 
 
 def test_unbracketed_late_month_meeting_is_skipped_not_garbage(caplog):
