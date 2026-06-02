@@ -11,8 +11,8 @@ Flags:
     --bank               fed | ecb
     --year               Year to pull meetings from (default 2026)
     --source             'mock' | 'yfinance' (default: mock for safety)
-    --current-rate       Current policy-rate midpoint (percent). Default auto-picks
-                         by bank: 4.375 for FED, 2.00 for ECB.
+    --current-rate       Current policy-rate midpoint (percent). REQUIRED for FED
+                         (or set RR_FED_CURRENT_RATE); ECB defaults to 2.00%.
     --write              Best-effort Supabase upsert via RR_DB_URL. Database
                          outages (paused project, DNS NXDOMAIN, refused
                          connection) downgrade to a warning so the cron job
@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import argparse
 import logging
+import os
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
@@ -44,9 +45,31 @@ logger = logging.getLogger(__name__)
 
 
 DEFAULT_RATES = {
-    "fed": 4.375,
     "ecb": 2.00,
 }
+
+
+def resolve_current_rate(bank: str, cli_value: float | None, env: str | None) -> float:
+    """Resolve the current policy-rate midpoint.
+
+    FED has no hard-coded default (the old 4.375 went stale — the real Fed mid
+    is 3.625 since 2026-04-29). FED must be given explicitly via --current-rate
+    or the RR_FED_CURRENT_RATE env var. ECB keeps its documented default.
+    """
+    if cli_value is not None:
+        return cli_value
+    if bank == "fed":
+        if env is not None:
+            return float(env)
+        print(
+            "[--current-rate is required for FED (no stale default). Pass "
+            "--current-rate 3.625 or set RR_FED_CURRENT_RATE. Real Fed mid is "
+            "3.625 / range 3.50-3.75 since 2026-04-29.]",
+            file=sys.stderr,
+        )
+        raise SystemExit(2)
+    return DEFAULT_RATES[bank]
+
 
 METHODOLOGY_VERSION = "1.0.0"
 
@@ -153,8 +176,8 @@ def main() -> int:
         "--current-rate",
         type=float,
         default=None,
-        help="Current policy-rate midpoint, percent. Defaults by bank "
-        "(FED: 4.375%, ECB: 2.00%).",
+        help="Current policy-rate midpoint, percent. REQUIRED for FED "
+        "(or set RR_FED_CURRENT_RATE); ECB defaults to 2.00%%.",
     )
     parser.add_argument(
         "--write",
@@ -180,7 +203,11 @@ def main() -> int:
         format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
     )
 
-    current_rate = args.current_rate if args.current_rate is not None else DEFAULT_RATES[args.bank]
+    current_rate = resolve_current_rate(
+        bank=args.bank,
+        cli_value=args.current_rate,
+        env=os.environ.get("RR_FED_CURRENT_RATE"),
+    )
     fetcher = build_fetcher(args.source, args.bank)
 
     logger.info(
@@ -219,8 +246,6 @@ def main() -> int:
         print(f"Appended history:    {history}")
 
     if args.write:
-        import os
-
         db_url = os.environ.get("RR_DB_URL") or os.environ.get("SUPABASE_DB_URL")
         if not db_url:
             print(
