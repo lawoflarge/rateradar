@@ -12,6 +12,7 @@ from src.fetchers.ecb_estr_source import (
     parse_ecb_portal_csv_latest,
     parse_fred_csv_latest,
 )
+from src.main import build_fetcher
 
 
 def test_parse_ecb_portal_csv_latest_returns_last_obs_value():
@@ -135,3 +136,20 @@ def test_estr_spot_returns_none_when_all_sources_down():
 
     # Informational fixing — None on total failure, never raises.
     assert EcbEstrFetcher(http_get=all_down).estr_spot() is None
+
+
+def test_build_fetcher_routes_estr_ecb_to_estr_fetcher():
+    f = build_fetcher("estr", "ecb")
+    assert isinstance(f, EcbEstrFetcher)
+
+
+def test_build_fetcher_estr_fed_rejected():
+    with pytest.raises(ValueError):
+        build_fetcher("estr", "fed")
+
+
+def test_build_fetcher_yfinance_ecb_redirects_to_estr():
+    # The old NotImplementedError is replaced with a clear redirect message.
+    with pytest.raises(NotImplementedError) as exc:
+        build_fetcher("yfinance", "ecb")
+    assert "estr" in str(exc.value).lower()

@@ -77,15 +77,23 @@ METHODOLOGY_VERSION = "1.1.0"
 def build_fetcher(source: str, bank: str) -> PriceFetcher:
     if source == "mock":
         return EcbMockFetcher() if bank == "ecb" else MockFetcher()
-    if source == "yfinance":
-        from .fetchers.yfinance_source import YFinanceFetcher
+    if source == "estr":
+        if bank != "ecb":
+            raise ValueError("source 'estr' is ECB-only (it tracks the ECB DFR/STR).")
+        from .fetchers.ecb_estr_source import EcbEstrFetcher
 
+        return EcbEstrFetcher()
+    if source == "yfinance":
         if bank == "ecb":
             raise NotImplementedError(
-                "yfinance source not supported for ECB yet, use --source mock for now."
+                "No FREE forward-implied source exists for the ECB. Use "
+                "--source estr for the spot-anchored estimate "
+                "(DFR + STR spot, forward odds unavailable)."
             )
+        from .fetchers.yfinance_source import YFinanceFetcher
+
         return YFinanceFetcher()
-    raise ValueError(f"Unknown source: {source}. Valid: mock, yfinance")
+    raise ValueError(f"Unknown source: {source}. Valid: mock, yfinance, estr")
 
 
 def print_probabilities(results: list[MeetingProbability]) -> None:
@@ -171,7 +179,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="RateRadar data pipeline")
     parser.add_argument("--bank", choices=["fed", "ecb"], default="fed")
     parser.add_argument("--year", type=int, default=2026)
-    parser.add_argument("--source", choices=["mock", "yfinance"], default="mock")
+    parser.add_argument("--source", choices=["mock", "yfinance", "estr"], default="mock")
     parser.add_argument(
         "--current-rate",
         type=float,
