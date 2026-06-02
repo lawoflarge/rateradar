@@ -173,3 +173,18 @@ def solve_post_meeting_rate_in_month(
         )
     pre_weight = meeting_day / days_in_month
     return (observed_monthly_avg - pre_weight * rate_before_meeting) / post_weight
+
+
+def is_plausible_post_rate(
+    post_rate: float,
+    rate_before: float,
+    max_move_bps: float = 75.0,
+) -> bool:
+    """True if a one-meeting move from `rate_before` to `post_rate` is plausible.
+
+    A single meeting moves the target by at most a handful of 25bp steps. A
+    larger implied jump indicates a data wobble amplified by a bad solve
+    (METHODOLOGY.md §10) — the caller flags and skips rather than emitting it.
+    `max_move_bps` is the absolute one-meeting bound, in basis points.
+    """
+    return abs(post_rate - rate_before) * 100.0 <= max_move_bps

@@ -189,3 +189,20 @@ def test_solve_post_meeting_rate_in_month_rejects_tiny_tail():
             days_in_month=31,
             min_post_weight=0.20,
         )
+
+
+def test_is_plausible_post_rate_accepts_normal_moves():
+    from src.probability_calc import is_plausible_post_rate
+
+    # Hold, a 25bp cut, and a 50bp cut are all plausible from 3.625.
+    assert is_plausible_post_rate(3.625, rate_before=3.625, max_move_bps=75)
+    assert is_plausible_post_rate(3.375, rate_before=3.625, max_move_bps=75)
+    assert is_plausible_post_rate(3.125, rate_before=3.625, max_move_bps=75)
+
+
+def test_is_plausible_post_rate_rejects_implausible_swing():
+    from src.probability_calc import is_plausible_post_rate
+
+    # The bug produced jumps like +308bp / -395bp in one meeting — reject.
+    assert not is_plausible_post_rate(6.365, rate_before=3.279, max_move_bps=75)
+    assert not is_plausible_post_rate(2.412, rate_before=6.365, max_move_bps=75)
