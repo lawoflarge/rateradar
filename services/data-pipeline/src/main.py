@@ -99,7 +99,7 @@ def build_fetcher(source: str, bank: str) -> PriceFetcher:
 def estimation_basis_for(fetcher: PriceFetcher, bank: str, source: str) -> str:
     """Honest one-line label for how this run's numbers were derived."""
     explicit = getattr(fetcher, "estimation_basis", None)
-    if explicit:
+    if explicit is not None:
         return str(explicit)
     if source == "mock":
         return "mock (synthetic test data — not market-derived)"

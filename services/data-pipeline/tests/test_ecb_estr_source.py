@@ -12,7 +12,7 @@ from src.fetchers.ecb_estr_source import (
     parse_ecb_portal_csv_latest,
     parse_fred_csv_latest,
 )
-from src.main import build_fetcher
+from src.main import build_fetcher, estimation_basis_for
 
 
 def test_parse_ecb_portal_csv_latest_returns_last_obs_value():
@@ -153,3 +153,25 @@ def test_build_fetcher_yfinance_ecb_redirects_to_estr():
     with pytest.raises(NotImplementedError) as exc:
         build_fetcher("yfinance", "ecb")
     assert "estr" in str(exc.value).lower()
+
+
+class _Bare:
+    """Stub fetcher with no estimation_basis attr — exercises the heuristics."""
+
+
+@pytest.mark.parametrize(
+    ("fetcher", "bank", "source", "expected"),
+    [
+        (
+            EcbEstrFetcher(dfr_override=2.0),
+            "ecb",
+            "estr",
+            "spot-anchored — forward odds unavailable",
+        ),
+        (_Bare(), "ecb", "mock", "mock (synthetic test data — not market-derived)"),
+        (_Bare(), "fed", "yfinance", "forward-implied (Fed Funds futures via yfinance)"),
+        (_Bare(), "ecb", "estr", "unspecified"),
+    ],
+)
+def test_estimation_basis_for_all_paths(fetcher, bank, source, expected):
+    assert estimation_basis_for(fetcher, bank, source) == expected
