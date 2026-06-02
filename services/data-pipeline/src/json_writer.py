@@ -20,10 +20,10 @@ from __future__ import annotations
 
 import json
 import logging
-from collections.abc import Iterable
 from dataclasses import asdict
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Iterable
 
 logger = logging.getLogger(__name__)
 
@@ -118,7 +118,7 @@ def _rebuild_series(bank_dir: Path, bank_code: str) -> Path:
                 continue
             try:
                 file_payload = json.loads(path.read_text(encoding="utf-8"))
-            except Exception:  # noqa: S112 — skip corrupt history files, keep series build alive
+            except Exception:
                 continue
             snap_at = file_payload.get("snapshot_at")
             for row in file_payload.get("rows", []):
