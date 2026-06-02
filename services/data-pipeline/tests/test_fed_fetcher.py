@@ -160,3 +160,30 @@ def test_flat_futures_yield_hold_for_every_meeting():
         for label, p in by_label.items():
             if label != "Hold":
                 assert p == pytest.approx(0.0, abs=1e-6), f"{meeting} {label}={p}"
+
+
+def test_jul29_late_month_meeting_no_amplification():
+    """METHODOLOGY §10 case: Jul-29 leaves only 2/31 of the month post-meeting.
+
+    Near-flat data (July avg 3.620, August (no meeting) avg 3.620) must yield a
+    Hold-dominant July, NOT the +28bp swing the single-contract solve produced.
+    Expected via the August bracket: post-July = 3.620; with before=3.625 the
+    two-point decomposition gives Hold~0.98, -25bp~0.02.
+    """
+    from src.fed_fetcher import compute_meeting_probabilities
+    from src.fetchers.base import ContractPrice
+
+    current = 3.625
+    prices = [
+        ContractPrice("ZQN26", date(2026, 7, 1), 100.0 - 3.620, date(2026, 6, 1)),
+        ContractPrice("ZQQ26", date(2026, 8, 1), 100.0 - 3.620, date(2026, 6, 1)),
+    ]
+    meetings = [date(2026, 7, 29)]  # August has no meeting -> bracket identity
+    results = compute_meeting_probabilities(meetings, prices, current)
+
+    by_label = {r.outcome_label: r.probability for r in results}
+    assert by_label["Hold"] == pytest.approx(0.98, abs=0.01)
+    assert by_label["-25bp"] == pytest.approx(0.02, abs=0.01)
+    # Crucially: no hike mass at all (the bug put 0.88 on +25bp here).
+    assert by_label["+25bp"] == pytest.approx(0.0, abs=1e-9)
+    assert by_label["+50bp"] == pytest.approx(0.0, abs=1e-9)
