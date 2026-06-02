@@ -54,53 +54,50 @@ def test_outcomes_around_standard_range():
 
 
 def test_compute_meeting_probabilities_with_mock_data():
-    """Full path: meetings + mock contract prices → per-outcome probabilities."""
+    """Full path under the cross-contract solve: mock prices -> per-outcome probs."""
     meetings = [date(2026, 6, 17), date(2026, 7, 29), date(2026, 9, 16)]
     fetcher = MockFetcher()
-    contracts = contracts_covering_meetings(meetings)
+    # Need bracketing months too: Aug (for Jul) is in the mock; pull all covered.
+    contracts = ["ZQM26", "ZQN26", "ZQQ26", "ZQU26", "ZQV26"]
     prices = fetcher.fetch(contracts)
 
-    current_midpoint = 4.375  # current Fed Funds target range midpoint
+    current_midpoint = 4.375
     probs = compute_meeting_probabilities(meetings, prices, current_midpoint)
 
-    # Sanity: each meeting should produce 5 outcomes (-50 through +50 in 25bp steps)
+    # All three meetings solve (none skipped) -> 5 outcomes each.
+    assert len({p.meeting_date for p in probs}) == 3
     assert len(probs) == 5 * 3
 
-    # Each meeting's probabilities should sum to ~1
     for meeting in meetings:
         meeting_probs = [p.probability for p in probs if p.meeting_date == meeting]
         assert len(meeting_probs) == 5
         assert sum(meeting_probs) == pytest.approx(1.0)
 
-    # June 2026 contract price 95.685 → implied avg 4.315% (cut partially priced)
-    # For the June 17 meeting, with pre-rate 4.375 and meeting on day 17 of 30,
-    # solve for post-rate. Should yield a probability mix biased toward a -25bp cut.
-    june_probs = {
-        p.outcome_label: p.probability for p in probs if p.meeting_date == date(2026, 6, 17)
-    }
-    # We expect non-trivial probability on -25bp AND Hold, with -25bp dominant
-    assert june_probs["-25bp"] > 0
-    assert june_probs["Hold"] > 0
-    # One of the two adjacent outcomes gets the full probability mass under our
-    # two-point decomposition; the rest are zero. Confirm the split is sensible.
-    nonzero = {k: v for k, v in june_probs.items() if v > 0}
-    assert set(nonzero.keys()).issubset({"-25bp", "Hold", "-50bp"})
+    june = {p.outcome_label: p.probability for p in probs if p.meeting_date == date(2026, 6, 17)}
+    assert june["-25bp"] == pytest.approx(0.5538, abs=0.01)
+    assert june["Hold"] == pytest.approx(0.4462, abs=0.01)
+    assert june["+25bp"] == pytest.approx(0.0, abs=1e-9)  # cut-skew, no hikes
+
+    july = {p.outcome_label: p.probability for p in probs if p.meeting_date == date(2026, 7, 29)}
+    assert july["-25bp"] == pytest.approx(0.4262, abs=0.01)
+    assert july["Hold"] == pytest.approx(0.5738, abs=0.01)
+    assert july["+25bp"] == pytest.approx(0.0, abs=1e-9)
 
 
 def test_run_fed_fetch_end_to_end_mock():
-    """Top-level orchestrator entry runs without errors on mock data."""
+    """Top-level orchestrator runs on mock data and never produces a sawtooth."""
     fetcher = MockFetcher()
     results = run_fed_fetch(fetcher=fetcher, current_target_midpoint=4.375, year=2026)
-    # 8 meetings × 5 outcomes each = 40 rows, but the mock only covers
-    # 8 contract months (May-Dec 2026), and January/March meetings don't have
-    # mock prices (happened before). Filter logic skips those.
-    # Mock covers May-Dec 2026; May/Jun/Jul/Aug/Sep/Oct/Nov/Dec meetings * 5 = 30
-    # (Jan 28 and Mar 18 have no mock contract — they're skipped with a warning)
-    # Apr 29 meeting is in April but mock doesn't have ZQJ26 - also skipped
     assert len(results) > 0
-    # Sanity: all probabilities must be in [0, 1]
     for r in results:
         assert 0.0 <= r.probability <= 1.0
+
+    # Each emitted meeting sums to ~1 and is never a 100% hike spike.
+    for meeting in {r.meeting_date for r in results}:
+        by_label = {r.outcome_label: r.probability for r in results if r.meeting_date == meeting}
+        assert sum(by_label.values()) == pytest.approx(1.0)
+        assert by_label.get("+50bp", 0.0) < 0.999, f"{meeting} hike-spiked: {by_label}"
+        assert by_label.get("+25bp", 0.0) < 0.999, f"{meeting} hike-spiked: {by_label}"
 
 
 def test_next_month_has_meeting_flags_consecutive_month_meetings():
