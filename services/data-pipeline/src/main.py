@@ -71,21 +71,41 @@ def resolve_current_rate(bank: str, cli_value: float | None, env: str | None) ->
     return DEFAULT_RATES[bank]
 
 
-METHODOLOGY_VERSION = "1.1.0"
+METHODOLOGY_VERSION = "1.2.0"
 
 
 def build_fetcher(source: str, bank: str) -> PriceFetcher:
     if source == "mock":
         return EcbMockFetcher() if bank == "ecb" else MockFetcher()
-    if source == "yfinance":
-        from .fetchers.yfinance_source import YFinanceFetcher
+    if source == "estr":
+        if bank != "ecb":
+            raise ValueError("source 'estr' is ECB-only (it tracks the ECB DFR/STR).")
+        from .fetchers.ecb_estr_source import EcbEstrFetcher
 
+        return EcbEstrFetcher()
+    if source == "yfinance":
         if bank == "ecb":
             raise NotImplementedError(
-                "yfinance source not supported for ECB yet, use --source mock for now."
+                "No FREE forward-implied source exists for the ECB. Use "
+                "--source estr for the spot-anchored estimate "
+                "(DFR + STR spot, forward odds unavailable)."
             )
+        from .fetchers.yfinance_source import YFinanceFetcher
+
         return YFinanceFetcher()
-    raise ValueError(f"Unknown source: {source}. Valid: mock, yfinance")
+    raise ValueError(f"Unknown source: {source}. Valid: mock, yfinance, estr")
+
+
+def estimation_basis_for(fetcher: PriceFetcher, bank: str, source: str) -> str:
+    """Honest one-line label for how this run's numbers were derived."""
+    explicit = getattr(fetcher, "estimation_basis", None)
+    if explicit is not None:
+        return str(explicit)
+    if source == "mock":
+        return "mock (synthetic test data — not market-derived)"
+    if bank == "fed":
+        return "forward-implied (Fed Funds futures via yfinance)"
+    return "unspecified"
 
 
 def print_probabilities(results: list[MeetingProbability]) -> None:
@@ -171,7 +191,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="RateRadar data pipeline")
     parser.add_argument("--bank", choices=["fed", "ecb"], default="fed")
     parser.add_argument("--year", type=int, default=2026)
-    parser.add_argument("--source", choices=["mock", "yfinance"], default="mock")
+    parser.add_argument("--source", choices=["mock", "yfinance", "estr"], default="mock")
     parser.add_argument(
         "--current-rate",
         type=float,
@@ -209,6 +229,11 @@ def main() -> int:
         env=os.environ.get("RR_FED_CURRENT_RATE"),
     )
     fetcher = build_fetcher(args.source, args.bank)
+    # ECB spot fetcher knows the live DFR — use it as the anchor unless pinned.
+    if args.current_rate is None and hasattr(fetcher, "current_policy_rate"):
+        current_rate = fetcher.current_policy_rate()
+
+    basis = estimation_basis_for(fetcher, args.bank, args.source)
 
     logger.info(
         "Running %s fetch: year=%s source=%s current_rate=%.3f%%",
@@ -234,6 +259,8 @@ def main() -> int:
 
     print_probabilities(results)
 
+    print(f"\nEstimation basis: {basis}")
+
     if args.json_snapshot_dir is not None:
         latest, history = write_snapshot_files(
             snapshot_dir=args.json_snapshot_dir,
@@ -241,6 +268,7 @@ def main() -> int:
             probabilities=results,
             snapshot_at=started_at,
             methodology_version=METHODOLOGY_VERSION,
+            estimation_basis=basis,
         )
         print(f"\nWrote JSON snapshot: {latest}")
         print(f"Appended history:    {history}")

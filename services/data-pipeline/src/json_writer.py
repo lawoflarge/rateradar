@@ -40,6 +40,7 @@ def write_snapshot_files(
     probabilities: Iterable,
     snapshot_at: datetime | None = None,
     methodology_version: str = "1.0.0",
+    estimation_basis: str | None = None,
 ) -> tuple[Path, Path]:
     """Persist a probability batch as JSON. Returns (latest_path, history_path).
 
@@ -64,6 +65,7 @@ def write_snapshot_files(
         "bank_code": bank_code.upper(),
         "snapshot_at": snapshot_at.isoformat(),
         "methodology_version": methodology_version,
+        "estimation_basis": estimation_basis,
         "rows": rows,
     }
     history_path = history_dir / f"{stamp}.json"

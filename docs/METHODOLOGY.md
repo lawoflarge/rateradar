@@ -91,6 +91,18 @@ The ECB sets three policy rates (Deposit Facility Rate / DFR, Main Refinancing O
 
 €STR OIS captures expectations of the ECB's DFR path with high fidelity because €STR closely tracks the DFR (typically ~5-10 bps below it). We apply the same step-function decomposition as for the Fed, substituting €STR OIS rates for Fed Funds Futures.
 
+**Free-data limitation (spot-anchored mode).** Forward-implied €STR (OIS) and
+Euribor-futures curves are not available from any free, redistributable source —
+they are paid (Barchart / ICE / BlueGamma) or scrape-only, both of which we rule
+out. What is free and authoritative is the *spot* picture: the current DFR and
+the €STR fixing, from the ECB Data Portal (`data-api.ecb.europa.eu`, no auth)
+with a FRED CSV fallback. When no free forward curve is available, RateRadar
+therefore runs the ECB in **spot-anchored** mode: every upcoming meeting is
+anchored at the current DFR (no change priced forward) and the output is
+**explicitly labeled "spot-anchored — forward odds unavailable"** in the API and
+UI. This is deliberately low-information — ECB probability history will be
+near-flat — and is preferred over fabricating a forward curve or paying for data.
+
 ## 7. Update cadence
 
 | Event | Cadence |
@@ -160,6 +172,11 @@ for meetings near the start or middle of their month.
 
 Material changes to this methodology are recorded here with date and reason. Consumers who rely on historical comparability can pin to a specific methodology version.
 
+- **v1.2.0** — ECB switched to honest **spot-anchored** mode (§6). With no free
+  forward-implied €STR/Euribor source, the ECB pipeline anchors every meeting at
+  the current DFR (fetched live from the ECB Data Portal, FRED fallback) and
+  labels the output "spot-anchored — forward odds unavailable" in the API
+  payload (`estimation_basis`) and UI. Fed is unaffected (still forward-implied).
 - **v1.1.0** — Fed post-meeting-rate solve rewritten from single-contract to
   cross-contract bracketing (§10): the month after a meeting (when meeting-free)
   yields the post-meeting rate directly; consecutive-month meetings use a

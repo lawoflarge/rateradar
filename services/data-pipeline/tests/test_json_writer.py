@@ -84,3 +84,14 @@ def test_methodology_version_recorded(tmp_path: Path) -> None:
     payload = json.loads(latest.read_text(encoding="utf-8"))
     assert payload["methodology_version"] == "1.2.3"
     assert payload["bank_code"] == "ECB"
+
+
+def test_snapshot_payload_includes_estimation_basis(tmp_path: Path) -> None:
+    latest, _hist = write_snapshot_files(
+        snapshot_dir=tmp_path,
+        bank_code="ECB",
+        probabilities=[_Prob(date(2026, 6, 11), "Hold", 0, 1.0, 2.0)],
+        estimation_basis="spot-anchored — forward odds unavailable",
+    )
+    payload = json.loads(latest.read_text(encoding="utf-8"))
+    assert payload["estimation_basis"] == "spot-anchored — forward odds unavailable"
