@@ -77,7 +77,7 @@ def parse_fred_csv_latest(csv_text: str) -> float:
 def estr_symbol_to_month(symbol: str) -> date:
     """Parse our internal ESTR symbol (e.g. 'ESTR_M26') into its contract month.
 
-    Inverse of `ecb_fetcher.ecb_symbol_for_month`. 'ESTR_M26' → date(2026, 6, 1).
+    Inverse of `src.ecb_fetcher.ecb_symbol_for_month`. 'ESTR_M26' → date(2026, 6, 1).
     """
     if not symbol.startswith("ESTR_") or len(symbol) < 8:
         raise ValueError(f"Invalid ESTR symbol: {symbol}")

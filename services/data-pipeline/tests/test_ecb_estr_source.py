@@ -118,3 +118,20 @@ def test_current_policy_rate_falls_back_to_fred_then_default():
     assert EcbEstrFetcher(http_get=all_down).current_policy_rate() == pytest.approx(
         EcbEstrFetcher.DFR_FALLBACK
     )
+
+
+def test_estr_spot_falls_back_to_fred_when_portal_raises():
+    def only_fred(url: str) -> str:
+        if "fred.stlouisfed.org" in url and "ECBESTRVOLWGTTRMDMNRT" in url:
+            return "observation_date,ECBESTRVOLWGTTRMDMNRT\n2026-06-01,1.918\n"
+        raise RuntimeError("ECB portal down")
+
+    assert EcbEstrFetcher(http_get=only_fred).estr_spot() == pytest.approx(1.918)
+
+
+def test_estr_spot_returns_none_when_all_sources_down():
+    def all_down(url: str) -> str:
+        raise RuntimeError("everything down")
+
+    # Informational fixing — None on total failure, never raises.
+    assert EcbEstrFetcher(http_get=all_down).estr_spot() is None
