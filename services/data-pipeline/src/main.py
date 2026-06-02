@@ -114,6 +114,10 @@ def has_publishable_rows(results: list) -> bool:
     An empty batch means the fetch failed or rate-limited (e.g. yfinance from a
     CI IP). Writing it would clobber the last good committed JSON snapshot, so
     the caller must skip the write and keep the previous data.
+
+    This is a count check, not a content check: it is the correct gate only
+    because the fetchers return an empty list (never a partial or sentinel
+    list) on failure.
     """
     return len(results) > 0
 
