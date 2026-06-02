@@ -119,3 +119,44 @@ def test_next_month_has_meeting_flags_consecutive_month_meetings():
     assert next_month_has_meeting(date(2026, 9, 16), meetings) is True
     # June's next month (July) HAS a meeting -> True.
     assert next_month_has_meeting(date(2026, 6, 17), meetings) is True
+
+
+def test_flat_futures_yield_hold_for_every_meeting():
+    """FLAT futures (every contract ~ current rate) MUST give a high-probability
+    Hold at every meeting and NEVER an alternating +/-50bp sawtooth."""
+    from src.fed_fetcher import compute_meeting_probabilities
+    from src.fetchers.base import ContractPrice
+
+    current = 3.625
+    flat_price = 100.0 - current  # 96.375 -> implied avg 3.625 every month
+    months = [6, 7, 8, 9, 10, 11, 12]  # meeting months + bracketing months
+    prices = [
+        ContractPrice(
+            symbol=f"ZQ{m:02d}",
+            contract_month=date(2026, m, 1),
+            price=flat_price,
+            as_of=date(2026, 6, 1),
+        )
+        for m in months
+    ]
+    meetings = [
+        date(2026, 6, 17),
+        date(2026, 7, 29),
+        date(2026, 9, 16),
+        date(2026, 10, 28),
+        date(2026, 12, 9),
+    ]
+    results = compute_meeting_probabilities(meetings, prices, current)
+
+    # Every meeting that produced output must be Hold-dominant at ~100%.
+    seen_meetings = {r.meeting_date for r in results}
+    assert seen_meetings, "no meetings produced — flat data must be solvable"
+    for meeting in seen_meetings:
+        by_label = {r.outcome_label: r.probability for r in results if r.meeting_date == meeting}
+        assert by_label["Hold"] == pytest.approx(
+            1.0, abs=1e-6
+        ), f"{meeting}: expected Hold~1.0, got {by_label}"
+        # No outcome other than Hold may carry meaningful mass (no sawtooth).
+        for label, p in by_label.items():
+            if label != "Hold":
+                assert p == pytest.approx(0.0, abs=1e-6), f"{meeting} {label}={p}"

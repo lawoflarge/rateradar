@@ -25,7 +25,9 @@ from .probability_calc import (
     Outcome,
     decompose_probabilities,
     implied_rate_from_price,
-    solve_post_meeting_rate,
+    is_plausible_post_rate,
+    post_rate_from_bracketing_contract,
+    solve_post_meeting_rate_in_month,
 )
 
 logger = logging.getLogger(__name__)
@@ -107,40 +109,63 @@ def compute_meeting_probabilities(
 ) -> list[MeetingProbability]:
     """For each upcoming meeting, compute probabilities of each possible outcome.
 
-    MVP simplification: uses a single contract per meeting to solve for the
-    implied post-meeting rate. This works for meetings near the start/middle of
-    their month but amplifies noise for late-month meetings (see METHODOLOGY.md
-    §10 for the planned production fix using cross-contract anchoring).
+    Cross-contract solve (METHODOLOGY.md §10): each meeting's expected
+    post-meeting rate is isolated using the contracts that bracket the meeting,
+    rather than dividing a single month's average by a tiny post-meeting tail.
+
+    - If the month AFTER the meeting holds no meeting, that next-month contract's
+      implied average IS the post-meeting rate (identity — noise-stable).
+    - Otherwise we solve within the meeting's own month, but refuse a tail too
+      small to be numerically safe (`solve_post_meeting_rate_in_month`).
+    - Solved rates are validated (`is_plausible_post_rate`); implausible or
+      unsolvable meetings are flagged and skipped — never emitted as garbage.
+    - `rate_before` for the next meeting is the *validated* post-rate, so a
+      skipped/odd meeting never poisons its successors.
     """
-    price_by_month = {p.contract_month: p for p in contract_prices}
+    avg_by_month = {p.contract_month: implied_rate_from_price(p.price) for p in contract_prices}
     results: list[MeetingProbability] = []
     rate_before = current_target_midpoint
 
     for meeting in meetings:
         contract_month = date(meeting.year, meeting.month, 1)
-        price = price_by_month.get(contract_month)
-        if price is None:
-            logger.warning("No contract price for meeting %s", meeting)
+        meeting_avg = avg_by_month.get(contract_month)
+        if meeting_avg is None:
+            logger.warning("No contract price for meeting %s — skipping", meeting)
             continue
 
-        # CME: implied monthly-average rate = 100 - price
-        implied_avg = implied_rate_from_price(price.price)
+        if meeting.month == 12:
+            next_month = date(meeting.year + 1, 1, 1)
+        else:
+            next_month = date(meeting.year, meeting.month + 1, 1)
 
-        # Solve for the market-implied post-meeting rate
-        days_in_month = monthrange(meeting.year, meeting.month)[1]
-        meeting_day = meeting.day
-        try:
-            expected_post_rate = solve_post_meeting_rate(
-                observed_monthly_avg=implied_avg,
-                rate_before_meeting=rate_before,
-                meeting_day=meeting_day,
-                days_in_month=days_in_month,
+        expected_post_rate: float | None = None
+        if not next_month_has_meeting(meeting, meetings):
+            next_avg = avg_by_month.get(next_month)
+            if next_avg is not None:
+                expected_post_rate = post_rate_from_bracketing_contract(next_avg)
+
+        if expected_post_rate is None:
+            days_in_month = monthrange(meeting.year, meeting.month)[1]
+            try:
+                expected_post_rate = solve_post_meeting_rate_in_month(
+                    observed_monthly_avg=meeting_avg,
+                    rate_before_meeting=rate_before,
+                    meeting_day=meeting.day,
+                    days_in_month=days_in_month,
+                )
+            except ValueError as exc:
+                logger.warning("Skipping %s — cannot solve post-meeting rate: %s", meeting, exc)
+                continue
+
+        if not is_plausible_post_rate(expected_post_rate, rate_before):
+            logger.warning(
+                "Skipping %s — implausible solved post-rate %.3f from %.3f",
+                meeting,
+                expected_post_rate,
+                rate_before,
             )
-        except ValueError as exc:
-            logger.error("Could not solve post-meeting rate for %s: %s", meeting, exc)
             continue
 
-        # Build the outcome set around the pre-meeting rate
         outcomes = outcomes_around(rate_before, bps_range=50)
         probs = decompose_probabilities(expected_post_rate, outcomes)
 
@@ -155,7 +180,7 @@ def compute_meeting_probabilities(
                 )
             )
 
-        # Chain: the expected post-rate becomes the pre-rate for the next meeting
+        # Chain only the VALIDATED post-rate into the next meeting.
         rate_before = expected_post_rate
 
     return results
