@@ -38,8 +38,8 @@ def write_snapshot_files(
     snapshot_dir: Path,
     bank_code: str,
     probabilities: Iterable,
+    methodology_version: str,
     snapshot_at: datetime | None = None,
-    methodology_version: str = "1.0.0",
     estimation_basis: str | None = None,
 ) -> tuple[Path, Path]:
     """Persist a probability batch as JSON. Returns (latest_path, history_path).
