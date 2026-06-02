@@ -72,6 +72,21 @@ def contracts_covering_meetings(meetings: list[date]) -> list[str]:
     return result
 
 
+def next_month_has_meeting(meeting: date, meetings: list[date]) -> bool:
+    """True if the calendar month immediately after `meeting`'s month holds a meeting.
+
+    Drives the §10 bracketing decision: if the next month has NO meeting, that
+    month's contract average is the post-meeting rate (identity solve); if it
+    does, we must solve within the meeting's own month (and may have to skip a
+    late-month meeting whose tail is too small).
+    """
+    if meeting.month == 12:
+        nxt_year, nxt_month = meeting.year + 1, 1
+    else:
+        nxt_year, nxt_month = meeting.year, meeting.month + 1
+    return any(m.year == nxt_year and m.month == nxt_month for m in meetings)
+
+
 def outcomes_around(current_rate: float, bps_range: int = 50) -> list[Outcome]:
     """Build a realistic outcome set centered on the current target rate.
 

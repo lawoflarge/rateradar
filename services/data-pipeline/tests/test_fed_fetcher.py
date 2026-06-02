@@ -101,3 +101,21 @@ def test_run_fed_fetch_end_to_end_mock():
     # Sanity: all probabilities must be in [0, 1]
     for r in results:
         assert 0.0 <= r.probability <= 1.0
+
+
+def test_next_month_has_meeting_flags_consecutive_month_meetings():
+    from src.fed_fetcher import next_month_has_meeting
+
+    meetings = [
+        date(2026, 6, 17),
+        date(2026, 7, 29),
+        date(2026, 9, 16),
+        date(2026, 10, 28),
+        date(2026, 12, 9),
+    ]
+    # July's next month (Aug) has no meeting -> False (bracketing identity usable).
+    assert next_month_has_meeting(date(2026, 7, 29), meetings) is False
+    # Sep's next month (Oct) HAS a meeting -> True.
+    assert next_month_has_meeting(date(2026, 9, 16), meetings) is True
+    # June's next month (July) HAS a meeting -> True.
+    assert next_month_has_meeting(date(2026, 6, 17), meetings) is True
