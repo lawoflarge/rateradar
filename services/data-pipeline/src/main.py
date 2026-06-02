@@ -108,6 +108,16 @@ def estimation_basis_for(fetcher: PriceFetcher, bank: str, source: str) -> str:
     return "unspecified"
 
 
+def has_publishable_rows(results: list) -> bool:
+    """True if the computed batch is non-empty and safe to persist.
+
+    An empty batch means the fetch failed or rate-limited (e.g. yfinance from a
+    CI IP). Writing it would clobber the last good committed JSON snapshot, so
+    the caller must skip the write and keep the previous data.
+    """
+    return len(results) > 0
+
+
 def print_probabilities(results: list[MeetingProbability]) -> None:
     if not results:
         print("(no probabilities computed)")
@@ -262,16 +272,26 @@ def main() -> int:
     print(f"\nEstimation basis: {basis}")
 
     if args.json_snapshot_dir is not None:
-        latest, history = write_snapshot_files(
-            snapshot_dir=args.json_snapshot_dir,
-            bank_code=args.bank.upper(),
-            probabilities=results,
-            snapshot_at=started_at,
-            methodology_version=METHODOLOGY_VERSION,
-            estimation_basis=basis,
-        )
-        print(f"\nWrote JSON snapshot: {latest}")
-        print(f"Appended history:    {history}")
+        if not has_publishable_rows(results):
+            logger.warning(
+                "Computed 0 rows (fetch failed or rate-limited) — SKIPPING snapshot "
+                "write to preserve the last good committed JSON snapshot."
+            )
+            print(
+                "\n[snapshot write skipped: 0 rows computed — last good JSON preserved]",
+                file=sys.stderr,
+            )
+        else:
+            latest, history = write_snapshot_files(
+                snapshot_dir=args.json_snapshot_dir,
+                bank_code=args.bank.upper(),
+                probabilities=results,
+                methodology_version=METHODOLOGY_VERSION,
+                snapshot_at=started_at,
+                estimation_basis=basis,
+            )
+            print(f"\nWrote JSON snapshot: {latest}")
+            print(f"Appended history:    {history}")
 
     if args.write:
         db_url = os.environ.get("RR_DB_URL") or os.environ.get("SUPABASE_DB_URL")
