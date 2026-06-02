@@ -262,3 +262,40 @@ def test_easing_scenario_smooth_cut_skew():
         assert by_label["+50bp"] == pytest.approx(0.0, abs=1e-9)
         # No 100% spike anywhere.
         assert max(by_label.values()) < 0.999, f"{meeting} spiked: {by_label}"
+
+
+def test_unbracketed_late_month_meeting_is_skipped_not_garbage(caplog):
+    """A late-month meeting with a meeting in the very next month (no bracket
+    identity) and a tail too small to solve must be SKIPPED with a warning, and
+    must NOT emit any outcome rows. A solvable later meeting is unaffected."""
+    import logging
+
+    from src.fed_fetcher import compute_meeting_probabilities
+    from src.fetchers.base import ContractPrice
+
+    current = 3.625
+    # Two consecutive-month meetings: Jul-30 (tail 1/31) then Aug-12 (mid-month).
+    # July's next month (Aug) HAS a meeting -> no bracket identity for July.
+    # July tail = 1/31 ~ 0.032 < 0.20 -> in-month solve refuses -> SKIP July.
+    prices = [
+        ContractPrice("ZQN26", date(2026, 7, 1), 100.0 - 3.620, date(2026, 6, 1)),
+        ContractPrice("ZQQ26", date(2026, 8, 1), 100.0 - 3.610, date(2026, 6, 1)),
+        ContractPrice("ZQU26", date(2026, 9, 1), 100.0 - 3.610, date(2026, 6, 1)),
+    ]
+    meetings = [date(2026, 7, 30), date(2026, 8, 12)]
+    with caplog.at_level(logging.WARNING):
+        results = compute_meeting_probabilities(meetings, prices, current)
+
+    # July-30 produced NO rows (skipped, not garbage).
+    assert all(r.meeting_date != date(2026, 7, 30) for r in results)
+    assert "Skipping 2026-07-30" in caplog.text
+
+    # Aug-12 IS solvable (Sep is a no-meeting month -> bracket identity = 3.610),
+    # so it still produces a full outcome set centered on `current` (the skipped
+    # July meeting did NOT advance rate_before).
+    aug = {r.outcome_label: r.probability for r in results if r.meeting_date == date(2026, 8, 12)}
+    assert aug, "Aug-12 should still be emitted despite July being skipped"
+    assert sum(aug.values()) == pytest.approx(1.0)
+    # post-Aug = 3.610 vs before = 3.625 (current, since July skipped) -> -1.5bp.
+    assert aug["Hold"] == pytest.approx(0.94, abs=0.02)
+    assert aug["-25bp"] == pytest.approx(0.06, abs=0.02)
