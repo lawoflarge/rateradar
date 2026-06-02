@@ -187,3 +187,78 @@ def test_jul29_late_month_meeting_no_amplification():
     # Crucially: no hike mass at all (the bug put 0.88 on +25bp here).
     assert by_label["+25bp"] == pytest.approx(0.0, abs=1e-9)
     assert by_label["+50bp"] == pytest.approx(0.0, abs=1e-9)
+
+
+def test_easing_scenario_smooth_cut_skew():
+    """A genuine easing curve gives a smooth, cut-skewed distribution across all
+    meetings — partial -25bp probability + dominant Hold, monotonically falling
+    post-rates, NO 100% spikes and NO sign-flipping.
+
+    Bracketing months Aug (after Jul) and Nov (after Oct) carry the post rates of
+    the preceding meeting; meeting-month contract averages are pre-computed from
+    avg = pre_w*before + post_w*after with the easing path below.
+    """
+    from src.fed_fetcher import compute_meeting_probabilities
+    from src.fetchers.base import ContractPrice
+
+    current = 3.625
+    # (contract_month, implied monthly-average) — derived from the easing path
+    # post = {Jun:3.560, Jul:3.500, Sep:3.430, Oct:3.370, Dec:3.310}
+    avgs = {
+        (2026, 6): 3.5968,  # Jun-17 meeting month
+        (2026, 7): 3.5561,  # Jul-29 meeting month
+        (2026, 8): 3.500,  # Aug bracket = post-Jul rate
+        (2026, 9): 3.4673,  # Sep-16 meeting month
+        (2026, 10): 3.4242,  # Oct-28 meeting month
+        (2026, 11): 3.370,  # Nov bracket = post-Oct rate
+        (2026, 12): 3.3274,  # Dec-09 meeting month
+    }
+    prices = [
+        ContractPrice(
+            symbol=f"ZQ{m:02d}{y % 100}",
+            contract_month=date(y, m, 1),
+            price=100.0 - avg,
+            as_of=date(2026, 6, 1),
+        )
+        for (y, m), avg in avgs.items()
+    ]
+    meetings = [
+        date(2026, 6, 17),
+        date(2026, 7, 29),
+        date(2026, 9, 16),
+        date(2026, 10, 28),
+        date(2026, 12, 9),
+    ]
+    results = compute_meeting_probabilities(meetings, prices, current)
+
+    # All five meetings produce output.
+    seen = sorted({r.meeting_date for r in results})
+    assert seen == meetings
+
+    # Per-meeting expected (Hold, -25bp) splits — smooth, cut-skewed, no spikes.
+    # NOTE: Jul-29 and Oct-28 are bracketed meetings; their outcome set is centered
+    # on the chained pre-rate and the bracket post-rate sits ~6bp below it, so the
+    # cut probability is ~0.24 (= 6/25), NOT a near-certain Hold.
+    expected = {
+        date(2026, 6, 17): (0.74, 0.26),
+        date(2026, 7, 29): (
+            0.76,
+            0.24,
+        ),  # Jul via Aug bracket (post=3.500 vs before=3.560 -> -6bp -> p(cut)=6/25=0.24)
+        date(2026, 9, 16): (0.72, 0.28),
+        date(2026, 10, 28): (
+            0.76,
+            0.24,
+        ),  # Oct via Nov bracket (post=3.370 vs before=3.430 -> -6bp -> p(cut)=6/25=0.24)
+        date(2026, 12, 9): (0.76, 0.24),
+    }
+    for meeting, (exp_hold, exp_cut) in expected.items():
+        by_label = {r.outcome_label: r.probability for r in results if r.meeting_date == meeting}
+        assert sum(by_label.values()) == pytest.approx(1.0)
+        assert by_label["Hold"] == pytest.approx(exp_hold, abs=0.02), f"{meeting} {by_label}"
+        assert by_label["-25bp"] == pytest.approx(exp_cut, abs=0.02), f"{meeting} {by_label}"
+        # Cut-skew: never any hike mass.
+        assert by_label["+25bp"] == pytest.approx(0.0, abs=1e-9)
+        assert by_label["+50bp"] == pytest.approx(0.0, abs=1e-9)
+        # No 100% spike anywhere.
+        assert max(by_label.values()) < 0.999, f"{meeting} spiked: {by_label}"
