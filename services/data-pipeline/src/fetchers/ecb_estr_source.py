@@ -17,8 +17,12 @@ from __future__ import annotations
 
 import csv
 import io
+import logging
+from collections.abc import Callable
 from datetime import date
+from typing import ClassVar
 
+from .base import BaseFetcher, ContractPrice
 from .yfinance_source import MONTH_CODES
 
 
@@ -82,3 +86,106 @@ def estr_symbol_to_month(symbol: str) -> date:
     if code not in MONTH_CODES:
         raise ValueError(f"Unknown month code '{code}' in symbol {symbol}")
     return date(2000 + int(year_2), MONTH_CODES[code], 1)
+
+
+logger = logging.getLogger(__name__)
+
+# ECB Data Portal series (no auth). DFR level + €STR volume-weighted trimmed mean.
+_ECB_PORTAL = "https://data-api.ecb.europa.eu/service/data"
+_DFR_URL = f"{_ECB_PORTAL}/FM/D.U2.EUR.4F.KR.DFR.LEV?lastNObservations=1&format=csvdata"
+_ESTR_URL = f"{_ECB_PORTAL}/EST/B.EU000A2X2A25.WT?lastNObservations=1&format=csvdata"
+# FRED fallback (no API key via fredgraph.csv).
+_FRED = "https://fred.stlouisfed.org/graph/fredgraph.csv?id="
+_FRED_DFR_URL = f"{_FRED}ECBDFR"
+_FRED_ESTR_URL = f"{_FRED}ECBESTRVOLWGTTRMDMNRT"
+
+
+def _default_http_get(url: str) -> str:
+    import requests
+
+    resp = requests.get(url, timeout=20, headers={"User-Agent": "RateRadar/1.0 (+pipeline)"})
+    resp.raise_for_status()
+    return resp.text
+
+
+class EcbEstrFetcher(BaseFetcher):
+    """Free ECB fetcher: real DFR + €STR spot → flat spot-anchored contracts.
+
+    No forward-implied source is free for the ECB, so every upcoming meeting is
+    anchored at the current DFR (no change priced) and the output is labeled
+    "spot-anchored — forward odds unavailable". See module docstring + §6.
+    """
+
+    estimation_basis: ClassVar[str] = "spot-anchored — forward odds unavailable"
+    DFR_FALLBACK: ClassVar[float] = 2.00  # ECB DFR as of 2026-04; last-resort anchor
+
+    def __init__(
+        self,
+        *,
+        http_get: Callable[[str], str] | None = None,
+        dfr_override: float | None = None,
+        as_of: date | None = None,
+    ) -> None:
+        self._http_get = http_get or _default_http_get
+        self._dfr_override = dfr_override
+        self.as_of = as_of or date.today()
+        self._cached_rate: float | None = None
+
+    def forward_curve_available(self) -> bool:
+        """Best-effort check whether a FREE source beats spot. It does not.
+
+        €STR OIS / Euribor (FEU3) forward curves are paid or scrape-only, both
+        ruled out. We keep this as an explicit, honest hook rather than pretend
+        a forward curve exists.
+        """
+        return False
+
+    def current_policy_rate(self) -> float:
+        """Live DFR midpoint (cached). ECB portal → FRED → documented fallback."""
+        if self._dfr_override is not None:
+            return self._dfr_override
+        if self._cached_rate is not None:
+            return self._cached_rate
+
+        rate = self._fetch_rate(_DFR_URL, parse_ecb_portal_csv_latest, "ECB portal DFR")
+        if rate is None:
+            rate = self._fetch_rate(_FRED_DFR_URL, parse_fred_csv_latest, "FRED DFR")
+        if rate is None:
+            logger.warning(
+                "All free DFR sources unavailable — anchoring at documented "
+                "fallback %.3f%%. Spot-anchored output is degraded but honest.",
+                self.DFR_FALLBACK,
+            )
+            rate = self.DFR_FALLBACK
+
+        self._cached_rate = rate
+        return rate
+
+    def estr_spot(self) -> float | None:
+        """Best-effort €STR fixing (informational). None on any failure."""
+        rate = self._fetch_rate(_ESTR_URL, parse_ecb_portal_csv_latest, "ECB portal STR")
+        if rate is None:
+            rate = self._fetch_rate(_FRED_ESTR_URL, parse_fred_csv_latest, "FRED STR")
+        return rate
+
+    def _fetch_rate(self, url: str, parser: Callable[[str], float], label: str) -> float | None:
+        try:
+            return parser(self._http_get(url))
+        except Exception as exc:  # noqa: BLE001 — degrade to next source, never abort
+            logger.warning("%s fetch failed (%s); trying next source", label, exc)
+            return None
+
+    def fetch(self, symbols: list[str]) -> list[ContractPrice]:
+        rate = self.current_policy_rate()
+        price = 100.0 - rate  # inverse of implied_rate_from_price → implied avg == DFR
+        results: list[ContractPrice] = []
+        for sym in symbols:
+            try:
+                month = estr_symbol_to_month(sym)
+            except ValueError:
+                logger.warning("Skipping unrecognized ECB symbol %s", sym)
+                continue
+            results.append(
+                ContractPrice(symbol=sym, contract_month=month, price=price, as_of=self.as_of)
+            )
+        return results
