@@ -96,6 +96,18 @@ def build_fetcher(source: str, bank: str) -> PriceFetcher:
     raise ValueError(f"Unknown source: {source}. Valid: mock, yfinance, estr")
 
 
+def estimation_basis_for(fetcher: PriceFetcher, bank: str, source: str) -> str:
+    """Honest one-line label for how this run's numbers were derived."""
+    explicit = getattr(fetcher, "estimation_basis", None)
+    if explicit:
+        return str(explicit)
+    if source == "mock":
+        return "mock (synthetic test data — not market-derived)"
+    if bank == "fed":
+        return "forward-implied (Fed Funds futures via yfinance)"
+    return "unspecified"
+
+
 def print_probabilities(results: list[MeetingProbability]) -> None:
     if not results:
         print("(no probabilities computed)")
@@ -217,6 +229,11 @@ def main() -> int:
         env=os.environ.get("RR_FED_CURRENT_RATE"),
     )
     fetcher = build_fetcher(args.source, args.bank)
+    # ECB spot fetcher knows the live DFR — use it as the anchor unless pinned.
+    if args.current_rate is None and hasattr(fetcher, "current_policy_rate"):
+        current_rate = fetcher.current_policy_rate()
+
+    basis = estimation_basis_for(fetcher, args.bank, args.source)
 
     logger.info(
         "Running %s fetch: year=%s source=%s current_rate=%.3f%%",
@@ -242,6 +259,8 @@ def main() -> int:
 
     print_probabilities(results)
 
+    print(f"\nEstimation basis: {basis}")
+
     if args.json_snapshot_dir is not None:
         latest, history = write_snapshot_files(
             snapshot_dir=args.json_snapshot_dir,
@@ -249,6 +268,7 @@ def main() -> int:
             probabilities=results,
             snapshot_at=started_at,
             methodology_version=METHODOLOGY_VERSION,
+            estimation_basis=basis,
         )
         print(f"\nWrote JSON snapshot: {latest}")
         print(f"Appended history:    {history}")

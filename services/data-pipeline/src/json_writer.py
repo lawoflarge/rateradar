@@ -20,10 +20,10 @@ from __future__ import annotations
 
 import json
 import logging
+from collections.abc import Iterable
 from dataclasses import asdict
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Iterable
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +40,7 @@ def write_snapshot_files(
     probabilities: Iterable,
     snapshot_at: datetime | None = None,
     methodology_version: str = "1.0.0",
+    estimation_basis: str | None = None,
 ) -> tuple[Path, Path]:
     """Persist a probability batch as JSON. Returns (latest_path, history_path).
 
@@ -64,6 +65,7 @@ def write_snapshot_files(
         "bank_code": bank_code.upper(),
         "snapshot_at": snapshot_at.isoformat(),
         "methodology_version": methodology_version,
+        "estimation_basis": estimation_basis,
         "rows": rows,
     }
     history_path = history_dir / f"{stamp}.json"
@@ -116,7 +118,7 @@ def _rebuild_series(bank_dir: Path, bank_code: str) -> Path:
                 continue
             try:
                 file_payload = json.loads(path.read_text(encoding="utf-8"))
-            except Exception:
+            except Exception:  # noqa: S112 — skip corrupt history files, keep series build alive
                 continue
             snap_at = file_payload.get("snapshot_at")
             for row in file_payload.get("rows", []):
