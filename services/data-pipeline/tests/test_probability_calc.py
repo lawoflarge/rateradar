@@ -138,3 +138,71 @@ def test_decompose_single_outcome_always_certain():
     outcomes = [Outcome(label="Hold", delta_bps=0, post_meeting_rate=4.50)]
     probs = decompose_probabilities(4.00, outcomes)
     assert probs == [1.0]
+
+
+def test_post_rate_from_bracketing_contract_is_identity():
+    # When the month AFTER the meeting holds no FOMC meeting, that month's
+    # implied monthly-average IS the post-meeting rate (no tail division).
+    from src.probability_calc import post_rate_from_bracketing_contract
+
+    # Aug 2026 has no meeting; its implied average 3.620 -> post-July rate 3.620.
+    post = post_rate_from_bracketing_contract(next_month_implied_avg=3.620)
+    assert post == pytest.approx(3.620)
+
+
+def test_post_rate_from_bracketing_contract_stable_to_noise():
+    # A 1bp wobble in the bracketing contract stays a 1bp wobble in the post rate
+    # (this is the whole point of the cross-contract fix vs the tail division).
+    from src.probability_calc import post_rate_from_bracketing_contract
+
+    base = post_rate_from_bracketing_contract(next_month_implied_avg=3.625)
+    wobbled = post_rate_from_bracketing_contract(next_month_implied_avg=3.615)
+    assert abs(wobbled - base) == pytest.approx(0.010)  # 1.0 bp, not ~15 bp
+
+
+def test_solve_post_meeting_rate_in_month_mid_month_ok():
+    # Mid-month meeting: post-weight is large, solve is well-conditioned.
+    # Jun-17 of 30: pre_w = 17/30, post_w = 13/30.
+    # implied_avg 3.5968 with before 3.625 -> after = (avg - pre_w*before)/post_w
+    from src.probability_calc import solve_post_meeting_rate_in_month
+
+    after = solve_post_meeting_rate_in_month(
+        observed_monthly_avg=3.5968,
+        rate_before_meeting=3.625,
+        meeting_day=17,
+        days_in_month=30,
+        min_post_weight=0.20,
+    )
+    assert after == pytest.approx(3.560, abs=1e-3)
+
+
+def test_solve_post_meeting_rate_in_month_rejects_tiny_tail():
+    # Jul-29 of 31: post_weight = 2/31 ~ 0.0645 < min_post_weight -> refuse.
+    # This is the bug condition: the function must NOT return an amplified value.
+    from src.probability_calc import solve_post_meeting_rate_in_month
+
+    with pytest.raises(ValueError, match="post-meeting weight"):
+        solve_post_meeting_rate_in_month(
+            observed_monthly_avg=3.620,
+            rate_before_meeting=3.625,
+            meeting_day=29,
+            days_in_month=31,
+            min_post_weight=0.20,
+        )
+
+
+def test_is_plausible_post_rate_accepts_normal_moves():
+    from src.probability_calc import is_plausible_post_rate
+
+    # Hold, a 25bp cut, and a 50bp cut are all plausible from 3.625.
+    assert is_plausible_post_rate(3.625, rate_before=3.625, max_move_bps=75)
+    assert is_plausible_post_rate(3.375, rate_before=3.625, max_move_bps=75)
+    assert is_plausible_post_rate(3.125, rate_before=3.625, max_move_bps=75)
+
+
+def test_is_plausible_post_rate_rejects_implausible_swing():
+    from src.probability_calc import is_plausible_post_rate
+
+    # The bug produced jumps like +308bp / -395bp in one meeting — reject.
+    assert not is_plausible_post_rate(6.365, rate_before=3.279, max_move_bps=75)
+    assert not is_plausible_post_rate(2.412, rate_before=6.365, max_move_bps=75)

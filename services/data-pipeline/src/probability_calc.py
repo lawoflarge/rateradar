@@ -129,3 +129,60 @@ def decompose_probabilities(
     if total > 0:
         probs = [p / total for p in probs]
     return probs
+
+
+def post_rate_from_bracketing_contract(next_month_implied_avg: float) -> float:
+    """Post-meeting rate when the *next* month holds no FOMC meeting.
+
+    Per METHODOLOGY.md §10: if the month after a meeting contains no meeting,
+    that month's contract settles to the (constant) post-meeting rate for the
+    whole month, so its implied monthly-average equals the post-meeting rate
+    directly. This avoids dividing the meeting-month's average by the tiny
+    post-meeting weight (the late-month-meeting noise-amplification bug).
+    """
+    return next_month_implied_avg
+
+
+def solve_post_meeting_rate_in_month(
+    observed_monthly_avg: float,
+    rate_before_meeting: float,
+    meeting_day: int,
+    days_in_month: int,
+    min_post_weight: float = 0.20,
+) -> float:
+    """Invert the monthly-average formula for a meeting, refusing tiny tails.
+
+    Same algebra as `solve_post_meeting_rate`, but raises if the post-meeting
+    weight `(N - meeting_day)/N` is below `min_post_weight`. A tiny tail is the
+    exact condition under which a ~1bp price wobble explodes into a multi-bp
+    solved-rate error (METHODOLOGY.md §10). The caller is expected to fall back
+    to the bracketing-contract identity, or to flag/skip the meeting.
+    """
+    if days_in_month <= 0:
+        raise ValueError(f"days_in_month must be > 0, got {days_in_month}")
+    if not 0 <= meeting_day <= days_in_month:
+        raise ValueError(f"meeting_day {meeting_day} out of range for month of {days_in_month}")
+    post_weight = (days_in_month - meeting_day) / days_in_month
+    if post_weight < min_post_weight:
+        raise ValueError(
+            f"post-meeting weight {post_weight:.4f} below minimum {min_post_weight} "
+            f"(meeting_day={meeting_day}, days_in_month={days_in_month}); "
+            "solve would amplify noise — use a bracketing contract or skip"
+        )
+    pre_weight = meeting_day / days_in_month
+    return (observed_monthly_avg - pre_weight * rate_before_meeting) / post_weight
+
+
+def is_plausible_post_rate(
+    post_rate: float,
+    rate_before: float,
+    max_move_bps: float = 75.0,
+) -> bool:
+    """True if a one-meeting move from `rate_before` to `post_rate` is plausible.
+
+    A single meeting moves the target by at most a handful of 25bp steps. A
+    larger implied jump indicates a data wobble amplified by a bad solve
+    (METHODOLOGY.md §10) — the caller flags and skips rather than emitting it.
+    `max_move_bps` is the absolute one-meeting bound, in basis points.
+    """
+    return abs(post_rate - rate_before) * 100.0 <= max_move_bps
