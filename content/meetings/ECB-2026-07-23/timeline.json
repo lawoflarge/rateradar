@@ -127,6 +127,10 @@
       {
         "snapshot_at": "2026-06-02T20:47:59+00:00",
         "probability": 0.3868421052633675
+      },
+      {
+        "snapshot_at": "2026-06-02T23:11:08+00:00",
+        "probability": 0.0
       }
     ],
     "-25": [
@@ -253,6 +257,10 @@
       {
         "snapshot_at": "2026-06-02T20:47:59+00:00",
         "probability": 0.6131578947366325
+      },
+      {
+        "snapshot_at": "2026-06-02T23:11:08+00:00",
+        "probability": 0.0
       }
     ],
     "0": [
@@ -379,6 +387,10 @@
       {
         "snapshot_at": "2026-06-02T20:47:59+00:00",
         "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-06-02T23:11:08+00:00",
+        "probability": 1.0
       }
     ],
     "25": [
@@ -504,6 +516,10 @@
       },
       {
         "snapshot_at": "2026-06-02T20:47:59+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-06-02T23:11:08+00:00",
         "probability": 0.0
       }
     ],
@@ -631,8 +647,40 @@
       {
         "snapshot_at": "2026-06-02T20:47:59+00:00",
         "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-06-02T23:11:08+00:00",
+        "probability": 0.0
       }
     ]
   },
-  "top_shifts": []
+  "top_shifts": [
+    {
+      "from_snapshot_at": "2026-06-02T20:47:59+00:00",
+      "to_snapshot_at": "2026-06-02T23:11:08+00:00",
+      "outcome_label": "Hold",
+      "outcome_delta_bps": 0,
+      "from_probability": 0.0,
+      "to_probability": 1.0,
+      "delta_pp": 100.0
+    },
+    {
+      "from_snapshot_at": "2026-06-02T20:47:59+00:00",
+      "to_snapshot_at": "2026-06-02T23:11:08+00:00",
+      "outcome_label": "-25bp",
+      "outcome_delta_bps": -25,
+      "from_probability": 0.6131578947366325,
+      "to_probability": 0.0,
+      "delta_pp": -61.31578947366325
+    },
+    {
+      "from_snapshot_at": "2026-06-02T20:47:59+00:00",
+      "to_snapshot_at": "2026-06-02T23:11:08+00:00",
+      "outcome_label": "-50bp",
+      "outcome_delta_bps": -50,
+      "from_probability": 0.3868421052633675,
+      "to_probability": 0.0,
+      "delta_pp": -38.68421052633675
+    }
+  ]
 }
