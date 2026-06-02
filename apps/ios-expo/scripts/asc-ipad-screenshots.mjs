@@ -20,7 +20,7 @@ import { fileURLToPath } from "node:url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const APP_ID = "6768628917";
-const KEY_PATH = path.resolve(__dirname, "..", ".secrets", "AuthKey_<ASC_KEY_ID>.p8");
+const KEY_PATH = path.resolve(__dirname, "..", ".secrets", `AuthKey_${process.env.ASC_KEY_ID}.p8`);
 const KEY_ID = process.env.ASC_KEY_ID;
 const ISSUER_ID = process.env.ASC_ISSUER_ID;
 const OUT_DIR = path.resolve(__dirname, "..", "assets", "screenshots", "ipad-13");
