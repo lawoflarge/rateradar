@@ -59,8 +59,8 @@ def resolve_current_rate(bank: str, cli_value: float | None, env: str | None) ->
     if cli_value is not None:
         return cli_value
     if bank == "fed":
-        if env is not None:
-            return float(env)
+        if env is not None and env.strip():
+            return float(env.strip())
         print(
             "[--current-rate is required for FED (no stale default). Pass "
             "--current-rate 3.625 or set RR_FED_CURRENT_RATE. Real Fed mid is "
