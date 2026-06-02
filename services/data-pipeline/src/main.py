@@ -71,7 +71,7 @@ def resolve_current_rate(bank: str, cli_value: float | None, env: str | None) ->
     return DEFAULT_RATES[bank]
 
 
-METHODOLOGY_VERSION = "1.0.0"
+METHODOLOGY_VERSION = "1.1.0"
 
 
 def build_fetcher(source: str, bank: str) -> PriceFetcher:

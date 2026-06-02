@@ -114,30 +114,56 @@ We also run weekly regression checks against CME's published historical archive 
 - **Non-25bp moves:** when markets price unusual outcomes (e.g., +50 bps), the three-outcome decomposition can produce sign-flipped probabilities during transitions. We clamp to [0, 1] and re-normalize.
 - **ECB between-meeting decisions:** historically rare but possible; we flag these in the UI when detected.
 
-## 10. Known limitations (MVP scaffold, pre-production)
+## 10. Cross-contract post-meeting-rate solve
 
-The initial implementation in `services/data-pipeline` uses **a single contract per
-meeting** to solve for the implied post-meeting rate. This works accurately when the
-meeting falls near the start or middle of its month (plenty of post-meeting days to
-average over), but **amplifies small noise into large rate deltas** for meetings that
-land near the end of a month (2-5 days remaining).
+The implied monthly-average rate from a single contract (`100 − price`) blends
+the pre- and post-meeting rates weighted by the meeting's position in the month
+(§3, §5). Inverting that for a *single* contract divides by the post-meeting
+weight `(N − meeting_day) / N`. For a meeting late in its month that weight is
+tiny — a July 29 meeting leaves only `2/31 ≈ 0.0645` of the month after the
+decision — so a ~1 bp wobble in the contract price is divided by ~0.0645 and
+explodes into ~15 bp of solved-rate error. Chaining that error into the next
+meeting compounds it into implausible multi-hundred-bp swings and 100%
+alternating outcome spikes.
 
-**Example.** A meeting on July 29 leaves only 2 days of post-meeting effective rate
-baked into the July contract. A 1 bp error in the contract price produces a ~15 bp
-error in the solved post-meeting rate.
+We therefore isolate each meeting's expected post-meeting rate using the
+contracts that **bracket** the meeting, following the CME methodology:
 
-**Production fix (tracked as a Phase 2 task):** Use the CME methodology's
-cross-contract approach — anchor the pre-meeting rate with the *prior* month's
-contract (which mostly reflects pre-decision rates when the meeting is late in its
-own month), and the post-meeting rate with the *next* month's contract. Solve the
-resulting system of equations iteratively.
+1. **Bracket identity (preferred).** If the calendar month *after* the meeting
+   contains no FOMC meeting, that next month's contract settles to the constant
+   post-meeting rate for the whole month, so its implied monthly-average **is**
+   the post-meeting rate directly — no division by a tiny tail. Example: the
+   August contract gives the post-July-29 rate exactly.
 
-Until that lands, production deployment should either (a) skip meetings that fall
-in the last 7 days of their month, or (b) validate solved rates against the live
-FedWatch snapshot and flag divergences > 5 bp.
+2. **Guarded in-month solve (fallback).** If the next month also holds a meeting
+   (consecutive-month meetings), we invert the meeting month's own average, but
+   only when the post-meeting weight is at least `min_post_weight` (0.20). Below
+   that, the solve would amplify noise and we do not perform it.
+
+3. **Pre-meeting rate / outcome center.** A meeting's pre-meeting rate is the
+   *validated* post-meeting rate of the previous meeting (or the current target
+   for the first meeting), never a previously-amplified solved value — so one
+   bad meeting cannot poison its successors.
+
+4. **Validation & flagging.** Every solved post-meeting rate is checked against
+   a one-meeting plausibility bound (default 75 bp from the pre-meeting rate).
+   Meetings that cannot be bracketed or solved, or whose solved rate is
+   implausible, are **flagged in the logs and skipped** — RateRadar emits no
+   probabilities for them rather than publishing a known artifact. Operators may
+   additionally cross-check solved rates against the live FedWatch snapshot
+   (§8) and alert on divergence.
+
+This replaces the earlier single-contract MVP solve, which was accurate only
+for meetings near the start or middle of their month.
 
 ## 11. Changelog
 
 Material changes to this methodology are recorded here with date and reason. Consumers who rely on historical comparability can pin to a specific methodology version.
 
+- **v1.1.0** — Fed post-meeting-rate solve rewritten from single-contract to
+  cross-contract bracketing (§10): the month after a meeting (when meeting-free)
+  yields the post-meeting rate directly; consecutive-month meetings use a
+  noise-guarded in-month solve; solved rates are validated and implausible /
+  unbracketable meetings are flagged and skipped instead of emitting degenerate
+  100% alternating outcomes. Fixes the late-month-meeting noise amplification.
 - **v0.1** — Initial release. Fed + ECB coverage via yfinance / stooq, daily + meeting-day cadence, step-function decomposition.
