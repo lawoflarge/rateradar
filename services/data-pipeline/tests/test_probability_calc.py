@@ -158,3 +158,34 @@ def test_post_rate_from_bracketing_contract_stable_to_noise():
     base = post_rate_from_bracketing_contract(next_month_implied_avg=3.625)
     wobbled = post_rate_from_bracketing_contract(next_month_implied_avg=3.615)
     assert abs(wobbled - base) == pytest.approx(0.010)  # 1.0 bp, not ~15 bp
+
+
+def test_solve_post_meeting_rate_in_month_mid_month_ok():
+    # Mid-month meeting: post-weight is large, solve is well-conditioned.
+    # Jun-17 of 30: pre_w = 17/30, post_w = 13/30.
+    # implied_avg 3.5968 with before 3.625 -> after = (avg - pre_w*before)/post_w
+    from src.probability_calc import solve_post_meeting_rate_in_month
+
+    after = solve_post_meeting_rate_in_month(
+        observed_monthly_avg=3.5968,
+        rate_before_meeting=3.625,
+        meeting_day=17,
+        days_in_month=30,
+        min_post_weight=0.20,
+    )
+    assert after == pytest.approx(3.560, abs=1e-3)
+
+
+def test_solve_post_meeting_rate_in_month_rejects_tiny_tail():
+    # Jul-29 of 31: post_weight = 2/31 ~ 0.0645 < min_post_weight -> refuse.
+    # This is the bug condition: the function must NOT return an amplified value.
+    from src.probability_calc import solve_post_meeting_rate_in_month
+
+    with pytest.raises(ValueError, match="post-meeting weight"):
+        solve_post_meeting_rate_in_month(
+            observed_monthly_avg=3.620,
+            rate_before_meeting=3.625,
+            meeting_day=29,
+            days_in_month=31,
+            min_post_weight=0.20,
+        )
