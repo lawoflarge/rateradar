@@ -10,8 +10,8 @@ This file is the morning hand-off. Per phase: PR#/commit + verify output, or the
 ## Phase 1 — FED §10 cross-contract solve — ✅ DONE (pre-run)
 PR #13, commit `7a4f25e`, METHODOLOGY v1.1.0. Not part of this run.
 
-## Phase 2 — ECB free spot-anchored fetcher — ✅ VERIFIED, awaiting CI+merge
-Branch: `feat/ecb-spot-anchored` (9 commits: `65885c4`→`d681445`).
+## Phase 2 — ECB free spot-anchored fetcher — ✅ MERGED (PR #14, squash `57982a3`)
+Branch: `feat/ecb-spot-anchored` (9 commits) — merged + deleted. CI green.
 
 **Shipped:** `EcbEstrFetcher` (`src/fetchers/ecb_estr_source.py`) — free no-auth ECB fetcher pulling real DFR + €STR spot from the ECB Data Portal (`data-api.ecb.europa.eu`) with FRED CSV fallback, anchoring every meeting at the current DFR (flat "Hold") and labeling it "spot-anchored — forward odds unavailable". Wired into `build_fetcher` as `--source estr`; basis surfaced in CLI + JSON payload (`estimation_basis`) + METHODOLOGY §6/§11; METHODOLOGY_VERSION 1.1.0→1.2.0. `probability_calc.py` untouched (pure).
 
@@ -23,8 +23,8 @@ Branch: `feat/ecb-spot-anchored` (9 commits: `65885c4`→`d681445`).
 - Reviews: Group A spec✅+quality✅, Group B spec✅+quality✅(conditional, fixed), final holistic review = **SHIP**.
 - Note: `estr_spot()` + `forward_curve_available()` are intentional public hooks for future UI wiring (not dead code).
 
-## Phase 3 — Pipeline off mock + real daily data — ✅ VERIFIED, awaiting CI+merge+live-cron
-Branch: `feat/pipeline-real-data` (7 commits: `fc28314`→`8cb6b3e`).
+## Phase 3 — Pipeline off mock + real daily data — ✅ MERGED (PR #15, squash `d85cee9`) + LIVE CRON CONFIRMED
+Branch: `feat/pipeline-real-data` (7 commits) — merged + deleted. CI green.
 
 **Shipped:**
 - **Cron off mock** (`pipeline-cron.yml`): matrix now FED→`yfinance`, ECB→`estr`; `RR_FED_CURRENT_RATE` read from a **repo variable** (set to `3.625`, not hardcoded). ECB ignores it (live DFR).
@@ -40,7 +40,7 @@ Branch: `feat/pipeline-real-data` (7 commits: `fc28314`→`8cb6b3e`).
 - Web: `pnpm lint` clean + `pnpm build` exit 0.
 - Reviews: Group A (pipeline) spec✅+quality✅(approve); Group B (web) spec+quality✅ = SHIP.
 
-**Remaining after merge:** trigger live cron (`gh workflow run pipeline-cron.yml`) + confirm a real, varying `series.json` committed (retry ≤3× on yfinance rate-limit; proceed to Phase 4 only if ≥1 real FED snapshot landed).
+**Live cron — DONE:** triggered `pipeline-cron.yml` on main; run succeeded and committed REAL data (`f848269`, "pipeline cron @ 2026-06-02T23:11Z"). FED `fed/latest.json` = 25 rows / 5 meetings, `methodology_version 1.2.0`, basis forward-implied, smooth Hold 98/90/79/87/68% (no sawtooth); ECB spot-anchored labeled. yfinance was NOT rate-limited on the GH runner this run. ≥1 real FED snapshot landed → Phase 4 unblocked.
 
 ## Phase 4 — Screenshots from real data — ⚠️ GENERATION DONE + STAGED, UPLOAD BLOCKED (HARD STOP)
 Branch: `feat/d1-screenshots-real` (PR open, **NOT merged** — upload VERIFY unmet). Commits `7e0e536`→`4561c67`.
