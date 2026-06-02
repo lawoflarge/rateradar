@@ -42,7 +42,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        bank: [fed, ecb]
+        # Real data sources (off mock): FED via free Fed Funds futures (yfinance),
+        # ECB via the free spot-anchored DFR/€STR fetcher (estr). FED needs a
+        # current rate — read from the RR_FED_CURRENT_RATE repo variable so it
+        # never goes stale; ECB ignores it (uses the live fetched DFR).
+        include:
+          - bank: fed
+            source: yfinance
+          - bank: ecb
+            source: estr
     defaults:
       run:
         working-directory: services/data-pipeline
@@ -57,10 +65,13 @@ jobs:
       - name: Run ${{ matrix.bank }} pipeline with JSON + Supabase write
         env:
           RR_DB_URL: ${{ secrets.RR_DB_URL }}
+          # FED reads this (real Fed target midpoint); ECB ignores it. Empty/unset
+          # renders as "" and is treated as missing (clean exit, not a crash).
+          RR_FED_CURRENT_RATE: ${{ vars.RR_FED_CURRENT_RATE }}
         run: |
           python -m src.main \
             --bank ${{ matrix.bank }} \
-            --source mock \
+            --source ${{ matrix.source }} \
             --write \
             --json-snapshot-dir snapshots
       - name: Upload snapshot artifact

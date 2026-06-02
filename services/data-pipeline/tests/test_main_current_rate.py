@@ -30,3 +30,11 @@ def test_fed_has_no_stale_default():
 
 def test_ecb_default_still_applies():
     assert resolve_current_rate(bank="ecb", cli_value=None, env=None) == pytest.approx(2.00)
+
+
+def test_fed_current_rate_empty_env_treated_as_missing():
+    # An unset GitHub repo variable renders as "" — must not crash on float("").
+    with pytest.raises(SystemExit):
+        resolve_current_rate(bank="fed", cli_value=None, env="")
+    with pytest.raises(SystemExit):
+        resolve_current_rate(bank="fed", cli_value=None, env="   ")

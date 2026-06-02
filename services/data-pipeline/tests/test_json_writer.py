@@ -7,6 +7,8 @@ from dataclasses import dataclass
 from datetime import UTC, date, datetime
 from pathlib import Path
 
+import pytest
+
 from src.json_writer import write_snapshot_files
 
 
@@ -34,6 +36,7 @@ def test_writes_latest_and_history(tmp_path: Path) -> None:
         bank_code="FED",
         probabilities=_sample(),
         snapshot_at=snap_at,
+        methodology_version="1.2.0",
     )
 
     assert latest == tmp_path / "fed" / "latest.json"
@@ -56,12 +59,14 @@ def test_history_is_append_only(tmp_path: Path) -> None:
         bank_code="FED",
         probabilities=_sample(),
         snapshot_at=datetime(2026, 5, 14, 18, 0, 0, tzinfo=UTC),
+        methodology_version="1.2.0",
     )
     write_snapshot_files(
         snapshot_dir=tmp_path,
         bank_code="FED",
         probabilities=_sample(),
         snapshot_at=datetime(2026, 5, 14, 22, 0, 0, tzinfo=UTC),
+        methodology_version="1.2.0",
     )
 
     history_files = sorted((tmp_path / "fed" / "history").iterdir())
@@ -91,7 +96,17 @@ def test_snapshot_payload_includes_estimation_basis(tmp_path: Path) -> None:
         snapshot_dir=tmp_path,
         bank_code="ECB",
         probabilities=[_Prob(date(2026, 6, 11), "Hold", 0, 1.0, 2.0)],
+        methodology_version="1.2.0",
         estimation_basis="spot-anchored — forward odds unavailable",
     )
     payload = json.loads(latest.read_text(encoding="utf-8"))
     assert payload["estimation_basis"] == "spot-anchored — forward odds unavailable"
+
+
+def test_methodology_version_is_required(tmp_path: Path) -> None:
+    with pytest.raises(TypeError):
+        write_snapshot_files(
+            snapshot_dir=tmp_path,
+            bank_code="FED",
+            probabilities=[],
+        )  # type: ignore[call-arg]
