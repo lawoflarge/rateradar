@@ -1,101 +1,32 @@
-# RateRadar — Autonomous Overnight Run (Engine Fix Phases 2–5)
+# RateRadar — Autonomous Run (Engine Fix Phases 2–5) — ✅ COMPLETE
 
-**Run started:** 2026-06-03 (overnight, autonomous)
-**Baseline:** main @ `7a4f25e` (Phase 1 merged via PR #13), 76 pipeline tests green.
-
-This file is the morning hand-off. Per phase: PR#/commit + verify output, or the exact blocker + resume command.
+**Run:** 2026-06-03. **Baseline:** main @ `7a4f25e` (Phase 1 / PR #13). **Outcome: all 5 phases shipped; v1.0.3 SUBMITTED to App Review.**
 
 ---
 
-## Phase 1 — FED §10 cross-contract solve — ✅ DONE (pre-run)
-PR #13, commit `7a4f25e`, METHODOLOGY v1.1.0. Not part of this run.
+## Phase 1 — FED §10 cross-contract solve — ✅ (pre-run) PR #13 `7a4f25e`, METHODOLOGY v1.1.0.
 
-## Phase 2 — ECB free spot-anchored fetcher — ✅ MERGED (PR #14, squash `57982a3`)
-Branch: `feat/ecb-spot-anchored` (9 commits) — merged + deleted. CI green.
+## Phase 2 — ECB free spot-anchored fetcher — ✅ MERGED (PR #14, `57982a3`)
+`EcbEstrFetcher` — free no-auth ECB fetcher: real DFR + €STR spot from the ECB Data Portal (FRED CSV fallback), anchored at the current DFR (flat "Hold"), labeled "spot-anchored — forward odds unavailable" in CLI + JSON (`estimation_basis`) + METHODOLOGY §6/§11. `--source estr` wired into `build_fetcher`. METHODOLOGY_VERSION 1.1.0→1.2.0. **99 tests green.** Resolved the open "which paid ECB provider" question: went free, no payment.
 
-**Shipped:** `EcbEstrFetcher` (`src/fetchers/ecb_estr_source.py`) — free no-auth ECB fetcher pulling real DFR + €STR spot from the ECB Data Portal (`data-api.ecb.europa.eu`) with FRED CSV fallback, anchoring every meeting at the current DFR (flat "Hold") and labeling it "spot-anchored — forward odds unavailable". Wired into `build_fetcher` as `--source estr`; basis surfaced in CLI + JSON payload (`estimation_basis`) + METHODOLOGY §6/§11; METHODOLOGY_VERSION 1.1.0→1.2.0. `probability_calc.py` untouched (pure).
+## Phase 3 — Pipeline off mock + real daily data — ✅ MERGED (PR #15, `d85cee9`) + live cron confirmed
+Cron matrix FED→`yfinance` / ECB→`estr`, `RR_FED_CURRENT_RATE` from a repo variable (3.625). Keep-last-good guard (`has_publishable_rows` — empty fetch never clobbers good JSON). `methodology_version` required in `json_writer` (dormant 1.0.0 follow-up closed). `resolve_current_rate` empty-env hardening. `/api/status` paused-vs-healthy. **104 tests green.** Live cron committed real FED (`f848269`, 25 rows / 5 meetings, smooth Hold 98/90/79/87/68%, no sawtooth, v1.2.0) + ECB spot-anchored. Subsequent scheduled crons continue to commit real data.
 
-**Verify output:**
-- Full suite: `99 passed` (was 76; +23 new). black clean on all touched files; ruff clean on new files (json_writer pre-existing UP035/S112 left out-of-scope per directive).
-- Live `--source estr --bank ecb`: every meeting 100% Hold @ 2.000%, `Estimation basis: spot-anchored — forward odds unavailable`, no fallback warning.
-- Live data confirmed real (not fallback): DFR 2.0% + €STR spot 1.931% fetched from ECB Data Portal.
-- JSON snapshot carries `"estimation_basis"`; FED mock path still works.
-- Reviews: Group A spec✅+quality✅, Group B spec✅+quality✅(conditional, fixed), final holistic review = **SHIP**.
-- Note: `estr_spot()` + `forward_curve_available()` are intentional public hooks for future UI wiring (not dead code).
+## Phase 4 — Screenshots from real data — ✅ MERGED (PR #16, `e81ea13`) + uploaded
+15 real-data D1 screenshots (5 shots × 6.9/6.5/iPad-13, exact Apple dims) rendered from a local JSON web build, visually verified real. Bug fixes found while rendering (all committed): poster dpr (3870×8388→exact), **stale web `policy-rates.ts` Fed anchor 4.375→3.625** (genuine live-site display bug), both ASC uploaders' `AuthKey_<ASC_KEY_ID>.p8` placeholder → `${process.env.ASC_KEY_ID}`. Screenshots uploaded to ASC for both en-US + de-DE (15 each).
 
-## Phase 3 — Pipeline off mock + real daily data — ✅ MERGED (PR #15, squash `d85cee9`) + LIVE CRON CONFIRMED
-Branch: `feat/pipeline-real-data` (7 commits) — merged + deleted. CI green.
-
-**Shipped:**
-- **Cron off mock** (`pipeline-cron.yml`): matrix now FED→`yfinance`, ECB→`estr`; `RR_FED_CURRENT_RATE` read from a **repo variable** (set to `3.625`, not hardcoded). ECB ignores it (live DFR).
-- **Keep-last-good guard** (`main.py` `has_publishable_rows`): an empty/rate-limited fetch SKIPS the snapshot write (logs + stderr notice) so the last good committed JSON is never clobbered; run stays green.
-- **`methodology_version` now required** in `write_snapshot_files` (no stale `1.0.0` default — Phase-1 follow-up closed).
-- **`resolve_current_rate` hardened**: empty `RR_FED_CURRENT_RATE` ("") treated as missing → clean exit, not a `float("")` crash.
-- **`/api/status` paused-vs-healthy**: reports JSON-snapshot health for FED+ECB via `loadJsonSnapshotAt`; JSON present ⇒ `ok:true`/HTTP 200/`data_source:"json_snapshots"` even when Supabase is paused; 503 only when neither source exists.
-
-**Verify output (local):**
-- Full suite `104 passed` (was 99; +5). black clean on touched files; ruff clean (json_writer pre-existing debt left out-of-scope).
-- Real FED `--source yfinance --current-rate 3.625 --json-snapshot-dir`: **25 rows / 5 upcoming meetings** (2026-06-17→12-09), `methodology_version:1.2.0`, basis `forward-implied (Fed Funds futures via yfinance)`, **no sawtooth** (smooth Hold 95/89/74/92/70%). Past/expired contracts correctly skipped.
-- Real ECB `--source estr`: flat 100% Hold @ 2.000%, basis `spot-anchored — forward odds unavailable`.
-- Web: `pnpm lint` clean + `pnpm build` exit 0.
-- Reviews: Group A (pipeline) spec✅+quality✅(approve); Group B (web) spec+quality✅ = SHIP.
-
-**Live cron — DONE:** triggered `pipeline-cron.yml` on main; run succeeded and committed REAL data (`f848269`, "pipeline cron @ 2026-06-02T23:11Z"). FED `fed/latest.json` = 25 rows / 5 meetings, `methodology_version 1.2.0`, basis forward-implied, smooth Hold 98/90/79/87/68% (no sawtooth); ECB spot-anchored labeled. yfinance was NOT rate-limited on the GH runner this run. ≥1 real FED snapshot landed → Phase 4 unblocked.
-
-## Phase 4 — Screenshots from real data — ✅ CODE MERGED (PR #16, `e81ea13`); ⏳ UPLOAD pending issuer
-Branch merged + deleted (user approved 2026-06-03). The 15 real screenshots + the live Fed-rate fix are on `main`. The ASC **upload** still needs `ASC_ISSUER_ID` (see below).
-
-**What shipped (committed on branch):**
-- Committed the previously-untracked `capture-d1-posters.mjs` generator.
-- **15 real-data D1 screenshots** generated + staged in `apps/ios-expo/assets/screenshots/{6.9,6.5,ipad-13}/` (5 shots × 3 sizes): `01-hero, 02-outcomes, 03-path, 04-divergence, 05-curve`. Exact Apple dims: **6.9=1290×2796, 6.5=1242×2688, ipad-13=2064×2752**. Visually verified all show REAL data (FED forward-implied @ 3.625, methodology v1.2.0, smooth no-sawtooth Hold 98/90/79/87/68%; ECB spot-anchored; hero badge shows "METHODOLOGY V1.2.0").
-- **2 bug fixes found while rendering** (both committed, both improve the live product):
-  - `fix(ios)` `41828bd`: generator rendered posters at dpr-3 → 3870×8388 (3× too big). Now renders posters in a dpr-1 context → exact Apple dims.
-  - `fix(web)` `ff1771e`: `policy-rates.ts` had a **stale hardcoded Fed anchor 4.375** → the implied-rate curve + displayed current rate were +0.75pp wrong vs real outcome data. Corrected to **3.625** (real Fed mid since 2026-04-29). This is a genuine LIVE-SITE display bug fix.
-  - `fix(ios)` `4561c67`: both ASC uploaders had a broken `AuthKey_<ASC_KEY_ID>.p8` placeholder path (public-repo sanitization artifact). Now interpolate `${process.env.ASC_KEY_ID}` → runnable.
-
-**🚫 BLOCKER — ASC upload cannot run unattended:** `ASC_ISSUER_ID` is not set in the environment or repo (it is a credential; I did not hunt the filesystem for it). The uploaders build a JWT with `iss: ASC_ISSUER_ID` → without it the ASC API returns 401. Per the Phase-4 hard-stop ("upload fails unattended → STAGE + record resume + HALT before Phase 5"), I staged the images and stopped.
-
-**▶️ RESUME (morning) — upload the staged screenshots, then proceed to Phase 5:**
-```bash
-# 1) merge the Phase 4 PR (after a glance — it includes the live policy-rate fix + 15 screenshots)
-gh pr merge <PR#> --squash --delete-branch
-
-# 2) upload the staged screenshots (the ONLY missing piece is your ASC issuer UUID):
-cd ~/Data/Claude/rateradar/apps/ios-expo
-export ASC_KEY_ID=8XWLD2B2RQ
-export ASC_ISSUER_ID=<your App Store Connect issuer UUID>
-ASC_SCREENSHOT_FILES="01-hero.png,02-outcomes.png,03-path.png,04-divergence.png,05-curve.png" \
-  node scripts/asc-upload-screenshots.mjs        # iPhone 6.9 + 6.5
-node scripts/asc-ipad-screenshots.mjs            # iPad (see note)
-```
-- **iPad note:** staged `ipad-13/*` are 2064×2752 (iPad Pro 13" M4). `asc-ipad-screenshots.mjs` self-captures 2048×2732 for `APP_IPAD_PRO_3GEN_129` (12.9") — it does NOT read the staged 2064×2752 files. Reconcile the iPad display type before uploading (either point it at the staged 2064×2752 with the matching display type, or let it self-capture 2048×2732).
-- Re-render anytime: real data is live on main; run a local web build (Supabase env empty → JSON) and `RR_BASE_URL=http://localhost:<port> node scripts/capture-d1-posters.mjs`.
-
-## Phase 5 — ASO metadata + DE localization + ship v1.0.3 — ✍️ CONTENT DRAFTED, submission pending issuer
-**All copy is written + char-checked + committed** to `apps/ios-expo/ASO-v1_0_3.md` (EN + DE subtitle/keywords/description, in-app event for FOMC 2026-06-17 / ECB 2026-06-11). "ECB" visible everywhere; hidden "ezb" only in the DE keyword field. The only thing left is the ASC push, which needs `ASC_ISSUER_ID`:
-```bash
-cd ~/Data/Claude/rateradar/apps/ios-expo
-export ASC_KEY_ID=8XWLD2B2RQ ASC_ISSUER_ID=<issuer UUID>
-node scripts/asc-fill-metadata.mjs        # push EN+DE metadata from ASO-v1_0_3.md, create v1.0.3 (reuse build 4)
-node scripts/asc-finalize-submission.mjs  # set MANUAL release (NOT auto)
-node scripts/asc-submit-for-review.mjs    # submit (only after screenshots uploaded)
-```
+## Phase 5 — ASO + DE localization + ship v1.0.3 — ✅ SUBMITTED (WAITING_FOR_REVIEW)
+- **v1.0.3 (build 5) SUBMITTED to App Review, MANUAL release.** reviewSubmission `10c30379-82bb-47b3-bd40-cb3eedfb5cc8`. App `6768628917`, version id `f74cdfcd-…`.
+- **Build 5** (`4b2cf990-…`): fresh 1.0.3 binary (build 4 was a 1.0.2 binary — Apple won't reuse it across marketing versions, so a rebuild was required despite the spec's "reuse build 4"). No native change; AdMob real units baked + verified (interstitial 7124163774, banner 6751953637).
+- **ASO** (`apps/ios-expo/ASO-v1_0_3.md`): EN subtitle "Rate decision odds & history" + 95-char keyword field; full description + promo + whatsNew. **DE localization**: subtitle "Zins-Prognose & Verlauf", 93-char keyword field (hidden "ezb" only here), translated description + whatsNew. "ECB" visible in all visible fields; title `RateRadar: Fed & ECB` unchanged.
+- **Screenshots**: D1 set on en-US + de-DE (iPhone 6.9/6.5 + iPad, 15 each). iPad 2064×2752 accepted by `APP_IPAD_PRO_3GEN_129`.
+- Orchestrated by `apps/ios-expo/scripts/asc-ship-v1_0_3.mjs` (inspect/apply/submit). In-app event copy (FOMC 2026-06-17 / ECB 2026-06-11) drafted in `ASO-v1_0_3.md` — create it in ASC nearer the date (in-app events are not in the REST surface used here).
 
 ---
 
-## Items awaiting a human — ONLY ONE THING LEFT
-**Provide `ASC_ISSUER_ID`** (your App Store Connect issuer UUID). It is the *single* remaining blocker — it gates the screenshot upload AND the v1.0.3 submission (both use the ASC REST API, whose JWT needs `iss: <issuer>`). It is a credential not present in env/repo; I did not hunt the filesystem for it. Everything else is done + merged + drafted:
-- ✅ Phases 2+3 merged, live cron committing real data.
-- ✅ Phase 4 code merged (`e81ea13`): 15 real screenshots staged in `apps/ios-expo/assets/screenshots/`, live Fed-rate fix.
-- ✅ Phase 5 ASO/DE copy fully drafted in `apps/ios-expo/ASO-v1_0_3.md`.
+## Items awaiting a human — NONE blocking
+1. **Apple review** — v1.0.3 is in the queue. Because it's **MANUAL release**, it will NOT auto-publish on approval — release it yourself in ASC when ready.
+2. **In-app event** (optional) — draft is in `ASO-v1_0_3.md`; add it in the ASC web UI a few days before the 2026-06-11 ECB / 2026-06-17 FOMC decision.
+3. **iPad screenshots** are the same English D1 set on the German listing (acceptable; the app + captions are English). Localize later if desired.
 
-**To finish (≈2 min once you have the UUID):**
-```bash
-cd ~/Data/Claude/rateradar/apps/ios-expo
-export ASC_KEY_ID=8XWLD2B2RQ ASC_ISSUER_ID=<issuer UUID>
-ASC_SCREENSHOT_FILES="01-hero.png,02-outcomes.png,03-path.png,04-divergence.png,05-curve.png" \
-  node scripts/asc-upload-screenshots.mjs   # iPhone 6.9 + 6.5
-node scripts/asc-ipad-screenshots.mjs       # iPad (reconcile display type, see Phase 4 note)
-node scripts/asc-fill-metadata.mjs && node scripts/asc-finalize-submission.mjs && node scripts/asc-submit-for-review.mjs
-```
-Or just paste the UUID back into this chat and I'll run all of it.
+_Credential note: the ASC upload + submission used your account issuer id, read (with your explicit authorization) from `appstore-command-center/.env.local`, paired with the rateradar `8XWLD2B2RQ` key. Nothing was hunted beyond the file you authorized._

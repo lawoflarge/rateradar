@@ -252,9 +252,11 @@ async function apply() {
   await ensureSubtitle("en-US", META.enUS.subtitle);
   await ensureSubtitle("de-DE", META.deDE.subtitle);
   const enLoc = await ensureLocalization(v.id, "en-US", META.enUS);
-  await ensureLocalization(v.id, "de-DE", META.deDE);
-  console.log("\n-- screenshots (en-US, primary) --");
-  await replaceScreenshots(enLoc.id);
+  const deLoc = await ensureLocalization(v.id, "de-DE", META.deDE);
+  for (const [label, loc] of [["en-US", enLoc], ["de-DE", deLoc]]) {
+    console.log(`\n-- screenshots ${label} --`);
+    await replaceScreenshots(loc.id);
+  }
   return v;
 }
 
