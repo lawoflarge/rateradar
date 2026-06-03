@@ -1,46 +1,46 @@
 {
   "date": "2026-06-03",
-  "generated_at": "2026-06-03T00:01:40.908260+00:00",
+  "generated_at": "2026-06-03T20:55:33.419438+00:00",
   "headline": {
     "meeting_id": "FED-2026-07-29",
     "bank_code": "FED",
     "meeting_date": "2026-07-29",
-    "outcome_label": "-50bp",
-    "outcome_delta_bps": -50,
-    "prior_probability": 1.0,
-    "current_probability": 0.0,
-    "delta_pp": -100.0
+    "outcome_label": "Hold",
+    "outcome_delta_bps": 0,
+    "prior_probability": 0.8969139685997582,
+    "current_probability": 0.8768944373497582,
+    "delta_pp": -2.001953125
   },
   "top_shifts": [
     {
       "meeting_id": "FED-2026-07-29",
       "bank_code": "FED",
       "meeting_date": "2026-07-29",
-      "outcome_label": "-50bp",
-      "outcome_delta_bps": -50,
-      "prior_probability": 1.0,
-      "current_probability": 0.0,
-      "delta_pp": -100.0
+      "outcome_label": "Hold",
+      "outcome_delta_bps": 0,
+      "prior_probability": 0.8969139685997582,
+      "current_probability": 0.8768944373497582,
+      "delta_pp": -2.001953125
     },
     {
-      "meeting_id": "FED-2026-09-16",
+      "meeting_id": "FED-2026-07-29",
       "bank_code": "FED",
-      "meeting_date": "2026-09-16",
-      "outcome_label": "+50bp",
-      "outcome_delta_bps": 50,
-      "prior_probability": 1.0,
-      "current_probability": 0.0,
-      "delta_pp": -100.0
+      "meeting_date": "2026-07-29",
+      "outcome_label": "+25bp",
+      "outcome_delta_bps": 25,
+      "prior_probability": 0.10308603140024175,
+      "current_probability": 0.12310556265024175,
+      "delta_pp": 2.001953125
     },
     {
       "meeting_id": "FED-2026-10-28",
       "bank_code": "FED",
       "meeting_date": "2026-10-28",
-      "outcome_label": "-50bp",
-      "outcome_delta_bps": -50,
-      "prior_probability": 1.0,
-      "current_probability": 0.0,
-      "delta_pp": -100.0
+      "outcome_label": "Hold",
+      "outcome_delta_bps": 0,
+      "prior_probability": 0.8742719377790173,
+      "current_probability": 0.8543134416852673,
+      "delta_pp": -1.995849609375
     }
   ],
   "calendar_context": []
