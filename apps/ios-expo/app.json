@@ -2,7 +2,7 @@
   "expo": {
     "name": "RateRadar",
     "slug": "rateradar-ios",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -15,7 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.lawoflarge.rateradar",
-      "buildNumber": "4",
+      "buildNumber": "5",
       "requireFullScreen": false,
       "infoPlist": {
         "CFBundleDisplayName": "RateRadar",
