@@ -42,8 +42,8 @@ Branch: `feat/pipeline-real-data` (7 commits) — merged + deleted. CI green.
 
 **Live cron — DONE:** triggered `pipeline-cron.yml` on main; run succeeded and committed REAL data (`f848269`, "pipeline cron @ 2026-06-02T23:11Z"). FED `fed/latest.json` = 25 rows / 5 meetings, `methodology_version 1.2.0`, basis forward-implied, smooth Hold 98/90/79/87/68% (no sawtooth); ECB spot-anchored labeled. yfinance was NOT rate-limited on the GH runner this run. ≥1 real FED snapshot landed → Phase 4 unblocked.
 
-## Phase 4 — Screenshots from real data — ⚠️ GENERATION DONE + STAGED, UPLOAD BLOCKED (HARD STOP)
-Branch: `feat/d1-screenshots-real` (PR open, **NOT merged** — upload VERIFY unmet). Commits `7e0e536`→`4561c67`.
+## Phase 4 — Screenshots from real data — ✅ CODE MERGED (PR #16, `e81ea13`); ⏳ UPLOAD pending issuer
+Branch merged + deleted (user approved 2026-06-03). The 15 real screenshots + the live Fed-rate fix are on `main`. The ASC **upload** still needs `ASC_ISSUER_ID` (see below).
 
 **What shipped (committed on branch):**
 - Committed the previously-untracked `capture-d1-posters.mjs` generator.
@@ -71,11 +71,31 @@ node scripts/asc-ipad-screenshots.mjs            # iPad (see note)
 - **iPad note:** staged `ipad-13/*` are 2064×2752 (iPad Pro 13" M4). `asc-ipad-screenshots.mjs` self-captures 2048×2732 for `APP_IPAD_PRO_3GEN_129` (12.9") — it does NOT read the staged 2064×2752 files. Reconcile the iPad display type before uploading (either point it at the staged 2064×2752 with the matching display type, or let it self-capture 2048×2732).
 - Re-render anytime: real data is live on main; run a local web build (Supabase env empty → JSON) and `RR_BASE_URL=http://localhost:<port> node scripts/capture-d1-posters.mjs`.
 
-## Phase 5 — ASO metadata + DE localization + ship v1.0.3 — ⛔ NOT STARTED (halted before, per Phase-4 hard stop)
-Branch: `feat/aso-v1_0_3` (not created). Phase 5 creates v1.0.3 (reuse build 4) + fills ASO/DE metadata + submits — ALL via the ASC REST API, which needs the same `ASC_ISSUER_ID` that blocks Phase 4. Do NOT submit a version without screenshots. After the upload above succeeds, Phase 5 can run (set `ASC_KEY_ID` + `ASC_ISSUER_ID`, then `asc-fill-metadata.mjs` → `asc-finalize-submission.mjs` → set MANUAL release → `asc-submit-for-review.mjs`).
+## Phase 5 — ASO metadata + DE localization + ship v1.0.3 — ✍️ CONTENT DRAFTED, submission pending issuer
+**All copy is written + char-checked + committed** to `apps/ios-expo/ASO-v1_0_3.md` (EN + DE subtitle/keywords/description, in-app event for FOMC 2026-06-17 / ECB 2026-06-11). "ECB" visible everywhere; hidden "ezb" only in the DE keyword field. The only thing left is the ASC push, which needs `ASC_ISSUER_ID`:
+```bash
+cd ~/Data/Claude/rateradar/apps/ios-expo
+export ASC_KEY_ID=8XWLD2B2RQ ASC_ISSUER_ID=<issuer UUID>
+node scripts/asc-fill-metadata.mjs        # push EN+DE metadata from ASO-v1_0_3.md, create v1.0.3 (reuse build 4)
+node scripts/asc-finalize-submission.mjs  # set MANUAL release (NOT auto)
+node scripts/asc-submit-for-review.mjs    # submit (only after screenshots uploaded)
+```
 
 ---
 
-## Items awaiting a human
-1. **Provide `ASC_ISSUER_ID`** (App Store Connect issuer UUID) — the single blocker for the Phase 4 screenshot upload AND all of Phase 5 (both use the ASC REST API). Once set, run the RESUME block above, then Phase 5.
-2. **Merge Phase 4 PR** (`feat/d1-screenshots-real`) — CI green, includes the live Fed-rate display fix (4.375→3.625) + 15 real screenshots. Left unmerged because the upload VERIFY couldn't complete unattended.
+## Items awaiting a human — ONLY ONE THING LEFT
+**Provide `ASC_ISSUER_ID`** (your App Store Connect issuer UUID). It is the *single* remaining blocker — it gates the screenshot upload AND the v1.0.3 submission (both use the ASC REST API, whose JWT needs `iss: <issuer>`). It is a credential not present in env/repo; I did not hunt the filesystem for it. Everything else is done + merged + drafted:
+- ✅ Phases 2+3 merged, live cron committing real data.
+- ✅ Phase 4 code merged (`e81ea13`): 15 real screenshots staged in `apps/ios-expo/assets/screenshots/`, live Fed-rate fix.
+- ✅ Phase 5 ASO/DE copy fully drafted in `apps/ios-expo/ASO-v1_0_3.md`.
+
+**To finish (≈2 min once you have the UUID):**
+```bash
+cd ~/Data/Claude/rateradar/apps/ios-expo
+export ASC_KEY_ID=8XWLD2B2RQ ASC_ISSUER_ID=<issuer UUID>
+ASC_SCREENSHOT_FILES="01-hero.png,02-outcomes.png,03-path.png,04-divergence.png,05-curve.png" \
+  node scripts/asc-upload-screenshots.mjs   # iPhone 6.9 + 6.5
+node scripts/asc-ipad-screenshots.mjs       # iPad (reconcile display type, see Phase 4 note)
+node scripts/asc-fill-metadata.mjs && node scripts/asc-finalize-submission.mjs && node scripts/asc-submit-for-review.mjs
+```
+Or just paste the UUID back into this chat and I'll run all of it.
