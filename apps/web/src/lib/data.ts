@@ -153,6 +153,22 @@ export const getEcbProbabilities = (): Promise<MeetingProbabilities[]> =>
   getProbabilities("ECB");
 
 /**
+ * From a set of meeting snapshots, pick the soonest upcoming one (meeting_date
+ * today or later), or null if none are upcoming. `getProbabilities` already
+ * returns only future scheduled meetings sorted ascending, but this stays
+ * robust against the JSON-fallback path, which may be unsorted.
+ */
+export function pickNextMeeting(
+  meetings: MeetingProbabilities[],
+): MeetingProbabilities | null {
+  const todayISO = new Date().toISOString().slice(0, 10);
+  const upcoming = meetings
+    .filter((m) => m.meeting.meeting_date >= todayISO)
+    .sort((a, b) => (a.meeting.meeting_date < b.meeting.meeting_date ? -1 : 1));
+  return upcoming[0] ?? null;
+}
+
+/**
  * Given a meeting's bank + date, return the prior and next meetings (same bank)
  * from the already-scheduled set. Used for the "path context" on detail pages.
  */
