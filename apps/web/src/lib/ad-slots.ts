@@ -14,4 +14,6 @@ export const AD_SLOTS = {
   scenarios: process.env.NEXT_PUBLIC_AD_SLOT_SCENARIOS ?? "",
   glossary: process.env.NEXT_PUBLIC_AD_SLOT_GLOSSARY ?? "",
   anchor: process.env.NEXT_PUBLIC_AD_SLOT_ANCHOR ?? "",
+  fed: process.env.NEXT_PUBLIC_AD_SLOT_FED ?? "",
+  ecb: process.env.NEXT_PUBLIC_AD_SLOT_ECB ?? "",
 } as const;
