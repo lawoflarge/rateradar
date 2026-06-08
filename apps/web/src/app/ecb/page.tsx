@@ -7,7 +7,7 @@ import { Rule } from "@/components/Rule";
 import { SectionLabel } from "@/components/SectionLabel";
 import { AD_SLOTS } from "@/lib/ad-slots";
 import { getEcbProbabilities, pickNextMeeting } from "@/lib/data";
-import { CURRENT_POLICY_RATE_LABELS } from "@/lib/policy-rates";
+import { CURRENT_ECB_RATE_PCT, CURRENT_POLICY_RATE_LABELS } from "@/lib/policy-rates";
 
 export const revalidate = 300;
 
@@ -36,7 +36,7 @@ export async function generateMetadata(): Promise<Metadata> {
     ? `Next ECB Meeting: ${formatShortDate(next.meeting.meeting_date)} — rate decision`
     : "Next ECB Meeting — Governing Council schedule";
   const description = next
-    ? `The next ECB Governing Council rate decision is on ${formatLongDate(next.meeting.meeting_date)}. Current Deposit Facility Rate 2.00%; full meeting schedule and live tracking.`
+    ? `The next ECB Governing Council rate decision is on ${formatLongDate(next.meeting.meeting_date)}. Current Deposit Facility Rate ${CURRENT_ECB_RATE_PCT}; full meeting schedule and live tracking.`
     : "The next ECB Governing Council rate decision date, current Deposit Facility Rate, and full meeting schedule.";
   return {
     title,
@@ -79,7 +79,7 @@ export default async function EcbHubPage() {
               name: "What is the current ECB interest rate?",
               acceptedAnswer: {
                 "@type": "Answer",
-                text: "The ECB Deposit Facility Rate is currently 2.00%.",
+                text: `The ECB Deposit Facility Rate is currently ${CURRENT_ECB_RATE_PCT}.`,
               },
             },
           ],
@@ -102,7 +102,7 @@ export default async function EcbHubPage() {
           {next ? `Next ECB Meeting: ${formatLongDate(next.meeting.meeting_date)}` : "Next ECB Meeting"}
         </h1>
         <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink-soft">
-          The ECB Governing Council sets the Deposit Facility Rate, currently 2.00%.
+          The ECB Governing Council sets the Deposit Facility Rate, currently {CURRENT_ECB_RATE_PCT}.
           {next ? ` The next decision is on ${formatLongDate(next.meeting.meeting_date)}.` : ""}
         </p>
         {next && (
@@ -117,7 +117,7 @@ export default async function EcbHubPage() {
       <section className="my-10 grid gap-8 border-y border-ink/15 py-8 sm:grid-cols-2">
         <div>
           <SectionLabel>Current rate</SectionLabel>
-          <div className="mt-2 font-serif text-2xl font-medium text-ink">2.00%</div>
+          <div className="mt-2 font-serif text-2xl font-medium text-ink">{CURRENT_ECB_RATE_PCT}</div>
           <div className="mt-1 text-sm text-ink-mute">{CURRENT_POLICY_RATE_LABELS.ECB}</div>
         </div>
         <div className="sm:border-l sm:border-ink/15 sm:pl-8">
@@ -138,7 +138,7 @@ export default async function EcbHubPage() {
       <Rule tone="soft" />
 
       <section className="my-12">
-        <SectionLabel>All {year} ECB meetings</SectionLabel>
+        <SectionLabel>Upcoming {year} ECB meetings</SectionLabel>
         <ul className="mt-4 divide-y divide-ink/10">
           {upcoming.map((m) => (
             <li key={m.meeting.id}>

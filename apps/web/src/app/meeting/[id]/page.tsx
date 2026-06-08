@@ -11,6 +11,7 @@ import { SectionLabel } from "@/components/SectionLabel";
 import { ShareButtons } from "@/components/ShareButtons";
 import { AD_SLOTS } from "@/lib/ad-slots";
 import { getMeetingById, getMeetingContext, getMeetingHistory } from "@/lib/data";
+import { CURRENT_ECB_RATE_PCT } from "@/lib/policy-rates";
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -51,7 +52,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const description =
     bank === "FED"
       ? `Market-implied odds for the FOMC ${date} decision: ${pct}% chance to ${action}. Live probabilities with 60 days of history.`
-      : `The ECB Governing Council meets on ${date}. Current Deposit Facility Rate 2.00%; market-implied tracking with 60 days of history.`;
+      : `The ECB Governing Council meets on ${date}. Current Deposit Facility Rate ${CURRENT_ECB_RATE_PCT}; market-implied tracking with 60 days of history.`;
 
   return {
     title,
@@ -93,7 +94,7 @@ export default async function MeetingPage({ params }: PageProps) {
   const answer =
     bank === "FED"
       ? `Markets price a ${Math.round(top.probability * 100)}% chance the Fed will ${top.label === "Hold" ? "hold rates" : `move ${top.label}`} at the ${shortDate} FOMC meeting.`
-      : `The ECB Governing Council meets on ${shortDate}. The current Deposit Facility Rate is 2.00%; forward odds are spot-anchored.`;
+      : `The ECB Governing Council meets on ${shortDate}. The current Deposit Facility Rate is ${CURRENT_ECB_RATE_PCT}; forward odds are spot-anchored.`;
 
   // Compute delta vs 30 days ago for the top outcome, if history available
   const topSeries = history.find((s) => s.delta_bps === top.delta_bps);

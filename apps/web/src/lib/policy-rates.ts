@@ -18,3 +18,6 @@ export const CURRENT_POLICY_RATE_LABELS: Record<BankCode, string> = {
   FED: "Fed Funds target range 3.50–3.75%",
   ECB: "ECB Deposit Facility Rate 2.00%",
 };
+
+/** ECB Deposit Facility Rate as a formatted percent string, e.g. "2.00%". Single source for ECB copy/metadata. */
+export const CURRENT_ECB_RATE_PCT = `${CURRENT_POLICY_RATES.ECB.toFixed(2)}%`;

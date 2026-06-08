@@ -8,7 +8,7 @@ import { Rule } from "@/components/Rule";
 import { SectionLabel } from "@/components/SectionLabel";
 import { AD_SLOTS } from "@/lib/ad-slots";
 import { getFedProbabilities, pickNextMeeting } from "@/lib/data";
-import type { MeetingProbabilities } from "@/lib/types";
+import type { MeetingProbabilities, Outcome } from "@/lib/types";
 
 export const revalidate = 300;
 
@@ -31,13 +31,14 @@ function formatShortDate(iso: string): string {
   });
 }
 
-function topOutcome(m: MeetingProbabilities) {
-  return [...m.outcomes].sort((a, b) => b.probability - a.probability)[0];
+function topOutcome(m: MeetingProbabilities): Outcome | null {
+  return [...m.outcomes].sort((a, b) => b.probability - a.probability)[0] ?? null;
 }
 
 function summarize(next: MeetingProbabilities | null): string {
   if (!next) return "The next FOMC meeting date will appear here once scheduled.";
   const top = topOutcome(next);
+  if (!top) return "The next FOMC meeting date will appear here once scheduled.";
   const pct = Math.round(top.probability * 100);
   const action = top.label === "Hold" ? "hold rates" : `move ${top.label}`;
   return `Markets price a ${pct}% chance the Fed will ${action} at the ${formatShortDate(next.meeting.meeting_date)} meeting.`;
@@ -142,10 +143,11 @@ export default async function FedHubPage() {
       <Rule tone="soft" />
 
       <section className="my-12">
-        <SectionLabel>All {year} FOMC meetings</SectionLabel>
+        <SectionLabel>Upcoming {year} FOMC meetings</SectionLabel>
         <ul className="mt-4 divide-y divide-ink/10">
           {upcoming.map((m) => {
             const t = topOutcome(m);
+            if (!t) return null;
             return (
               <li key={m.meeting.id}>
                 <Link
