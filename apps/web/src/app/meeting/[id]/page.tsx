@@ -44,10 +44,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const pct = Math.round(top.probability * 100);
   const action = top.label === "Hold" ? "hold" : `move ${top.label}`;
 
-  const title = `${bank} ${date} · markets price ${pct}% to ${action}`;
+  const title =
+    bank === "FED"
+      ? `Will the Fed cut rates on ${date}?`
+      : `ECB rate decision ${date}: what to expect`;
   const description =
-    `Market-implied probabilities for the ${bank} ${date} rate decision, ` +
-    `with 60 days of historical probability tracking.`;
+    bank === "FED"
+      ? `Market-implied odds for the FOMC ${date} decision: ${pct}% chance to ${action}. Live probabilities with 60 days of history.`
+      : `The ECB Governing Council meets on ${date}. Current Deposit Facility Rate 2.00%; market-implied tracking with 60 days of history.`;
 
   return {
     title,
@@ -81,6 +85,15 @@ export default async function MeetingPage({ params }: PageProps) {
   ]);
   const top = [...data.outcomes].sort((a, b) => b.probability - a.probability)[0];
   const bank = data.meeting.bank_code;
+  const shortDate = formatShortDate(data.meeting.meeting_date);
+  const question =
+    bank === "FED"
+      ? `Will the Fed cut rates on ${shortDate}?`
+      : `What will the ECB decide on ${shortDate}?`;
+  const answer =
+    bank === "FED"
+      ? `Markets price a ${Math.round(top.probability * 100)}% chance the Fed will ${top.label === "Hold" ? "hold rates" : `move ${top.label}`} at the ${shortDate} FOMC meeting.`
+      : `The ECB Governing Council meets on ${shortDate}. The current Deposit Facility Rate is 2.00%; forward odds are spot-anchored.`;
 
   // Compute delta vs 30 days ago for the top outcome, if history available
   const topSeries = history.find((s) => s.delta_bps === top.delta_bps);
@@ -127,6 +140,19 @@ export default async function MeetingPage({ params }: PageProps) {
           ],
         }}
       />
+      <JsonLd
+        data={{
+          "@context": "https://schema.org",
+          "@type": "FAQPage",
+          mainEntity: [
+            {
+              "@type": "Question",
+              name: question,
+              acceptedAnswer: { "@type": "Answer", text: answer },
+            },
+          ],
+        }}
+      />
       <nav className="mb-8 text-sm text-ink-mute">
         <Link href="/" className="hover:text-cut underline-offset-4 hover:underline">
           ← Back to all meetings
@@ -146,6 +172,9 @@ export default async function MeetingPage({ params }: PageProps) {
         <div className="mt-4 text-ink-mute">
           <MeetingCountdown meetingDate={data.meeting.meeting_date} />
         </div>
+        <h2 className="mt-6 font-serif text-2xl font-medium text-ink-soft">
+          {question}
+        </h2>
       </header>
 
       <Rule />
