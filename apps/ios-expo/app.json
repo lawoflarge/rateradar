@@ -2,7 +2,7 @@
   "expo": {
     "name": "RateRadar",
     "slug": "rateradar-ios",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -15,7 +15,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.lawoflarge.rateradar",
-      "buildNumber": "5",
+      "buildNumber": "6",
       "requireFullScreen": false,
       "infoPlist": {
         "CFBundleDisplayName": "RateRadar",
@@ -24,7 +24,9 @@
         "NSPrivacyTrackingDomains": [],
         "UIStatusBarStyle": "UIStatusBarStyleDefault",
         "SKAdNetworkItems": [],
-        "UIBackgroundModes": ["remote-notification"]
+        "UIBackgroundModes": [
+          "remote-notification"
+        ]
       }
     },
     "plugins": [
@@ -46,12 +48,16 @@
         }
       ]
     ],
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "extra": {
       "eas": {
         "projectId": "PLACEHOLDER_REPLACE_AFTER_EAS_INIT"
       }
     },
-    "runtimeVersion": { "policy": "appVersion" }
+    "runtimeVersion": {
+      "policy": "appVersion"
+    }
   }
 }
