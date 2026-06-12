@@ -33,8 +33,6 @@ targets:
         product: GoogleMobileAds
       - package: GoogleUserMessagingPlatform
         product: GoogleUserMessagingPlatform
-    info:
-      path: RateRadar/Resources/Info.plist
     entitlements:
       path: RateRadar/RateRadar.entitlements
       properties:
@@ -44,6 +42,9 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.lawoflarge.rateradar
         TARGETED_DEVICE_FAMILY: "1,2"
         SWIFT_EMIT_LOC_STRINGS: YES
+        # Info.plist is hand-maintained — XcodeGen must not regenerate it.
+        INFOPLIST_FILE: RateRadar/Resources/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
 
   RateRadarTests:
     type: bundle.unit-test
@@ -52,6 +53,9 @@ targets:
       - path: Tests
     dependencies:
       - target: RateRadar
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
 
 schemes:
   RateRadar:

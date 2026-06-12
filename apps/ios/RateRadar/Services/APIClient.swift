@@ -29,6 +29,11 @@ actor APIClient {
         return resp.data
     }
 
+    /// GET /api/status — used for the methodology badge (version + freshness).
+    func getStatus() async throws -> APIStatus {
+        try await get("/api/status")
+    }
+
     private func get<T: Decodable>(_ path: String) async throws -> T {
         let url = Config.apiURL(path)
         let (data, response) = try await session.data(from: url)
