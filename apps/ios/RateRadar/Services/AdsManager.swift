@@ -1,4 +1,5 @@
 import SwiftUI
+import Observation
 import GoogleMobileAds
 import UserMessagingPlatform
 import AppTrackingTransparency
@@ -10,6 +11,7 @@ import AppTrackingTransparency
 /// never during launch — iOS silently drops it otherwise. Order:
 /// active → +600ms → ATT (if undetermined) → UMP consent → SDK start → preload.
 @MainActor
+@Observable
 final class AdsManager {
     static let shared = AdsManager()
 
@@ -141,13 +143,25 @@ private final class InterstitialDelegate: NSObject, FullScreenContentDelegate {
 // MARK: - Anchored adaptive banner (BannerAdSlot.tsx parity)
 
 struct BannerAdSlot: View {
-    @State private var bannerHeight: CGFloat = 0
+    // Reserve the adaptive height up front (RNGMA parity) — a zero-height
+    // banner view fails to load with "Invalid ad width or height".
+    @State private var bannerHeight: CGFloat = currentOrientationAnchoredAdaptiveBanner(
+        width: UIScreen.main.bounds.width
+    ).size.height
 
     var body: some View {
-        BannerAdView(height: $bannerHeight)
-            .frame(height: bannerHeight)
-            .frame(maxWidth: .infinity)
-            .background(RR.cream)
+        // Mount the banner only once the Mobile Ads SDK has started —
+        // loading earlier fails permanently (no retry on GADBannerView).
+        Group {
+            if AdsManager.shared.sdkReady {
+                BannerAdView(height: $bannerHeight)
+                    .frame(height: bannerHeight)
+                    .frame(maxWidth: .infinity)
+            } else {
+                Color.clear.frame(height: 0)
+            }
+        }
+        .background(RR.cream)
     }
 }
 
@@ -158,6 +172,9 @@ private struct BannerAdView: UIViewRepresentable {
         let width = UIScreen.main.bounds.width
         let adSize = currentOrientationAnchoredAdaptiveBanner(width: width)
         let banner = BannerView(adSize: adSize)
+        // Give the view concrete bounds before load() — the SDK validates the
+        // view size, and SwiftUI has not laid the representable out yet.
+        banner.frame = CGRect(origin: .zero, size: adSize.size)
         banner.adUnitID = AdsManager.bannerUnitId
         banner.rootViewController = AdsManager.rootViewController()
         banner.delegate = context.coordinator
@@ -171,6 +188,7 @@ private struct BannerAdView: UIViewRepresentable {
 
     final class Coordinator: NSObject, BannerViewDelegate {
         @Binding var height: CGFloat
+        private var retries = 0
         init(height: Binding<CGFloat>) { _height = height }
 
         func bannerViewDidReceiveAd(_ bannerView: BannerView) {
@@ -178,7 +196,16 @@ private struct BannerAdView: UIViewRepresentable {
         }
 
         func bannerView(_ bannerView: BannerView, didFailToReceiveAdWithError error: Error) {
-            height = 0
+            // The first load can race SwiftUI layout ("Invalid ad width or
+            // height" while bounds are still zero) — retry once laid out.
+            guard retries < 5 else {
+                height = 0
+                return
+            }
+            retries += 1
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                bannerView.load(Request())
+            }
         }
     }
 }
