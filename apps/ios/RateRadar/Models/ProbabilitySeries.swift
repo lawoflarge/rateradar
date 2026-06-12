@@ -1,5 +1,11 @@
 import Foundation
 
+private let iso8601: ISO8601DateFormatter = {
+    let f = ISO8601DateFormatter()
+    f.formatOptions = [.withInternetDateTime]
+    return f
+}()
+
 struct ProbabilityPoint: Codable, Hashable {
     let snapshotAt: String        // ISO timestamp
     let probability: Double
@@ -10,7 +16,7 @@ struct ProbabilityPoint: Codable, Hashable {
     }
 
     var date: Date? {
-        ISO8601DateFormatter().date(from: snapshotAt)
+        iso8601.date(from: snapshotAt)
     }
 }
 
