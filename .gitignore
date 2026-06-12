@@ -111,3 +111,6 @@ archive/
 
 # XcodeGen output (apps/ios)
 apps/ios/RateRadar.xcodeproj/
+
+# asc CLI checkpoints
+apps/ios-expo/.asc/
