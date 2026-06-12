@@ -103,7 +103,7 @@ struct CompareView: View {
         VStack(alignment: .leading, spacing: 0) {
             SectionLabel(label)
             (
-                Text("\(value >= 0 ? "+" : "")\(String(format: "%.0f", value))")
+                Text("\(value >= 0 ? "+" : "")\(RateMath.pct0(value))")
                     .font(.rrMono(30, weight: .medium))
                 + Text(" bps")
                     .font(.rrSerif(30, weight: .medium))
@@ -180,7 +180,7 @@ struct CompareView: View {
             "Cumulative expected change = Σ (pᵢ × Δᵢ) over all upcoming meetings. Positive = rate hikes priced in; negative = cuts. See "
         )
         var link = AttributedString("methodology")
-        link.link = URL(string: "https://rateradar-web.vercel.app/methodology")
+        link.link = URL(string: "rateradar://methodology")
         link.foregroundColor = RR.cut
         text += link
         text += AttributedString(".")

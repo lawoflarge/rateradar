@@ -170,7 +170,7 @@ private struct ScenarioBuilderView: View {
                     Button {
                         outcomeId = o.id
                     } label: {
-                        Text("\(o.label) · \(String(format: "%.0f", o.probability * 100))%")
+                        Text("\(o.label) · \(RateMath.pct0(o.probability * 100))%")
                             .font(.rrMono(12))
                             .foregroundStyle(active ? RR.cut : RR.inkMute)
                             .padding(.horizontal, 10)

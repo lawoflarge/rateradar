@@ -140,6 +140,15 @@ enum RateMath {
         return Movements(windowDays: maxActualWindow != 0 ? maxActualWindow : windowDays, byLabel: byLabel)
     }
 
+    /// JS parity for 0-decimal rounding: Math.round/toFixed(0) round half AWAY
+    /// from zero (printf "%.0f" rounds half-to-even) and keep "-0" for small
+    /// negatives (e.g. cumulative -0.4 bps renders "-0" like toFixed).
+    static func pct0(_ value: Double) -> String {
+        let r = value.rounded(.toNearestOrAwayFromZero)
+        if r == 0 && value < 0 { return "-0" }
+        return String(format: "%.0f", r)
+    }
+
     enum DeltaSign { case up, down, flat }
 
     /// formatDelta from lib/movement.ts: "▲ +4.2pp" / "▼ −3.1pp" / "· flat" semantics.
@@ -163,6 +172,7 @@ enum RateMath {
     }
 
     private static let shortF = formatter("MMM d")
+    private static let shortYearF = formatter("MMM d, yyyy")
     private static let weekdayShortF = formatter("EEE, MMM d")
     private static let longF = formatter("EEEE, MMMM d, yyyy")
     private static let mediumF = formatter("MMMM d, yyyy")
@@ -176,6 +186,12 @@ enum RateMath {
     static func shortDate(_ isoDay: String) -> String {
         guard let d = parseISODay(isoDay) else { return isoDay }
         return shortF.string(from: d)
+    }
+
+    /// "Jun 17, 2026"
+    static func shortDateYear(_ isoDay: String) -> String {
+        guard let d = parseISODay(isoDay) else { return isoDay }
+        return shortYearF.string(from: d)
     }
 
     /// "Wed, Jun 17"
@@ -196,17 +212,4 @@ enum RateMath {
         return mediumF.string(from: d)
     }
 
-    /// MeetingCountdown.tsx semantics — component agents must verify the exact
-    /// strings against the web source when porting.
-    static func countdownText(_ isoDay: String, now: Date = Date()) -> String {
-        guard let meeting = parseISODay(isoDay) else { return "" }
-        var cal = Calendar(identifier: .gregorian)
-        cal.timeZone = TimeZone(identifier: "UTC") ?? .current
-        let startOfToday = cal.startOfDay(for: now)
-        let days = cal.dateComponents([.day], from: startOfToday, to: meeting).day ?? 0
-        if days < 0 { return "Decision made" }
-        if days == 0 { return "Today" }
-        if days == 1 { return "Tomorrow" }
-        return "in \(days) days"
-    }
 }

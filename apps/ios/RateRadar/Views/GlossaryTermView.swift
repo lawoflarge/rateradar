@@ -95,8 +95,10 @@ struct GlossaryTermView: View {
         .padding(.top, 16) // mt-4
 
         // Ad section (my-10) renders nothing natively; margins collapse.
+        // Web links to /glossary (the index) — after term → related-term
+        // chains a plain dismiss() would return to the previous term instead.
         Button {
-            dismiss()
+            router.navigate(.glossary)
         } label: {
             Text("← All glossary terms")
                 .font(.rrSans(14))

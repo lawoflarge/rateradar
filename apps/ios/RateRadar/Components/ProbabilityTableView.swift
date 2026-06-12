@@ -8,6 +8,9 @@ import SwiftUI
 struct ProbabilityTableView: View {
     let snapshot: MeetingProbabilities
     var showDetailLink: Bool = true
+    /// Web parity: fed/page.tsx renders its table with history={[]} (empty
+    /// chart card, no movement chips). Pass false to mirror that.
+    var fetchHistory: Bool = true
 
     @Environment(AppDataStore.self) private var store
     @Environment(Router.self) private var router
@@ -32,7 +35,11 @@ struct ProbabilityTableView: View {
         .background(RR.creamSoft)
         .overlay(Rectangle().stroke(RR.ink.opacity(0.15), lineWidth: 1))
         .task(id: snapshot.meeting.id) {
-            history = await store.history(meetingId: snapshot.meeting.id)
+            if fetchHistory {
+                history = await store.history(meetingId: snapshot.meeting.id)
+            } else {
+                history = []
+            }
         }
     }
 
@@ -65,7 +72,7 @@ struct ProbabilityTableView: View {
                             .textCase(.uppercase)
                             .tracking(0.4)
                             .foregroundStyle(RR.inkMute)
-                        Text("\(top.label) · \(String(format: "%.0f", top.probability * 100))%")
+                        Text("\(top.label) · \(RateMath.pct0(top.probability * 100))%")
                             .font(.rrMono(18, weight: .semibold))
                             .foregroundStyle(Tone(label: top.label).color)
                     }

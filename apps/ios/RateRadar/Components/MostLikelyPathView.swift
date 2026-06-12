@@ -50,7 +50,7 @@ struct MostLikelyPathView: View {
                         .tracking(0.4)
                         .foregroundStyle(RR.inkMute)
 
-                    Text("\(finalCumulative >= 0 ? "+" : "")\(String(format: "%.0f", finalCumulative)) bps by \(finalDate)")
+                    Text("\(finalCumulative >= 0 ? "+" : "")\(RateMath.pct0(finalCumulative)) bps by \(finalDate)")
                         .font(.rrMono(18, weight: .semibold))
                         .foregroundStyle(RR.cut)
                         .padding(.top, 4)
@@ -112,12 +112,12 @@ struct MostLikelyPathView: View {
                         .foregroundStyle(toneText)
                         .padding(.top, 8)
 
-                    Text(String(format: "%.0f%%", top.probability * 100))
+                    Text("\(RateMath.pct0(top.probability * 100))%")
                         .font(.rrMono(11))
                         .foregroundStyle(RR.inkMute)
                         .padding(.top, 2)
 
-                    Text("Σ \(entry.cumulative >= 0 ? "+" : "")\(String(format: "%.0f", entry.cumulative))bp")
+                    Text("Σ \(entry.cumulative >= 0 ? "+" : "")\(RateMath.pct0(entry.cumulative))bp")
                         .font(.rrMono(10))
                         .foregroundStyle(RR.inkMute)
                         .padding(.top, 8)

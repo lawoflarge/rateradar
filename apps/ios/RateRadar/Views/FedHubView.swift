@@ -109,7 +109,7 @@ private struct FedHubContent: View {
             .foregroundStyle(RR.ink)
             .padding(.top, 8) // mt-2
 
-        ProbabilityTableView(snapshot: next, showDetailLink: false)
+        ProbabilityTableView(snapshot: next, showDetailLink: false, fetchHistory: false)
             .padding(.top, 24) // h2 mb-6
 
         Button {

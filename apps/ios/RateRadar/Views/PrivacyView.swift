@@ -82,7 +82,7 @@ struct PrivacyView: View {
                 strong("Cookies and identifiers.") + plain(" Google may set cookies and read device identifiers when it serves ads on this site, for the purposes of ad delivery, frequency capping, attribution, and ad personalization."),
                 strong("EU/EEA/UK consent.") + plain(" If you visit from the EU, EEA, or UK, a consent banner powered by Google Funding Choices appears on your first visit. The banner uses the IAB Transparency & Consent Framework (TCF v2.2). You can consent to personalized ads, reject them (you'll still see non-personalized ads), or manage individual vendor purposes."),
                 strong("Other regions.") + plain(" Outside the EU/EEA/UK, ads are served with personalization unless you opt out via Google's controls (see §6 below). Where U.S. state privacy laws apply (for example, California's CCPA/CPRA), our use of AdSense may be classified as \"sharing\" personal information for cross-context behavioral advertising."),
-                strong("iOS app.") + plain(" The RateRadar iOS app loads this website inside a WebView, so the same AdSense behavior described above applies inside the app. We do not run any native ad SDK and we do not access the iOS Advertising Identifier (IDFA)."),
+                strong("iOS app.") + plain(" The RateRadar iOS app shows ads via Google AdMob (a native ad SDK). On first use, iOS asks for App Tracking Transparency permission; only if you allow tracking may Google access the iOS Advertising Identifier (IDFA) to personalize ads and detect ad fraud. If you decline, ads are still shown without IDFA-based tracking. In the EU/EEA/UK, a Google consent form lets you choose between personalized and non-personalized ads."),
             ])
         }
     }
@@ -94,7 +94,7 @@ struct PrivacyView: View {
                 plain("We do not sell your personal data."),
                 plain("We do not share data with data brokers."),
                 plain("We do not combine RateRadar data with data from third-party apps, websites, or services for our own tracking purposes."),
-                plain("We do not request the iOS Advertising Identifier (IDFA) in the iOS app."),
+                plain("We do not access the iOS Advertising Identifier (IDFA) without your explicit App Tracking Transparency consent."),
                 plain("We do not run our own analytics SDKs, fingerprinting, location tracking, microphone, camera, contacts, or health-data access."),
             ])
         }

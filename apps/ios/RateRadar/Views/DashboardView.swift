@@ -148,7 +148,7 @@ private struct DashboardContent: View {
                 + Text("\(jsNumber(rate))%")
                     .font(.rrMono(16))
                 + Text(". Market puts ")
-                + Text(String(format: "%.0f%%", top.probability * 100))
+                + Text("\(RateMath.pct0(top.probability * 100))%")
                     .font(.rrMono(16, weight: .semibold))
                     .foregroundStyle(RR.ink)
                 + Text(" on this outcome.")
@@ -324,18 +324,31 @@ private struct ErrorState: View {
                 .multilineTextAlignment(.center)
                 .padding(.top, 8)
 
-            Button {
-                Task { await retry() }
-            } label: {
-                Text("Try again")
-                    .font(.rrSans(14))
-                    .foregroundStyle(RR.ink)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .background(RR.creamSoft)
-                    .overlay(Rectangle().stroke(RR.ink.opacity(0.25), lineWidth: 1))
+            HStack(spacing: 24) {
+                Button {
+                    Task { await retry() }
+                } label: {
+                    Text("Try again")
+                        .font(.rrSans(14))
+                        .foregroundStyle(RR.ink)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(RR.creamSoft)
+                        .overlay(Rectangle().stroke(RR.ink.opacity(0.25), lineWidth: 1))
+                }
+                .buttonStyle(.plain)
+
+                // Web error.tsx secondary action; on the dashboard itself
+                // "going to the dashboard" means reloading it.
+                Button {
+                    Task { await retry() }
+                } label: {
+                    Text("Go to dashboard →")
+                        .font(.rrSans(14))
+                        .foregroundStyle(RR.cut)
+                }
+                .buttonStyle(.plain)
             }
-            .buttonStyle(.plain)
             .padding(.top, 40)
         }
         .frame(maxWidth: .infinity)

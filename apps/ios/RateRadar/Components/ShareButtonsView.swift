@@ -23,9 +23,9 @@ struct ShareButtonsView: View {
     }
 
     /// Title as built by apps/web/src/app/meeting/[id]/page.tsx:
-    /// "{BANK} {MMM d} · {NN}% {hold|move {label}}".
+    /// "{BANK} {MMM d, yyyy} · {NN}% {hold|move {label}}" (web includes the year).
     private var title: String {
-        let base = "\(bank.rawValue) \(RateMath.shortDate(meetingDate))"
+        let base = "\(bank.rawValue) \(RateMath.shortDateYear(meetingDate))"
         guard let top = store.meeting(id: meetingId)?.topOutcome else { return base }
         let pct = Int((top.probability * 100).rounded())
         let action = top.label == "Hold" ? "hold" : "move \(top.label)"

@@ -229,7 +229,7 @@ struct MeetingDetailView: View {
         let delta = top.probability - then.probability
         guard abs(delta) > 0.01 else { return nil }
         let sign = delta >= 0 ? "+" : ""
-        return "\(sign)\(String(format: "%.0f", delta * 100))pp vs 30d ago"
+        return "\(sign)\(RateMath.pct0(delta * 100))pp vs 30d ago"
     }
 
     // MARK: - Footer
