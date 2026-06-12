@@ -22,27 +22,13 @@
 			<true/>
 			<key>NSPrivacyCollectedDataTypePurposes</key>
 			<array>
-				<string>NSPrivacyCollectedDataTypePurposeThirdPartyAdvertising</string>
+				<string>NSPrivacyCollectedDataTypePurposeAppFunctionality</string>
 			</array>
 			<key>NSPrivacyCollectedDataTypeTracking</key>
-			<true/>
-		</dict>
-		<dict>
-			<key>NSPrivacyCollectedDataType</key>
-			<string>NSPrivacyCollectedDataTypeAdvertisingData</string>
-			<key>NSPrivacyCollectedDataTypeLinked</key>
 			<false/>
-			<key>NSPrivacyCollectedDataTypePurposes</key>
-			<array>
-				<string>NSPrivacyCollectedDataTypePurposeThirdPartyAdvertising</string>
-			</array>
-			<key>NSPrivacyCollectedDataTypeTracking</key>
-			<true/>
 		</dict>
 	</array>
 	<key>NSPrivacyTracking</key>
-	<true/>
-	<key>NSPrivacyTrackingDomains</key>
-	<array/>
+	<false/>
 </dict>
 </plist>

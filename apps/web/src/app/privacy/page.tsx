@@ -111,10 +111,13 @@ export default function PrivacyPage() {
           </li>
           <li>
             <strong className="text-ink">iOS app.</strong> The RateRadar iOS
-            app loads this website inside a WebView, so the same AdSense
-            behavior described above applies inside the app. We do not run
-            any native ad SDK and we do not access the iOS Advertising
-            Identifier (IDFA).
+            app shows ads via Google AdMob (a native ad SDK). On first use,
+            iOS asks for App Tracking Transparency permission; only if you
+            allow tracking may Google access the iOS Advertising Identifier
+            (IDFA) to personalize ads and detect ad fraud. If you decline,
+            ads are still shown without IDFA-based tracking. In the
+            EU/EEA/UK, a Google consent form lets you choose between
+            personalized and non-personalized ads.
           </li>
         </ul>
 
@@ -129,8 +132,8 @@ export default function PrivacyPage() {
             websites, or services for our own tracking purposes.
           </li>
           <li>
-            We do not request the iOS Advertising Identifier (IDFA) in the
-            iOS app.
+            We do not access the iOS Advertising Identifier (IDFA) without
+            your explicit App Tracking Transparency consent.
           </li>
           <li>
             We do not run our own analytics SDKs, fingerprinting, location
@@ -163,8 +166,8 @@ export default function PrivacyPage() {
           </li>
           <li>
             <strong className="text-ink">Google LLC</strong> — provides
-            advertising via Google AdSense and consent management via Google
-            Funding Choices. Google&apos;s use of data is governed by its{" "}
+            advertising via Google AdSense (web) and Google AdMob (iOS app),
+            and consent management via Google Funding Choices. Google&apos;s use of data is governed by its{" "}
             <a
               className="text-ink underline decoration-amber underline-offset-4"
               href="https://policies.google.com/technologies/ads"

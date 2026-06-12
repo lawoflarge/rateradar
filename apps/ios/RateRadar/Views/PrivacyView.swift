@@ -108,7 +108,7 @@ struct PrivacyView: View {
                 strong("Vercel") + plain(" hosts the website and serverless functions. Sees standard HTTP request metadata."),
                 strong("Supabase") + plain(" stores probability snapshots and meeting metadata (public market data; no user information)."),
                 strong("Apple Push Notification Service") + plain(" (APNs) delivers iOS push notifications. Sees the device token and message payload (no personal information)."),
-                strong("Google LLC") + plain(" — provides advertising via Google AdSense and consent management via Google Funding Choices. Google's use of data is governed by its ") + inkLink("Advertising Privacy & Terms", "https://policies.google.com/technologies/ads") + plain(" and its ") + inkLink("Privacy Policy", "https://policies.google.com/privacy") + plain("."),
+                strong("Google LLC") + plain(" — provides advertising via Google AdSense (web) and Google AdMob (iOS app), and consent management via Google Funding Choices. Google's use of data is governed by its ") + inkLink("Advertising Privacy & Terms", "https://policies.google.com/technologies/ads") + plain(" and its ") + inkLink("Privacy Policy", "https://policies.google.com/privacy") + plain("."),
             ])
         }
     }
