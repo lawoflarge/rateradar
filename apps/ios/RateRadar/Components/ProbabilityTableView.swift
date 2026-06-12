@@ -70,6 +70,7 @@ struct ProbabilityTableView: View {
                             .foregroundStyle(Tone(label: top.label).color)
                     }
                     .multilineTextAlignment(.trailing)
+                    .frame(minWidth: 56, alignment: .trailing)
                 }
 
                 exportShareLink
@@ -114,6 +115,7 @@ struct ProbabilityTableView: View {
             .textCase(.uppercase)
             .tracking(0.4)
             .foregroundStyle(RR.inkMute)
+            .fixedSize()
             .padding(.horizontal, 10)
             .padding(.vertical, 4)
             .background(RR.cream)
@@ -146,14 +148,15 @@ struct ProbabilityTableView: View {
                     Text(outcome.label)
                         .font(.rrMono(12, weight: .medium))
                         .foregroundStyle(Tone(label: outcome.label).color)
-                        .padding(.horizontal, 16)
+                        .fixedSize()
+                        .padding(.horizontal, 8)
                         .padding(.vertical, 12)
 
                     Text(String(format: "%.1f%%", outcome.probability * 100))
                         .font(.rrMono(14, weight: .medium))
                         .foregroundStyle(RR.ink)
-                        .multilineTextAlignment(.trailing)
-                        .padding(.horizontal, 16)
+                        .fixedSize()
+                        .padding(.horizontal, 8)
                         .padding(.vertical, 12)
 
                     movedCell(for: outcome)
@@ -161,8 +164,8 @@ struct ProbabilityTableView: View {
                     Text(String(format: "%.3f%%", outcome.postMeetingRate))
                         .font(.rrMono(14))
                         .foregroundStyle(RR.inkMute)
-                        .multilineTextAlignment(.trailing)
-                        .padding(.horizontal, 16)
+                        .fixedSize()
+                        .padding(.horizontal, 8)
                         .padding(.vertical, 12)
 
                     barCell(for: outcome)
@@ -182,12 +185,14 @@ struct ProbabilityTableView: View {
 
     private func headCell(_ text: String, trailing: Bool = false) -> some View {
         Text(text)
-            .font(.rrSans(12))
+            .font(.rrSans(10))
             .textCase(.uppercase)
             .tracking(0.4)
             .foregroundStyle(RR.inkMute)
             .multilineTextAlignment(trailing ? .trailing : .leading)
-            .padding(.horizontal, 16)
+            .lineLimit(text.contains(" ") ? 2 : 1)
+            .minimumScaleFactor(0.6)
+            .padding(.horizontal, 8)
             .padding(.vertical, 12)
             .gridColumnAlignment(trailing ? .trailing : .leading)
     }
@@ -203,7 +208,8 @@ struct ProbabilityTableView: View {
                     .foregroundStyle(RR.inkMute.opacity(0.6))
             }
         }
-        .padding(.horizontal, 16)
+        .fixedSize()
+        .padding(.horizontal, 8)
         .padding(.vertical, 12)
     }
 
@@ -224,7 +230,8 @@ struct ProbabilityTableView: View {
         }
         .frame(height: 6)
         .frame(maxWidth: .infinity)
-        .padding(.horizontal, 16)
+        .frame(minWidth: 24)
+        .padding(.horizontal, 8)
         .padding(.vertical, 12)
     }
 

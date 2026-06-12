@@ -37,10 +37,12 @@ enum RR {
 enum Tone {
     case cut, hike, hold, neutral
 
+    /// Web actionTone (ProbabilityTable.tsx): matches ONLY the words
+    /// cut/hike/hold — bare "-25bp"/"+25bp" labels stay ink, as on the web.
     init(label: String) {
         let l = label.lowercased()
-        if l.contains("-") || l.contains("cut") { self = .cut }
-        else if l.contains("+") || l.contains("hike") { self = .hike }
+        if l.contains("cut") { self = .cut }
+        else if l.contains("hike") { self = .hike }
         else if l.contains("hold") { self = .hold }
         else { self = .neutral }
     }
