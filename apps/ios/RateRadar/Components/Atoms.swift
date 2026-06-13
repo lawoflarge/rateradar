@@ -80,6 +80,7 @@ struct NavBarView: View {
         (.glossary, "Glossary"),
         (.brokers, "Brokers"),
         (.about, "About"),
+        (.alerts, "Alerts"),
     ]
 
     var body: some View {

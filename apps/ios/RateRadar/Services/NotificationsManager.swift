@@ -24,7 +24,22 @@ final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCent
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil
     ) -> Bool {
         UNUserNotificationCenter.current().delegate = self
+        // Must register the background refresh handler before launch completes.
+        AlertScheduler.registerBackgroundTask()
         return true
+    }
+
+    // A tapped alert (meeting reminder or rate-shift) deep-links to its meeting.
+    func userNotificationCenter(
+        _ center: UNUserNotificationCenter,
+        didReceive response: UNNotificationResponse,
+        withCompletionHandler completionHandler: @escaping () -> Void
+    ) {
+        let meetingId = response.notification.request.content.userInfo["meetingId"] as? String
+        Task { @MainActor in
+            if let meetingId { DeepLinkCenter.shared.pendingMeetingId = meetingId }
+            completionHandler()
+        }
     }
 
     // Foreground presentation mirrors the Expo setNotificationHandler:
