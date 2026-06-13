@@ -14,6 +14,7 @@ enum Route: Hashable {
     case brokers
     case about
     case privacy
+    case alerts
 
     /// Interstitial qualifying routes (web NativeNavBridge: /meeting/* + /compare).
     var isQualifyingEvent: Bool {

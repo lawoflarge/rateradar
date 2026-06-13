@@ -245,8 +245,13 @@
 		<string>JetBrainsMono-Regular.ttf</string>
 		<string>JetBrainsMono-SemiBold.ttf</string>
 	</array>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.lawoflarge.rateradar.refresh</string>
+	</array>
 	<key>UIBackgroundModes</key>
 	<array>
+		<string>fetch</string>
 		<string>remote-notification</string>
 	</array>
 	<key>UILaunchScreen</key>
