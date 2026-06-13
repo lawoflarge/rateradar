@@ -9,6 +9,7 @@ struct MeetingDetailView: View {
     @Environment(AppDataStore.self) private var store
     @Environment(Router.self) private var router
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.requestReview) private var requestReview
 
     @State private var history: [ProbabilitySeries] = []
     @State private var attemptedLoad = false
@@ -47,6 +48,14 @@ struct MeetingDetailView: View {
             }
             attemptedLoad = true
             history = await store.history(meetingId: meetingId, windowDays: 60)
+
+            // Viewing an upcoming meeting is a positive moment — record it and,
+            // after the user has had a beat to read the page, maybe ask for a review.
+            if snapshot != nil {
+                ReviewPrompt.recordMeetingViewed()
+                try? await Task.sleep(for: .seconds(1.5))
+                ReviewPrompt.maybeRequest(requestReview)
+            }
         }
     }
 
