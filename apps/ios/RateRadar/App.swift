@@ -25,6 +25,7 @@ struct RateRadarApp: App {
             .task {
                 // Keep-awake parity (expo-keep-awake for the app lifetime).
                 UIApplication.shared.isIdleTimerDisabled = true
+                ReviewPrompt.recordLaunch()
                 await store.loadAll()
                 // Refresh meeting reminders with the latest odds, mark the current
                 // values as "seen" (so background alerts only fire on later moves),
