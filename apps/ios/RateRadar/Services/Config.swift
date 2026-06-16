@@ -14,4 +14,11 @@ enum Config {
     static func apiURL(_ path: String) -> URL {
         URL(string: "\(apiHost)\(path)")!
     }
+
+    /// Screenshot mode. Set `RATERADAR_SCREENSHOTS=1` (e.g. via
+    /// `SIMCTL_CHILD_RATERADAR_SCREENSHOTS=1 xcrun simctl launch`) to hide
+    /// monetization chrome (the banner ad) so App Store screenshot captures
+    /// stay clean. No effect on normal runs.
+    static let screenshotMode: Bool =
+        ProcessInfo.processInfo.environment["RATERADAR_SCREENSHOTS"] == "1"
 }
