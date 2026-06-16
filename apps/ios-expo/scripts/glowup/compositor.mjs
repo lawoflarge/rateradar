@@ -38,11 +38,13 @@ const argVal = (name, dflt) => {
 const APP = argVal("app", "rateradar");
 const DPR = Number(argVal("dpr", "2"));
 const frameFilter = argVal("frames", null);
+const IPAD = args.includes("--ipad");
 
 const config = JSON.parse(fs.readFileSync(path.join(__dirname, "config.json"), "utf8"))[APP];
 if (!config) throw new Error(`No config for app "${APP}"`);
 const P = config.palette;
-const { w: W, h: H } = config.size;
+const W = IPAD ? 2064 : config.size.w;   // iPad Pro 12.9" 2064x2752 (APP_IPAD_PRO_3GEN_129)
+const H = IPAD ? 2752 : config.size.h;   // iPhone 6.9" 1290x2796 (APP_IPHONE_67)
 const ACCENT = P.amber;        // brand accent (amber) — matches the app icon needle
 const ACCENT_DEEP = "#C8841C"; // exact app "cut" amber for the radar needle
 
@@ -152,7 +154,7 @@ const LAYOUTS = {
 };
 
 function radarBg() {
-  const cx = 645, cy = 1080;
+  const cx = Math.round(W / 2), cy = Math.round(H * 0.5);
   const rings = [240, 470, 700, 940, 1180]
     .map((r) => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="rgba(255,255,255,0.045)" stroke-width="2"/>`)
     .join("");
@@ -179,7 +181,7 @@ function css() {
       radial-gradient(130% 80% at 50% 12%, rgba(120,150,190,0.06), rgba(0,0,0,0) 46%),
       linear-gradient(180deg, #0D1322 0%, ${P.navy} 44%, #06080F 100%); }
   .radar { position:absolute; left:0; top:0; opacity:0.9; }
-  .sweep { position:absolute; left:645px; top:1080px; width:2400px; height:2400px; transform:translate(-50%,-50%); border-radius:50%;
+  .sweep { position:absolute; left:50%; top:50%; width:2400px; height:2400px; transform:translate(-50%,-50%); border-radius:50%;
       background:conic-gradient(from -40deg, rgba(230,168,75,0.14), rgba(230,168,75,0.02) 26%, rgba(0,0,0,0) 42%);
       -webkit-mask:radial-gradient(circle, #000 0%, #000 56%, transparent 70%); }
   .vignette { position:absolute; inset:0; box-shadow: inset 0 0 480px 100px rgba(0,0,0,0.62); pointer-events:none; }
@@ -237,6 +239,29 @@ function css() {
   `;
 }
 
+// iPad Pro layout: text left, framed device right (uses the wide canvas).
+function ipadFrameHTML(f) {
+  const ipadCss = `
+  .ipad-head { position:absolute; left:140px; top:0; bottom:0; width:1010px; display:flex; flex-direction:column; justify-content:center; z-index:5; }
+  .ipad-head .ey { font-family:'Mono'; font-weight:700; font-size:42px; letter-spacing:0.12em; color:${ACCENT}; text-transform:uppercase; margin-bottom:34px; }
+  .ipad-head .hl { font-family:'Grotesk'; font-weight:700; font-size:132px; line-height:1.02; letter-spacing:-0.024em; color:#fff; text-wrap:balance; }
+  .ipad-head .hl .accent { color:${ACCENT}; }
+  .ipad-head .sub { margin-top:38px; font-family:'Grotesk'; font-weight:500; font-size:50px; line-height:1.3; color:${P.slate}; max-width:880px; }
+  .ipad-dev { position:absolute; right:-150px; top:50%; transform:translateY(-50%); width:1120px; z-index:3;
+      filter: drop-shadow(0 64px 84px rgba(0,0,0,0.62)) drop-shadow(0 0 84px rgba(230,168,75,0.14)); }
+  .ipad-foot { position:absolute; left:140px; bottom:96px; z-index:10; display:flex; align-items:center; gap:24px; }
+  .ipad-foot img { width:78px; height:78px; border-radius:18px; box-shadow:0 6px 18px rgba(0,0,0,0.4); }
+  .ipad-foot .wm { font-family:'Grotesk'; font-weight:700; font-size:54px; color:#fff; }
+  `;
+  return `<!doctype html><html><head><meta charset="utf-8"><style>${css()}${ipadCss}</style></head>
+  <body>
+    <div class="bg"></div>${radarBg()}<div class="sweep"></div><div class="vignette"></div>
+    <div class="ipad-head"><div class="ey">${f.eyebrow}</div><h1 class="hl">${headlineHTML(f.headline, f.accent)}</h1><p class="sub">${f.subline}</p></div>
+    <img class="ipad-dev" src="${ensureFramed(f.screen)}"/>
+    <div class="ipad-foot"><img src="${ICON_URI}"/><span class="wm">${config.wordmark}</span></div>
+  </body></html>`;
+}
+
 function frameHTML(f) {
   const inner = (LAYOUTS[f.layout] || LAYOUTS.hero)(f);
   return `<!doctype html><html><head><meta charset="utf-8"><style>${css()}</style></head>
@@ -260,15 +285,18 @@ async function main() {
     frames = frames.filter((f) => want.includes(f.id));
   }
 
+  const outDir = IPAD ? path.join(OUT, "ipad") : OUT;
+  fs.mkdirSync(outDir, { recursive: true });
+
   const browser = await chromium.launch();
   const page = await browser.newPage({ viewport: { width: W, height: H }, deviceScaleFactor: DPR });
 
   for (const f of frames) {
-    await page.setContent(frameHTML(f), { waitUntil: "load" });
+    await page.setContent(IPAD ? ipadFrameHTML(f) : frameHTML(f), { waitUntil: "load" });
     await page.evaluate(async () => { await document.fonts.ready; });
     const raw = path.join(tmp, `${f.id}.png`);
     await page.screenshot({ path: raw, clip: { x: 0, y: 0, width: W, height: H } });
-    const final = path.join(OUT, `${f.id}.png`);
+    const final = path.join(outDir, `${f.id}.png`);
     execFileSync("sips", ["-z", String(H), String(W), raw, "--out", final], { stdio: "ignore" });
     const dim = execFileSync("sips", ["-g", "pixelWidth", "-g", "pixelHeight", final]).toString();
     console.log(`✓ ${f.id}  ${/pixelWidth: (\d+)/.exec(dim)[1]}x${/pixelHeight: (\d+)/.exec(dim)[1]}  (${f.layout})`);
