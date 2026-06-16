@@ -1,0 +1,88 @@
+{
+  "rateradar": {
+    "name": "RateRadar",
+    "wordmark": "RateRadar",
+    "appId": "6768628917",
+    "size": { "w": 1290, "h": 2796 },
+    "navCrop": [0.063, 0.150],
+    "palette": {
+      "navy": "#0B0F1A",
+      "navy2": "#0E1422",
+      "ink": "#070A12",
+      "bezel": "#04060B",
+      "cyan": "#00E0A4",
+      "cyanDeep": "#0BB488",
+      "amber": "#E6A84B",
+      "red": "#FF5C6E",
+      "white": "#FFFFFF",
+      "slate": "#C9D2CF",
+      "slateDim": "#5E6C82"
+    },
+    "frames": [
+      {
+        "id": "01-hero",
+        "layout": "hero",
+        "screen": "01-hero.png",
+        "eyebrow": "FED · ECB RATE ODDS",
+        "headline": "Track the Fed's next move",
+        "accent": "next move",
+        "subline": "Know the odds before the meeting.",
+        "angle": "straight"
+      },
+      {
+        "id": "02-odds",
+        "layout": "callout",
+        "screen": "02-odds.png",
+        "eyebrow": "OUTCOME DISTRIBUTION",
+        "headline": "Exact odds, every outcome",
+        "accent": "Exact odds",
+        "subline": "Cut, hold or hike — probability per meeting.",
+        "callout": { "cropFrac": [0.035, 0.752, 0.55, 0.145], "caption": "market-implied" },
+        "angle": "straight"
+      },
+      {
+        "id": "03-chart",
+        "layout": "chart",
+        "screen": "03-chart.png",
+        "eyebrow": "60-DAY PROBABILITY HISTORY",
+        "headline": "See how the odds moved",
+        "accent": "the odds moved",
+        "subline": "Sixty days of history, tracked.",
+        "angle": "straight"
+      },
+      {
+        "id": "04-alerts",
+        "layout": "alerts",
+        "screen": "04-alerts.png",
+        "eyebrow": "ON-DEVICE ALERTS",
+        "headline": "Get pinged before it moves",
+        "accent": "before it moves",
+        "subline": "A nudge when the odds shift sharply.",
+        "banner": { "title": "RateRadar", "body": "Fed cut odds moved past your threshold" },
+        "angle": "straight"
+      },
+      {
+        "id": "05-coverage",
+        "layout": "coverage",
+        "screen": "05-coverage.png",
+        "eyebrow": "FED + ECB COVERAGE",
+        "headline": "Fed and ECB, one radar",
+        "accent": "one radar",
+        "subline": "Track both banks — and see when they diverge.",
+        "chips": ["FED", "ECB"],
+        "angle": "straight"
+      },
+      {
+        "id": "06-cta",
+        "layout": "cta",
+        "screen": "06-cta.png",
+        "eyebrow": "NEVER MISS A DECISION",
+        "headline": "Read the decision, not the news",
+        "accent": "not the news",
+        "subline": "Computed from Fed Funds futures. Never scraped.",
+        "cta": "Track the next decision — free",
+        "angle": "straight"
+      }
+    ]
+  }
+}

@@ -153,7 +153,10 @@ struct BannerAdSlot: View {
         // Mount the banner only once the Mobile Ads SDK has started —
         // loading earlier fails permanently (no retry on GADBannerView).
         Group {
-            if AdsManager.shared.sdkReady {
+            if Config.screenshotMode {
+                // App Store screenshot capture: hide monetization chrome.
+                Color.clear.frame(height: 0)
+            } else if AdsManager.shared.sdkReady {
                 BannerAdView(height: $bannerHeight)
                     .frame(height: bannerHeight)
                     .frame(maxWidth: .infinity)
