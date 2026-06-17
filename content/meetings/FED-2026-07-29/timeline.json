@@ -215,6 +215,10 @@
       {
         "snapshot_at": "2026-06-16T23:40:48+00:00",
         "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-06-17T20:11:08+00:00",
+        "probability": 0.0
       }
     ],
     "-25": [
@@ -428,6 +432,10 @@
       },
       {
         "snapshot_at": "2026-06-16T23:40:48+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-06-17T20:11:08+00:00",
         "probability": 0.0
       }
     ],
@@ -643,6 +651,10 @@
       {
         "snapshot_at": "2026-06-16T23:40:48+00:00",
         "probability": 0.8768944373497582
+      },
+      {
+        "snapshot_at": "2026-06-17T20:11:08+00:00",
+        "probability": 0.579986572265625
       }
     ],
     "25": [
@@ -857,6 +869,10 @@
       {
         "snapshot_at": "2026-06-16T23:40:48+00:00",
         "probability": 0.12310556265024175
+      },
+      {
+        "snapshot_at": "2026-06-17T20:11:08+00:00",
+        "probability": 0.420013427734375
       }
     ],
     "50": [
@@ -1071,6 +1087,10 @@
       {
         "snapshot_at": "2026-06-16T23:40:48+00:00",
         "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-06-17T20:11:08+00:00",
+        "probability": 0.0
       }
     ]
   },
@@ -1094,13 +1114,13 @@
       "delta_pp": 89.69139685997582
     },
     {
-      "from_snapshot_at": "2026-06-02T20:48:03+00:00",
-      "to_snapshot_at": "2026-06-02T23:11:04+00:00",
-      "outcome_label": "+25bp",
-      "outcome_delta_bps": 25,
-      "from_probability": 0.0,
-      "to_probability": 0.10308603140024175,
-      "delta_pp": 10.308603140024175
+      "from_snapshot_at": "2026-06-16T23:40:48+00:00",
+      "to_snapshot_at": "2026-06-17T20:11:08+00:00",
+      "outcome_label": "Hold",
+      "outcome_delta_bps": 0,
+      "from_probability": 0.8768944373497582,
+      "to_probability": 0.579986572265625,
+      "delta_pp": -29.690786508413325
     }
   ]
 }
