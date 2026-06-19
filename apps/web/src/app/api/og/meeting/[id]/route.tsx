@@ -49,6 +49,62 @@ function actionLabel(label: string, deltaBps: number): string {
   return "RATE HIKE";
 }
 
+// Fonts: Inter (UI/labels), IBM Plex Serif (headline), JetBrains Mono (figures).
+// Satori only supports TTF/OTF, not woff2 — pin the ttf endpoints from
+// Google Fonts CSS2 (resolved without a modern UA, so Google returns ttf).
+// If Google bumps the version slug, refresh these.
+// Fetched once per warm instance and reused across requests to avoid hitting
+// fonts.gstatic.com on every render.
+let ogFontsPromise: Promise<
+  Array<{
+    name: string;
+    data: ArrayBuffer;
+    style: "normal";
+    weight: 400 | 500;
+  }>
+> | null = null;
+
+function loadOgFonts() {
+  if (!ogFontsPromise) {
+    ogFontsPromise = Promise.all([
+      fetch(
+        new URL(
+          "https://fonts.gstatic.com/s/inter/v20/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfMZg.ttf",
+        ),
+      ).then((r) => r.arrayBuffer()),
+      fetch(
+        new URL(
+          "https://fonts.gstatic.com/s/ibmplexserif/v20/jizAREVNn1dOx-zrZ2X3pZvkTi3s-BIz.ttf",
+        ),
+      ).then((r) => r.arrayBuffer()),
+      fetch(
+        new URL(
+          "https://fonts.gstatic.com/s/jetbrainsmono/v24/tDbY2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8-qxjPQ.ttf",
+        ),
+      ).then((r) => r.arrayBuffer()),
+    ]).then(([inter, plexSerif, jetbrainsMono]) => [
+      { name: "Inter", data: inter, style: "normal" as const, weight: 400 as const },
+      {
+        name: "Plex Serif",
+        data: plexSerif,
+        style: "normal" as const,
+        weight: 500 as const,
+      },
+      {
+        name: "JetBrains Mono",
+        data: jetbrainsMono,
+        style: "normal" as const,
+        weight: 500 as const,
+      },
+    ]);
+  }
+  return ogFontsPromise;
+}
+
+// CDN cache so repeated scrapes of the same OG image don't re-render.
+const OG_CACHE_CONTROL =
+  "public, max-age=3600, s-maxage=86400, stale-while-revalidate=604800";
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -56,43 +112,7 @@ export async function GET(
   const { id } = await params;
   const data = await getMeetingById(id);
 
-  // Fonts: Inter (UI/labels), IBM Plex Serif (headline), JetBrains Mono (figures).
-  // Satori only supports TTF/OTF, not woff2 — pin the ttf endpoints from
-  // Google Fonts CSS2 (resolved without a modern UA, so Google returns ttf).
-  // If Google bumps the version slug, refresh these.
-  const [inter, plexSerif, jetbrainsMono] = await Promise.all([
-    fetch(
-      new URL(
-        "https://fonts.gstatic.com/s/inter/v20/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfMZg.ttf",
-      ),
-    ).then((r) => r.arrayBuffer()),
-    fetch(
-      new URL(
-        "https://fonts.gstatic.com/s/ibmplexserif/v20/jizAREVNn1dOx-zrZ2X3pZvkTi3s-BIz.ttf",
-      ),
-    ).then((r) => r.arrayBuffer()),
-    fetch(
-      new URL(
-        "https://fonts.gstatic.com/s/jetbrainsmono/v24/tDbY2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8-qxjPQ.ttf",
-      ),
-    ).then((r) => r.arrayBuffer()),
-  ]);
-
-  const ogFonts = [
-    { name: "Inter", data: inter, style: "normal" as const, weight: 400 as const },
-    {
-      name: "Plex Serif",
-      data: plexSerif,
-      style: "normal" as const,
-      weight: 500 as const,
-    },
-    {
-      name: "JetBrains Mono",
-      data: jetbrainsMono,
-      style: "normal" as const,
-      weight: 500 as const,
-    },
-  ];
+  const ogFonts = await loadOgFonts();
 
   if (!data) {
     return new ImageResponse(
@@ -113,7 +133,12 @@ export async function GET(
           Meeting not found
         </div>
       ),
-      { width: 1200, height: 630, fonts: ogFonts },
+      {
+        width: 1200,
+        height: 630,
+        fonts: ogFonts,
+        headers: { "Cache-Control": OG_CACHE_CONTROL },
+      },
     );
   }
 
@@ -359,6 +384,11 @@ export async function GET(
         </div>
       </div>
     ),
-    { width: 1200, height: 630, fonts: ogFonts },
+    {
+      width: 1200,
+      height: 630,
+      fonts: ogFonts,
+      headers: { "Cache-Control": OG_CACHE_CONTROL },
+    },
   );
 }
