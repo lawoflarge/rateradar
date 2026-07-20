@@ -1,27 +1,17 @@
 {
   "date": "2026-07-20",
-  "generated_at": "2026-07-20T19:43:33.658730+00:00",
+  "generated_at": "2026-07-20T23:06:52.565845+00:00",
   "headline": {
     "meeting_id": "FED-2026-10-28",
     "bank_code": "FED",
     "meeting_date": "2026-10-28",
-    "outcome_label": "Hold",
-    "outcome_delta_bps": 0,
-    "prior_probability": 0.7542550223214293,
-    "current_probability": 0.6942574637276794,
-    "delta_pp": -5.999755859374989
+    "outcome_label": "+25bp",
+    "outcome_delta_bps": 25,
+    "prior_probability": 0.24574497767857073,
+    "current_probability": 0.2856881277901793,
+    "delta_pp": 3.994315011160859
   },
   "top_shifts": [
-    {
-      "meeting_id": "FED-2026-10-28",
-      "bank_code": "FED",
-      "meeting_date": "2026-10-28",
-      "outcome_label": "Hold",
-      "outcome_delta_bps": 0,
-      "prior_probability": 0.7542550223214293,
-      "current_probability": 0.6942574637276794,
-      "delta_pp": -5.999755859374989
-    },
     {
       "meeting_id": "FED-2026-10-28",
       "bank_code": "FED",
@@ -29,8 +19,18 @@
       "outcome_label": "+25bp",
       "outcome_delta_bps": 25,
       "prior_probability": 0.24574497767857073,
-      "current_probability": 0.3057425362723206,
-      "delta_pp": 5.999755859374989
+      "current_probability": 0.2856881277901793,
+      "delta_pp": 3.994315011160859
+    },
+    {
+      "meeting_id": "FED-2026-10-28",
+      "bank_code": "FED",
+      "meeting_date": "2026-10-28",
+      "outcome_label": "Hold",
+      "outcome_delta_bps": 0,
+      "prior_probability": 0.7542550223214293,
+      "current_probability": 0.7143118722098207,
+      "delta_pp": -3.994315011160854
     },
     {
       "meeting_id": "FED-2026-12-09",
