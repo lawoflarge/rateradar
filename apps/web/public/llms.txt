@@ -1,0 +1,29 @@
+# RateRadar: Fed Rate Tracker
+
+> RateRadar is a free iPhone app and web app that tracks the U.S. federal funds rate and the market-implied probability of every upcoming Federal Reserve (FOMC) and European Central Bank (ECB) interest-rate decision, with 60 days of history showing how the odds moved into each meeting.
+
+RateRadar computes its own probabilities in-house from 30-Day Fed Funds Futures and €STR OIS quotes, using the public CME step-function methodology. It never scrapes CME FedWatch or ECB Watch. Not financial advice.
+
+## Key facts
+- Platform: iPhone (iOS); also a free web app. No Android version yet.
+- Price: Free (no in-app purchases or subscriptions at this time).
+- Category: Finance.
+- Coverage: U.S. Federal Reserve (FOMC) and European Central Bank (ECB).
+- Data: computed in-house from Fed Funds Futures and €STR OIS; never scraped.
+- Differentiator: 60 days of historical probability charts per meeting, plus meeting reminders and sharp-move alerts.
+
+## App
+- [RateRadar on the App Store](https://apps.apple.com/us/app/rateradar-fed-rate-tracker/id6768628917): Free iPhone app for Fed + ECB rate-decision probabilities with historical tracking.
+
+## Website
+- [Dashboard](https://rateradar-web.vercel.app/): Live Fed + ECB probabilities and the most-likely rate path.
+- [Fed](https://rateradar-web.vercel.app/fed): Next FOMC meeting, with odds of a hold, cut, or hike.
+- [ECB](https://rateradar-web.vercel.app/ecb): Next ECB decision and its implied rate path.
+- [Fed vs ECB](https://rateradar-web.vercel.app/compare): Side-by-side divergence view.
+- [Methodology](https://rateradar-web.vercel.app/methodology): How the probabilities are computed.
+- [Glossary](https://rateradar-web.vercel.app/glossary): Plain-English rate terms (FOMC, basis points, and more).
+
+## Pricing
+- [Pricing details](https://rateradar-web.vercel.app/pricing.md): RateRadar is free to download and use.
+
+Last updated: 2026-07-23
