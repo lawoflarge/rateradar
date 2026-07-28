@@ -6653,6 +6653,41 @@
         "delta_bps": 50,
         "probability": 0.0,
         "post_meeting_rate": 4.125
+      },
+      {
+        "snapshot_at": "2026-07-28T19:21:31+00:00",
+        "outcome_label": "-50bp",
+        "delta_bps": -50,
+        "probability": 0.0,
+        "post_meeting_rate": 3.125
+      },
+      {
+        "snapshot_at": "2026-07-28T19:21:31+00:00",
+        "outcome_label": "-25bp",
+        "delta_bps": -25,
+        "probability": 0.0,
+        "post_meeting_rate": 3.375
+      },
+      {
+        "snapshot_at": "2026-07-28T19:21:31+00:00",
+        "outcome_label": "Hold",
+        "delta_bps": 0,
+        "probability": 0.67999267578125,
+        "post_meeting_rate": 3.625
+      },
+      {
+        "snapshot_at": "2026-07-28T19:21:31+00:00",
+        "outcome_label": "+25bp",
+        "delta_bps": 25,
+        "probability": 0.32000732421875,
+        "post_meeting_rate": 3.875
+      },
+      {
+        "snapshot_at": "2026-07-28T19:21:31+00:00",
+        "outcome_label": "+50bp",
+        "delta_bps": 50,
+        "probability": 0.0,
+        "post_meeting_rate": 4.125
       }
     ],
     "2026-09-16": [
@@ -10540,6 +10575,41 @@
         "delta_bps": 50,
         "probability": 0.0,
         "post_meeting_rate": 4.224998474121094
+      },
+      {
+        "snapshot_at": "2026-07-28T19:21:31+00:00",
+        "outcome_label": "-50bp",
+        "delta_bps": -50,
+        "probability": 0.0,
+        "post_meeting_rate": 3.2050018310546875
+      },
+      {
+        "snapshot_at": "2026-07-28T19:21:31+00:00",
+        "outcome_label": "-25bp",
+        "delta_bps": -25,
+        "probability": 0.0,
+        "post_meeting_rate": 3.4550018310546875
+      },
+      {
+        "snapshot_at": "2026-07-28T19:21:31+00:00",
+        "outcome_label": "Hold",
+        "delta_bps": 0,
+        "probability": 0.3571690150669635,
+        "post_meeting_rate": 3.7050018310546875
+      },
+      {
+        "snapshot_at": "2026-07-28T19:21:31+00:00",
+        "outcome_label": "+25bp",
+        "delta_bps": 25,
+        "probability": 0.6428309849330365,
+        "post_meeting_rate": 3.9550018310546875
+      },
+      {
+        "snapshot_at": "2026-07-28T19:21:31+00:00",
+        "outcome_label": "+50bp",
+        "delta_bps": 50,
+        "probability": 0.0,
+        "post_meeting_rate": 4.2050018310546875
       }
     ],
     "2026-10-28": [
@@ -14427,6 +14497,41 @@
         "delta_bps": 50,
         "probability": 0.0,
         "post_meeting_rate": 4.407139369419642
+      },
+      {
+        "snapshot_at": "2026-07-28T19:21:31+00:00",
+        "outcome_label": "-50bp",
+        "delta_bps": -50,
+        "probability": 0.0,
+        "post_meeting_rate": 3.3657095772879466
+      },
+      {
+        "snapshot_at": "2026-07-28T19:21:31+00:00",
+        "outcome_label": "-25bp",
+        "delta_bps": -25,
+        "probability": 0.0,
+        "post_meeting_rate": 3.6157095772879466
+      },
+      {
+        "snapshot_at": "2026-07-28T19:21:31+00:00",
+        "outcome_label": "Hold",
+        "delta_bps": 0,
+        "probability": 0.6828395298549109,
+        "post_meeting_rate": 3.8657095772879466
+      },
+      {
+        "snapshot_at": "2026-07-28T19:21:31+00:00",
+        "outcome_label": "+25bp",
+        "delta_bps": 25,
+        "probability": 0.3171604701450891,
+        "post_meeting_rate": 4.115709577287946
+      },
+      {
+        "snapshot_at": "2026-07-28T19:21:31+00:00",
+        "outcome_label": "+50bp",
+        "delta_bps": 50,
+        "probability": 0.0,
+        "post_meeting_rate": 4.365709577287946
       }
     ],
     "2026-12-09": [
@@ -18314,6 +18419,41 @@
         "delta_bps": 50,
         "probability": 0.0,
         "post_meeting_rate": 4.480003356933594
+      },
+      {
+        "snapshot_at": "2026-07-28T19:21:31+00:00",
+        "outcome_label": "-50bp",
+        "delta_bps": -50,
+        "probability": 0.0,
+        "post_meeting_rate": 3.4449996948242188
+      },
+      {
+        "snapshot_at": "2026-07-28T19:21:31+00:00",
+        "outcome_label": "-25bp",
+        "delta_bps": -25,
+        "probability": 0.0,
+        "post_meeting_rate": 3.6949996948242188
+      },
+      {
+        "snapshot_at": "2026-07-28T19:21:31+00:00",
+        "outcome_label": "Hold",
+        "delta_bps": 0,
+        "probability": 0.639984130859375,
+        "post_meeting_rate": 3.9449996948242188
+      },
+      {
+        "snapshot_at": "2026-07-28T19:21:31+00:00",
+        "outcome_label": "+25bp",
+        "delta_bps": 25,
+        "probability": 0.360015869140625,
+        "post_meeting_rate": 4.194999694824219
+      },
+      {
+        "snapshot_at": "2026-07-28T19:21:31+00:00",
+        "outcome_label": "+50bp",
+        "delta_bps": 50,
+        "probability": 0.0,
+        "post_meeting_rate": 4.444999694824219
       }
     ]
   }
