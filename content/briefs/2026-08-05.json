@@ -1,36 +1,26 @@
 {
   "date": "2026-08-05",
-  "generated_at": "2026-08-05T19:28:29.075654+00:00",
+  "generated_at": "2026-08-05T23:09:10.772467+00:00",
   "headline": {
-    "meeting_id": "FED-2026-09-16",
+    "meeting_id": "FED-2026-10-28",
     "bank_code": "FED",
-    "meeting_date": "2026-09-16",
+    "meeting_date": "2026-10-28",
     "outcome_label": "Hold",
     "outcome_delta_bps": 0,
-    "prior_probability": 0.42145211356026735,
-    "current_probability": 0.4642857142857135,
-    "delta_pp": 4.2833600725446175
+    "prior_probability": 0.7485613141741077,
+    "current_probability": 0.7685503278459827,
+    "delta_pp": 1.9989013671875
   },
   "top_shifts": [
     {
-      "meeting_id": "FED-2026-09-16",
+      "meeting_id": "FED-2026-10-28",
       "bank_code": "FED",
-      "meeting_date": "2026-09-16",
+      "meeting_date": "2026-10-28",
       "outcome_label": "Hold",
       "outcome_delta_bps": 0,
-      "prior_probability": 0.42145211356026735,
-      "current_probability": 0.4642857142857135,
-      "delta_pp": 4.2833600725446175
-    },
-    {
-      "meeting_id": "FED-2026-09-16",
-      "bank_code": "FED",
-      "meeting_date": "2026-09-16",
-      "outcome_label": "+25bp",
-      "outcome_delta_bps": 25,
-      "prior_probability": 0.5785478864397327,
-      "current_probability": 0.5357142857142865,
-      "delta_pp": -4.2833600725446175
+      "prior_probability": 0.7485613141741077,
+      "current_probability": 0.7685503278459827,
+      "delta_pp": 1.9989013671875
     },
     {
       "meeting_id": "FED-2026-10-28",
@@ -39,8 +29,18 @@
       "outcome_label": "+25bp",
       "outcome_delta_bps": 25,
       "prior_probability": 0.25143868582589235,
-      "current_probability": 0.274283272879464,
-      "delta_pp": 2.284458705357167
+      "current_probability": 0.23144967215401735,
+      "delta_pp": -1.9989013671875
+    },
+    {
+      "meeting_id": "FED-2026-07-29",
+      "bank_code": "FED",
+      "meeting_date": "2026-07-29",
+      "outcome_label": "-50bp",
+      "outcome_delta_bps": -50,
+      "prior_probability": 0.0,
+      "current_probability": 0.0,
+      "delta_pp": 0.0
     }
   ],
   "calendar_context": []
