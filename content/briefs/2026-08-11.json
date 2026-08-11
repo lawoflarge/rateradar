@@ -1,37 +1,17 @@
 {
   "date": "2026-08-11",
-  "generated_at": "2026-08-11T19:00:30.090580+00:00",
+  "generated_at": "2026-08-11T22:52:47.508706+00:00",
   "headline": {
-    "meeting_id": "FED-2026-12-09",
+    "meeting_id": "FED-2026-09-16",
     "bank_code": "FED",
-    "meeting_date": "2026-12-09",
+    "meeting_date": "2026-09-16",
     "outcome_label": "Hold",
     "outcome_delta_bps": 0,
-    "prior_probability": 0.5,
-    "current_probability": 0.55999755859375,
-    "delta_pp": 5.999755859375
+    "prior_probability": 0.4000026157924115,
+    "current_probability": 0.44283621651785765,
+    "delta_pp": 4.2833600725446175
   },
   "top_shifts": [
-    {
-      "meeting_id": "FED-2026-12-09",
-      "bank_code": "FED",
-      "meeting_date": "2026-12-09",
-      "outcome_label": "Hold",
-      "outcome_delta_bps": 0,
-      "prior_probability": 0.5,
-      "current_probability": 0.55999755859375,
-      "delta_pp": 5.999755859375
-    },
-    {
-      "meeting_id": "FED-2026-12-09",
-      "bank_code": "FED",
-      "meeting_date": "2026-12-09",
-      "outcome_label": "+25bp",
-      "outcome_delta_bps": 25,
-      "prior_probability": 0.5,
-      "current_probability": 0.44000244140625,
-      "delta_pp": -5.999755859375
-    },
     {
       "meeting_id": "FED-2026-09-16",
       "bank_code": "FED",
@@ -41,6 +21,26 @@
       "prior_probability": 0.4000026157924115,
       "current_probability": 0.44283621651785765,
       "delta_pp": 4.2833600725446175
+    },
+    {
+      "meeting_id": "FED-2026-09-16",
+      "bank_code": "FED",
+      "meeting_date": "2026-09-16",
+      "outcome_label": "+25bp",
+      "outcome_delta_bps": 25,
+      "prior_probability": 0.5999973842075885,
+      "current_probability": 0.5571637834821423,
+      "delta_pp": -4.2833600725446175
+    },
+    {
+      "meeting_id": "FED-2026-12-09",
+      "bank_code": "FED",
+      "meeting_date": "2026-12-09",
+      "outcome_label": "Hold",
+      "outcome_delta_bps": 0,
+      "prior_probability": 0.5,
+      "current_probability": 0.540008544921875,
+      "delta_pp": 4.0008544921875
     }
   ],
   "calendar_context": []
