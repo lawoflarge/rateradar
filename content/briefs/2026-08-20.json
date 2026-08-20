@@ -1,6 +1,6 @@
 {
   "date": "2026-08-20",
-  "generated_at": "2026-08-20T18:37:21.181439+00:00",
+  "generated_at": "2026-08-20T22:35:17.828010+00:00",
   "headline": {
     "meeting_id": "FED-2026-09-16",
     "bank_code": "FED",
@@ -39,8 +39,8 @@
       "outcome_label": "Hold",
       "outcome_delta_bps": 0,
       "prior_probability": 0.8228759765625,
-      "current_probability": 0.8686000279017847,
-      "delta_pp": 4.57240513392847
+      "current_probability": 0.8486110142299097,
+      "delta_pp": 2.57350376674097
     }
   ],
   "calendar_context": []
