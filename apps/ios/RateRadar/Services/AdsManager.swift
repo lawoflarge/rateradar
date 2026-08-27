@@ -49,7 +49,10 @@ final class AdsManager {
         // 2. UMP consent (GDPR) — best-effort, mirrors the try/catch-ignored TS block.
         await requestConsentIfRequired()
 
-        // 3. Mobile Ads SDK configuration + start.
+        // 3. Mobile Ads SDK configuration + start, only once consent allows an
+        // ad request. Starting the SDK and loading an interstitial regardless of
+        // the UMP answer is exactly what the consent form asked about.
+        guard UMPConsentInformation.sharedInstance.canRequestAds else { return }
         MobileAds.shared.requestConfiguration.maxAdContentRating = GADMaxAdContentRating.parentalGuidance
         MobileAds.shared.requestConfiguration.tagForChildDirectedTreatment = NSNumber(value: false)
         MobileAds.shared.requestConfiguration.tagForUnderAgeOfConsent = NSNumber(value: false)
@@ -58,6 +61,19 @@ final class AdsManager {
 
         // 4. Preload the first interstitial.
         await preloadInterstitial()
+    }
+
+    /// Whether this user is entitled to reopen the consent choice. Outside the
+    /// EEA/UK there is no form, so the entry that calls it must stay hidden.
+    var privacyOptionsRequired: Bool {
+        UMPConsentInformation.sharedInstance.privacyOptionsRequirementStatus == .required
+    }
+
+    /// Reopen the consent form so a granted consent can be withdrawn as easily
+    /// as it was given.
+    func presentPrivacyOptions() {
+        guard let root = Self.rootViewController() else { return }
+        UMPConsentForm.presentPrivacyOptionsForm(from: root) { _ in }
     }
 
     private func requestConsentIfRequired() async {

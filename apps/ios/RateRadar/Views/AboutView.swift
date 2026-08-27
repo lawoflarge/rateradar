@@ -77,6 +77,16 @@ struct AboutView: View {
         Group {
             h2("How we stay free")
             paragraph(plain("Ads (Google AdSense / AdMob on iOS) and transparent broker affiliate partnerships (see ") + cutLink("/brokers", "rateradar://brokers") + plain(") cover the infrastructure costs. A Pro tier with custom alerts, CSV/API export, and advanced conditional scenarios is planned for later."))
+            if AdsManager.shared.privacyOptionsRequired {
+                Button("Ad privacy options") {
+                    AdsManager.shared.presentPrivacyOptions()
+                }
+                .buttonStyle(.plain)
+                .font(.rrSans(18))
+                .foregroundStyle(RR.cut)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.top, 16)
+            }
         }
     }
 
