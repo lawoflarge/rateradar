@@ -7,6 +7,12 @@ struct OnboardingView: View {
     @State private var busy = false
 
     var body: some View {
+        // The two CTAs are the only way out of this screen, and the fixed
+        // paddings plus the 40pt headline overflow an iPhone SE once the text
+        // size grows, so the whole column scrolls. minHeight keeps the original
+        // full-height spacing while it still fits.
+        GeometryReader { proxy in
+        ScrollView {
         VStack(alignment: .leading, spacing: 0) {
             // Brand row: concentric-circle radar mark + wordmark.
             HStack(spacing: 12) {
@@ -75,7 +81,10 @@ struct OnboardingView: View {
         .padding(.horizontal, 24)
         .padding(.top, 96)
         .padding(.bottom, 48)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .frame(maxWidth: .infinity, minHeight: proxy.size.height, alignment: .topLeading)
+        }
+        .scrollBounceBehavior(.basedOnSize)
+        }
         .background(RR.cream.ignoresSafeArea())
         .accessibilityIdentifier("rr-onboarding")
     }

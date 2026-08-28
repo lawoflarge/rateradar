@@ -81,6 +81,9 @@ struct NavBarView: View {
         (.brokers, "Brokers"),
         (.about, "About"),
         (.alerts, "Alerts"),
+        // RootView routes .privacy to PrivacyView, but nothing linked to it, so
+        // the privacy policy was unreachable inside the app.
+        (.privacy, "Privacy"),
     ]
 
     var body: some View {

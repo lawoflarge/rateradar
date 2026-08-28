@@ -62,7 +62,7 @@ struct AboutView: View {
                 strong("Dated UX.") + plain(" Dense tables, poor mobile, no sharing."),
                 strong("No engagement loop.") + plain(" No alerts, no widgets, no iOS app."),
             ])
-            paragraph(plain("RateRadar fixes all four. We combine Fed + ECB in a modern interface, expose 60 days of historical probability charts, and make every meeting snapshot shareable. Coming soon: a native iOS app with home-screen widgets and meeting-day push notifications."))
+            paragraph(plain("RateRadar fixes all four. We combine Fed + ECB in a modern interface, expose 60 days of historical probability charts, and make every meeting snapshot shareable. This iOS app adds meeting-day push notifications on top."))
         }
     }
 

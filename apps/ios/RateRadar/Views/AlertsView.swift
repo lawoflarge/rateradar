@@ -93,6 +93,8 @@ struct AlertsView: View {
             Toggle("", isOn: isOn)
                 .labelsHidden()
                 .tint(RR.cut)
+                // labelsHidden leaves VoiceOver with an unnamed switch.
+                .accessibilityLabel(title)
         }
     }
 
@@ -109,6 +111,8 @@ struct AlertsView: View {
             }
             Stepper("", value: $prefs.thresholdPP, in: 5...25, step: 1)
                 .labelsHidden()
+                .accessibilityLabel("Sharp move threshold")
+                .accessibilityValue("\(Int(prefs.thresholdPP)) percentage points")
         }
     }
 
