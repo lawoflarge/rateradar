@@ -21,7 +21,7 @@ struct ScenariosView: View {
                     .tracking(-0.5)
                     .foregroundStyle(RR.ink)
                     .padding(.top, 8)
-                Text("Pick a meeting and an outcome — for example “Fed cuts 25bp in March” — and see how the market-implied path for the following meetings re-anchors on that assumption.")
+                Text("Pick a meeting and an outcome, for example “Fed cuts 25bp in March”, and see how the market-implied path for the following meetings re-anchors on that assumption.")
                     .font(.rrSans(14))
                     .foregroundStyle(RR.inkMute)
                     .padding(.top, 8)
@@ -238,11 +238,11 @@ private struct ScenarioBuilderView: View {
                 ImpliedRateCurveView(
                     snapshots: conditional.after,
                     startingRate: conditional.startingRate,
-                    bankLabel: "\(bankLabel) — if \(conditional.anchorLabel)",
+                    bankLabel: "\(bankLabel), if \(conditional.anchorLabel)",
                     anchorLabel: conditional.anchorLabel
                 )
             } else {
-                Text("This is the last scheduled meeting — there is no subsequent path to project. Pick an earlier meeting.")
+                Text("This is the last scheduled meeting, so there is no subsequent path to project. Pick an earlier meeting.")
                     .font(.rrSans(14))
                     .foregroundStyle(RR.inkMute)
             }

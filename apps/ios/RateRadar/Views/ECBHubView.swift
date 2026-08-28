@@ -124,7 +124,7 @@ private struct ECBHubContent: View {
 
             VStack(alignment: .leading, spacing: 0) {
                 SectionLabel("Forward odds")
-                Text("Spot-anchored — market-implied forward probabilities for the ECB are not yet available (no free forward-rate source).")
+                Text("Spot-anchored, because market-implied forward probabilities for the ECB are not yet available (no free forward-rate source).")
                     .font(.rrSans(16))
                     .foregroundStyle(RR.inkSoft)
                     .padding(.top, 8) // mt-2
