@@ -1,3 +1,0 @@
-# Generated posters (regenerate with `node build.mjs --app rateradar`)
-out/
-# Source app captures and vendored OFL fonts ARE committed (screens/, fonts/).

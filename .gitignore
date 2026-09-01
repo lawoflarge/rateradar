@@ -113,5 +113,4 @@ archive/
 apps/ios/RateRadar.xcodeproj/
 
 # asc CLI checkpoints
-apps/ios-expo/.asc/
 /.asc/

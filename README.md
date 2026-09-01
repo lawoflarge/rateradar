@@ -42,8 +42,7 @@ rules, and known MVP limitations.
 rateradar/
 ├── apps/
 │   ├── web/                 # Next.js 16 + React 19 + Tailwind 4 + Recharts
-│   ├── ios-expo/            # Expo SDK 54 WebView wrapper — the App Store build
-│   └── ios/                 # SwiftUI + Swift Charts native scaffold (XcodeGen)
+│   └── ios/                 # SwiftUI + Swift Charts native app (XcodeGen) — the App Store build
 ├── services/
 │   └── data-pipeline/       # Python: fetch → probability_calc → diff → write
 │       ├── src/             # probability_calc.py is pure; I/O is isolated
