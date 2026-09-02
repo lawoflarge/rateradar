@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { AdSlot } from "@/components/AdSlot";
+import { AppStoreBadge } from "@/components/AppStoreBadge";
 import { JsonLd } from "@/components/JsonLd";
 import { MeetingContext } from "@/components/MeetingContext";
 import { MeetingCountdown } from "@/components/MeetingCountdown";
@@ -256,10 +257,26 @@ export default async function MeetingPage({ params }: PageProps) {
 
       <Rule />
 
+      <section className="my-12">
+        <div className="flex flex-wrap items-center gap-x-5 gap-y-3">
+          <AppStoreBadge slug="meeting-detail" />
+          <span className="max-w-sm text-sm leading-relaxed text-ink-mute">
+            Follow this meeting on your phone and get{" "}
+            <Link
+              href="/rate-cut-alerts"
+              className="text-cut underline-offset-4 hover:text-ink hover:underline"
+            >
+              an alert when the odds move
+            </Link>
+            .
+          </span>
+        </div>
+      </section>
+
       <footer className="mt-10 pt-8 text-sm text-ink-mute">
         <p>
-          Probabilities update twice per business day (after US and European
-          session close) and every 15 minutes on meeting days. See{" "}
+          Probabilities are recomputed twice per business day, after the
+          European close and after the US close. See{" "}
           <Link
             href="/methodology"
             className="text-cut hover:text-ink underline-offset-4 hover:underline"

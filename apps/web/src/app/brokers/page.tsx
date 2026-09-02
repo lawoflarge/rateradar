@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { AppStoreBadge } from "@/components/AppStoreBadge";
 import { Rule } from "@/components/Rule";
 
 export const metadata: Metadata = {
@@ -14,7 +16,7 @@ export const metadata: Metadata = {
   },
 };
 
-// Placeholders — real affiliate URLs + creatives to be wired once partner
+// Placeholders. Real affiliate URLs and creatives get wired once partner
 // programs are approved. Keeping this page live pre-partnership for SEO
 // ("rateradar brokers") and so we can iterate copy while waiting for approvals.
 const BROKERS = [
@@ -60,6 +62,19 @@ export default function BrokersPage() {
           reputable, regulated brokers where you can act on the rate-expectation
           shifts this site surfaces.
         </p>
+        <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
+          <AppStoreBadge slug="brokers-hero" priority />
+          <span className="max-w-xs text-sm leading-relaxed text-ink-mute">
+            See the shifts first with{" "}
+            <Link
+              href="/rate-cut-alerts"
+              className="text-cut underline-offset-4 hover:text-ink hover:underline"
+            >
+              rate alerts on iPhone
+            </Link>
+            .
+          </span>
+        </div>
       </header>
 
       <div className="mb-10 border-y border-cut/40 bg-cut/10 px-5 py-4 text-sm text-ink-soft">

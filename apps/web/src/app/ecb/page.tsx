@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { AdSlot } from "@/components/AdSlot";
+import { AppStoreBadge } from "@/components/AppStoreBadge";
 import { JsonLd } from "@/components/JsonLd";
 import { MeetingCountdown } from "@/components/MeetingCountdown";
 import { Rule } from "@/components/Rule";
@@ -33,8 +34,8 @@ function formatShortDate(iso: string): string {
 export async function generateMetadata(): Promise<Metadata> {
   const next = pickNextMeeting(await getEcbProbabilities());
   const title = next
-    ? `Next ECB Meeting: ${formatShortDate(next.meeting.meeting_date)} — rate decision`
-    : "Next ECB Meeting — Governing Council schedule";
+    ? `Next ECB Meeting ${formatShortDate(next.meeting.meeting_date)}: rate decision`
+    : "Next ECB Meeting: Governing Council schedule";
   const description = next
     ? `The next ECB Governing Council rate decision is on ${formatLongDate(next.meeting.meeting_date)}. Current Deposit Facility Rate ${CURRENT_ECB_RATE_PCT}; full meeting schedule and live tracking.`
     : "The next ECB Governing Council rate decision date, current Deposit Facility Rate, and full meeting schedule.";
@@ -110,6 +111,19 @@ export default async function EcbHubPage() {
             <MeetingCountdown meetingDate={next.meeting.meeting_date} />
           </div>
         )}
+        <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
+          <AppStoreBadge slug="ecb-hero" priority />
+          <span className="max-w-xs text-sm leading-relaxed text-ink-mute">
+            The{" "}
+            <Link
+              href="/fed-rate-tracker-app"
+              className="text-cut underline-offset-4 hover:text-ink hover:underline"
+            >
+              iPhone app
+            </Link>{" "}
+            carries the ECB calendar next to the Fed one.
+          </span>
+        </div>
       </header>
 
       <Rule />
@@ -123,8 +137,8 @@ export default async function EcbHubPage() {
         <div className="sm:border-l sm:border-ink/15 sm:pl-8">
           <SectionLabel>Forward odds</SectionLabel>
           <div className="mt-2 text-ink-soft">
-            Spot-anchored — market-implied forward probabilities for the ECB are
-            not yet available (no free forward-rate source).
+            Spot-anchored. Market-implied forward probabilities for the ECB are
+            not yet available, because there is no free forward-rate source.
           </div>
           <Link
             href="/methodology"

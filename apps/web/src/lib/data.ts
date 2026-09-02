@@ -3,7 +3,7 @@
  *
  * Tries Supabase first (if env vars are configured); falls back to built-in
  * mock data so dev / CI / first deploys never break. The fallback also covers
- * the "Supabase reachable but empty" case — handy before the pipeline runs.
+ * the "Supabase reachable but empty" case, handy before the pipeline runs.
  */
 
 import { MOCK_FED_PROBABILITIES } from "./mock-data";
@@ -115,7 +115,7 @@ export async function getProbabilities(
         label: r.label,
         delta_bps: r.delta_bps,
         probability: r.probability ?? 0,
-        post_meeting_rate: 0, // post-meeting rate isn't stored in DB yet — computed by pipeline
+        post_meeting_rate: 0, // post-meeting rate isn't stored in DB yet; computed by pipeline
       }));
       const latestSnap = rows.reduce(
         (acc, r) => (r.snapshot_at && (!acc || r.snapshot_at > acc) ? r.snapshot_at : acc),
@@ -183,7 +183,7 @@ export async function getMeetingContext(
 
   const sameBankAll = await getProbabilities(current.meeting.bank_code);
   const sameBankAllWithHistory = sameBankAll.concat(
-    // Include past meetings for prior lookup — getProbabilities only returns
+    // Include past meetings for prior lookup, since getProbabilities only returns
     // upcoming, but we want the immediately-preceding meeting too when known.
     [],
   );

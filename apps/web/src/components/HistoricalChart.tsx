@@ -18,7 +18,7 @@ interface Props {
   initialSeries?: ProbabilitySeries[];
 }
 
-// Wire Room palette — cut amber, hold sage, hike rust, with intensity tweaks per step
+// Wire Room palette: cut amber, hold sage, hike rust, with intensity tweaks per step
 const OUTCOME_COLORS: Record<number, string> = {
   [-50]: "#A06208", // deep cut
   [-25]: "#C8841C", // cut amber
@@ -82,7 +82,7 @@ export function HistoricalChart({
   }, [series]);
 
   // Only outcomes that actually have historical points should appear in the
-  // legend and as chart lines — otherwise an outcome with no snapshots yet
+  // legend and as chart lines, because otherwise an outcome with no snapshots yet
   // renders a legend dot with no corresponding line.
   const populatedSeries = useMemo(
     () => series.filter((s) => s.series.length > 0),
@@ -172,7 +172,7 @@ export function HistoricalChart({
               }
               formatter={(value, name) => {
                 const num = typeof value === "number" ? value : Number(value);
-                return [Number.isFinite(num) ? `${num.toFixed(1)}%` : "—", String(name)];
+                return [Number.isFinite(num) ? `${num.toFixed(1)}%` : "n/a", String(name)];
               }}
             />
             {visibleLabels.map((label) => {

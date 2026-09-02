@@ -15,7 +15,7 @@ export const CURRENT_POLICY_RATES: Record<BankCode, number> = {
 };
 
 export const CURRENT_POLICY_RATE_LABELS: Record<BankCode, string> = {
-  FED: "Fed Funds target range 3.50–3.75%",
+  FED: "Fed Funds target range 3.50% to 3.75%",
   ECB: "ECB Deposit Facility Rate 2.00%",
 };
 

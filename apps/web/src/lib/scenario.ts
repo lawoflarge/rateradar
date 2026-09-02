@@ -18,7 +18,7 @@ function formatShort(iso: string): string {
  * expected deltas are then chained from the anchor by the caller.
  *
  * This is an explicit independence assumption (the after-meetings' market
- * distributions are unchanged) — a what-if, not a forecast.
+ * distributions are unchanged). A what-if, not a forecast.
  *
  * Returns null when the meeting or outcome is not found, or when the
  * conditioned meeting is the last one (no subsequent path to project).

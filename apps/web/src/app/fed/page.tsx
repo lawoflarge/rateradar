@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { AdSlot } from "@/components/AdSlot";
+import { AppStoreBadge } from "@/components/AppStoreBadge";
 import { JsonLd } from "@/components/JsonLd";
 import { MeetingCountdown } from "@/components/MeetingCountdown";
 import { ProbabilityTable } from "@/components/ProbabilityTable";
@@ -47,8 +48,8 @@ function summarize(next: MeetingProbabilities | null): string {
 export async function generateMetadata(): Promise<Metadata> {
   const next = pickNextMeeting(await getFedProbabilities());
   const title = next
-    ? `Next Fed Meeting: ${formatShortDate(next.meeting.meeting_date)} — rate-cut odds`
-    : "Next Fed Meeting — FOMC schedule & rate-cut odds";
+    ? `Next Fed Meeting ${formatShortDate(next.meeting.meeting_date)}: rate-cut odds`
+    : "Next Fed Meeting: FOMC schedule and rate-cut odds";
   const description = next
     ? `${summarize(next)} Live FOMC probabilities and the full meeting schedule.`
     : "Live market-implied probabilities for the next FOMC decision and the full Fed meeting schedule.";
@@ -120,6 +121,19 @@ export default async function FedHubPage() {
             <MeetingCountdown meetingDate={next.meeting.meeting_date} />
           </div>
         )}
+        <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
+          <AppStoreBadge slug="fed-hero" priority />
+          <span className="max-w-xs text-sm leading-relaxed text-ink-mute">
+            Track the FOMC odds on your phone and get{" "}
+            <Link
+              href="/rate-cut-alerts"
+              className="text-cut underline-offset-4 hover:text-ink hover:underline"
+            >
+              an alert when they move
+            </Link>
+            .
+          </span>
+        </div>
       </header>
 
       <Rule />

@@ -1,5 +1,5 @@
 /**
- * Single source of truth for glossary terms — used by the glossary index,
+ * Single source of truth for glossary terms, used by the glossary index,
  * the per-term `/glossary/[term]` pages, and the sitemap. Slugs are explicit
  * and stable (don't auto-derive from `term`, so wording can change without
  * breaking URLs / losing SEO).
@@ -24,7 +24,7 @@ export const TERMS: GlossaryTerm[] = [
   {
     slug: "fed-funds-target-rate",
     term: "Fed Funds Target Rate",
-    def: "The interest rate the Fed targets for overnight lending between banks. Published as a 25-bp-wide range (e.g., 4.25–4.50%). The midpoint is what we use as the anchor for probability calculations.",
+    def: "The interest rate the Fed targets for overnight lending between banks. Published as a 25-bp-wide range, for example 4.25% to 4.50%. The midpoint is what we use as the anchor for probability calculations.",
   },
   {
     slug: "deposit-facility-rate",

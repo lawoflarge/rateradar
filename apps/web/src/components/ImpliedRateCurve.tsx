@@ -36,7 +36,7 @@ export function ImpliedRateCurve({
 }: Props) {
   if (snapshots.length === 0) return null;
 
-  // Use reduce instead of a mutable `let` counter — React 19's purity rule
+  // Use reduce instead of a mutable `let` counter, because React 19's purity rule
   // flags reassignment during render.
   type CurvePoint = { label: string; fullLabel: string; rate: number };
   const data: CurvePoint[] = snapshots.reduce<CurvePoint[]>(
@@ -111,7 +111,7 @@ export function ImpliedRateCurve({
               }}
               formatter={(value) => {
                 const num = typeof value === "number" ? value : Number(value);
-                return [Number.isFinite(num) ? `${num.toFixed(3)}%` : "—", "Rate"];
+                return [Number.isFinite(num) ? `${num.toFixed(3)}%` : "n/a", "Rate"];
               }}
             />
             <Line

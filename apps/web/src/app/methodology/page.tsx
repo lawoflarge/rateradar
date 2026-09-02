@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { AppStoreBadge } from "@/components/AppStoreBadge";
 import { JsonLd } from "@/components/JsonLd";
 
 export const metadata: Metadata = {
@@ -130,23 +132,34 @@ p_hold = 1 − p_cut`}
         </h2>
         <ul className="my-4 list-disc space-y-2 pl-6 text-lg leading-relaxed text-ink-soft">
           <li>
-            Daily snapshots: twice per business day (after US close and after
-            European close).
+            Snapshots run twice per business day: once after the European close
+            and once after the US close.
           </li>
           <li>
-            Meeting-day refreshes: every 15 minutes during the decision window.
+            Every snapshot carries the timestamp it was computed at, so a number
+            never pretends to be fresher than it is.
           </li>
-          <li>Historical retention: all snapshots kept indefinitely.</li>
+          <li>
+            Historical retention: snapshots are kept, and the app charts the
+            last 60 days per meeting.
+          </li>
+          <li>
+            What we do not promise is tick-level freshness. These are
+            end-of-session numbers, not a trading feed.
+          </li>
         </ul>
 
         <h2 className="mt-12 mb-4 font-serif text-2xl font-medium text-ink">
           6. Validation
         </h2>
         <p className="my-4 text-lg leading-relaxed text-ink-soft">
-          Every snapshot is cross-checked against the live CME FedWatch page at
-          capture time. Any outcome diverging more than 2% absolute triggers an
-          alert. Weekly regression checks against CME&apos;s published historical
-          archive catch long-term drift.
+          We do not check ourselves against CME FedWatch, because reading that
+          page programmatically is exactly the thing we promised not to do.
+          Validation runs the other way round: the probability math is covered
+          by unit tests on its own, and a diff engine scores what we published
+          before each past meeting against the outcome the committee actually
+          delivered. That scoreboard is the honest measure, since it grades the
+          forecast rather than its agreement with another tool.
         </p>
 
         <h2 className="mt-12 mb-4 font-serif text-2xl font-medium text-ink">
@@ -170,6 +183,22 @@ p_hold = 1 − p_cut`}
           central banks will actually decide. Nothing here is a recommendation
           to trade, invest, or change your financial plans.
         </p>
+
+        <div className="mt-12 border-t border-ink/15 pt-8">
+          <p className="max-w-2xl text-lg leading-relaxed text-ink-soft">
+            The same math runs inside the{" "}
+            <Link
+              href="/fed-rate-tracker-app"
+              className="text-cut hover:text-ink underline-offset-4 hover:underline"
+            >
+              iPhone app
+            </Link>
+            , with the methodology version stamped on every snapshot.
+          </p>
+          <div className="mt-5">
+            <AppStoreBadge slug="methodology" />
+          </div>
+        </div>
       </article>
     </main>
   );

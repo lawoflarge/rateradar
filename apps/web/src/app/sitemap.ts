@@ -20,8 +20,27 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
     { url: `${BASE_URL}/glossary`, lastModified: now, changeFrequency: "monthly", priority: 0.7 },
     { url: `${BASE_URL}/scenarios`, lastModified: now, changeFrequency: "hourly", priority: 0.7 },
+    {
+      url: `${BASE_URL}/fed-rate-tracker-app`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.9,
+    },
+    {
+      url: `${BASE_URL}/rate-cut-alerts`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
+    {
+      url: `${BASE_URL}/cme-fedwatch-alternative`,
+      lastModified: now,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
     { url: `${BASE_URL}/brokers`, lastModified: now, changeFrequency: "weekly", priority: 0.6 },
     { url: `${BASE_URL}/about`, lastModified: now, changeFrequency: "monthly", priority: 0.5 },
+    { url: `${BASE_URL}/privacy`, lastModified: now, changeFrequency: "yearly", priority: 0.3 },
   ];
 
   const glossaryTerms: MetadataRoute.Sitemap = TERMS.map((t) => ({
@@ -44,7 +63,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     }));
   } catch {
-    // Ignore — sitemap still valid without meeting pages
+    // Ignore; the sitemap is still valid without meeting pages
   }
 
   return [...staticPages, ...glossaryTerms, ...meetings];

@@ -43,7 +43,7 @@ const REPO_NAME = "rateradar";
 const REPO_BRANCH = "main";
 
 // Turbopack flags `process.cwd()` joins as non-statically-analyzable.
-// That's fine — the path is intentionally runtime, since the same code path
+// That's fine. The path is intentionally runtime, since the same code path
 // supports both dev (monorepo cwd) and prod (apps/web build root).
 const candidateLocalPaths = (bankLower: string) => [
   path.resolve(

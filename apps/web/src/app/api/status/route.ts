@@ -3,7 +3,7 @@
  *
  * Lightweight health/status endpoint. Production's real data source is the
  * git-committed JSON snapshots (Supabase free tier is paused), so a paused or
- * unreachable Supabase is NOT an outage — it's the expected state. We report
+ * unreachable Supabase is NOT an outage; it's the expected state. We report
  * JSON-snapshot freshness for both banks and only flag a real outage (ok:false
  * / 503) when neither Supabase nor a JSON snapshot is available.
  */

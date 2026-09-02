@@ -26,7 +26,7 @@ export function ShareButtons({ meetingId, title }: Props) {
       setCopied(true);
       window.setTimeout(() => setCopied(false), 1500);
     } catch {
-      // Clipboard API blocked — no-op
+      // Clipboard API blocked, so no-op
     }
   }
 

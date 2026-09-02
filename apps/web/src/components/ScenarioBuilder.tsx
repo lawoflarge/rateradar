@@ -30,7 +30,7 @@ export function ScenarioBuilder({ fed, ecb }: Props) {
   const snapshots = bank === "FED" ? fed : ecb;
   const ecbAvailable = ecb.length > 0;
 
-  // Resolve the active selection defensively — fall back to the first
+  // Resolve the active selection defensively, falling back to the first
   // meeting/outcome of the current bank if the stored id is stale (e.g. just
   // after switching banks).
   const activeMeeting =
@@ -155,18 +155,18 @@ export function ScenarioBuilder({ fed, ecb }: Props) {
           {/* Conditional curve */}
           <div className="flex flex-col gap-2">
             <span className="font-mono text-[11px] uppercase tracking-wider text-cut">
-              Conditional ({conditional?.anchorLabel ?? "—"})
+              Conditional ({conditional?.anchorLabel ?? "none"})
             </span>
             {conditional ? (
               <ImpliedRateCurve
                 snapshots={conditional.after}
                 startingRate={conditional.startingRate}
-                bankLabel={`${bankLabel} — if ${conditional.anchorLabel}`}
+                bankLabel={`${bankLabel}, if ${conditional.anchorLabel}`}
                 anchorLabel={conditional.anchorLabel}
               />
             ) : (
               <p className="text-sm text-ink-mute">
-                This is the last scheduled meeting — there is no subsequent path to
+                This is the last scheduled meeting, so there is no subsequent path to
                 project. Pick an earlier meeting.
               </p>
             )}

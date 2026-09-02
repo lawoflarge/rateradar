@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { AppStoreBadge } from "@/components/AppStoreBadge";
 
 export const metadata: Metadata = {
   title: "About RateRadar",
@@ -16,8 +17,11 @@ export default function AboutPage() {
           About RateRadar
         </h1>
         <p className="mt-6 text-lg leading-relaxed text-ink-soft">
-          See where rates are headed. Before the meeting.
+          See what is priced in before the meeting, on the web and on iPhone.
         </p>
+        <div className="mt-7">
+          <AppStoreBadge slug="about-hero" priority />
+        </div>
       </header>
 
       <article>
@@ -47,10 +51,23 @@ export default function AboutPage() {
           </li>
         </ul>
         <p className="my-4 text-lg leading-relaxed text-ink-soft">
-          RateRadar fixes all four. We combine Fed + ECB in a modern interface,
+          RateRadar addresses all four. We combine Fed and ECB in one interface,
           expose 60 days of historical probability charts, and make every
-          meeting snapshot shareable. Coming soon: a native iOS app with
-          home-screen widgets and meeting-day push notifications.
+          meeting snapshot shareable. The{" "}
+          <Link
+            href="/fed-rate-tracker-app"
+            className="text-cut hover:text-ink underline-offset-4 hover:underline"
+          >
+            native iPhone app
+          </Link>{" "}
+          is live on the App Store and adds{" "}
+          <Link
+            href="/rate-cut-alerts"
+            className="text-cut hover:text-ink underline-offset-4 hover:underline"
+          >
+            meeting reminders and sharp move alerts
+          </Link>
+          . There is no home screen widget yet.
         </p>
 
         <h2 className="mt-12 mb-4 font-serif text-2xl font-medium text-ink">

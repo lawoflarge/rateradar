@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AdSlot } from "@/components/AdSlot";
+import { AppStoreBadge } from "@/components/AppStoreBadge";
 import { JsonLd } from "@/components/JsonLd";
 import { Rule } from "@/components/Rule";
 import { AD_SLOTS } from "@/lib/ad-slots";
@@ -35,6 +36,19 @@ export default function GlossaryPage() {
           Plain-English definitions for the terms you&apos;ll see on RateRadar.
           No Bloomberg terminal required.
         </p>
+        <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
+          <AppStoreBadge slug="glossary-hero" priority />
+          <span className="max-w-xs text-sm leading-relaxed text-ink-mute">
+            The same glossary ships inside the{" "}
+            <Link
+              href="/fed-rate-tracker-app"
+              className="text-cut underline-offset-4 hover:text-ink hover:underline"
+            >
+              iPhone app
+            </Link>
+            .
+          </span>
+        </div>
       </header>
 
       <dl>

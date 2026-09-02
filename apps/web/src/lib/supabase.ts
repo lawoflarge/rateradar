@@ -2,7 +2,7 @@
  * Supabase client for server-side reads from Next.js route handlers + Server
  * Components.
  *
- * Uses the *publishable* key (formerly called "anon") which is safe to expose —
+ * Uses the *publishable* key (formerly called "anon") which is safe to expose:
  * RLS policies on Supabase gate what each caller can see. The pipeline uses a
  * separate secret key for writes.
  */

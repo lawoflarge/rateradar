@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { AdSlot } from "@/components/AdSlot";
+import { AppStoreBadge } from "@/components/AppStoreBadge";
 import { ImpliedRateCurve } from "@/components/ImpliedRateCurve";
 import { MostLikelyPath } from "@/components/MostLikelyPath";
 import { Rule } from "@/components/Rule";
@@ -56,6 +58,19 @@ export default async function ComparePage() {
           Federal Reserve and the European Central Bank. A growing divergence
           often signals shifting global macro expectations.
         </p>
+        <div className="mt-7 flex flex-wrap items-center gap-x-5 gap-y-3">
+          <AppStoreBadge slug="compare-hero" priority />
+          <span className="max-w-xs text-sm leading-relaxed text-ink-mute">
+            Both central banks in one{" "}
+            <Link
+              href="/fed-rate-tracker-app"
+              className="text-cut underline-offset-4 hover:text-ink hover:underline"
+            >
+              free iPhone app
+            </Link>
+            .
+          </span>
+        </div>
       </header>
 
       <Rule />

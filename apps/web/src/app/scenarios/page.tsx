@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 
+import Link from "next/link";
+
 import { AdSlot } from "@/components/AdSlot";
+import { AppStoreBadge } from "@/components/AppStoreBadge";
 import { ScenarioBuilder } from "@/components/ScenarioBuilder";
 import { Rule } from "@/components/Rule";
 import { SectionLabel } from "@/components/SectionLabel";
@@ -35,10 +38,23 @@ export default async function ScenariosPage() {
         Conditional rate paths
       </h1>
       <p className="mt-2 max-w-2xl text-sm text-ink-mute">
-        Pick a meeting and an outcome — for example &ldquo;Fed cuts 25bp in
-        March&rdquo; — and see how the market-implied path for the following
+        Pick a meeting and an outcome, for example &ldquo;Fed cuts 25bp in
+        March&rdquo;, and see how the market-implied path for the following
         meetings re-anchors on that assumption.
       </p>
+      <div className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-3">
+        <AppStoreBadge slug="scenarios-hero" priority />
+        <span className="max-w-xs text-sm leading-relaxed text-ink-mute">
+          Scenarios are in the{" "}
+          <Link
+            href="/fed-rate-tracker-app"
+            className="text-cut underline-offset-4 hover:text-ink hover:underline"
+          >
+            iPhone app
+          </Link>{" "}
+          as well.
+        </span>
+      </div>
       <Rule />
       <div className="mt-6">
         <ScenarioBuilder fed={fed} ecb={ecb} />

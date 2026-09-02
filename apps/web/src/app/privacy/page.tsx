@@ -165,7 +165,7 @@ export default function PrivacyPage() {
             and message payload (no personal information).
           </li>
           <li>
-            <strong className="text-ink">Google LLC</strong> — provides
+            <strong className="text-ink">Google LLC</strong> provides
             advertising via Google AdSense (web) and Google AdMob (iOS app),
             and consent management via Google Funding Choices. Google&apos;s use of data is governed by its{" "}
             <a

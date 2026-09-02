@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { AdSlot } from "@/components/AdSlot";
+import { AppStoreBadge } from "@/components/AppStoreBadge";
 import { ImpliedRateCurve } from "@/components/ImpliedRateCurve";
 import { MeetingCountdown } from "@/components/MeetingCountdown";
 import { MethodologyBadge } from "@/components/MethodologyBadge";
@@ -16,11 +18,29 @@ import { CURRENT_POLICY_RATES } from "@/lib/policy-rates";
 import { loadJsonSnapshotAt } from "@/lib/snapshots";
 import type { MeetingProbabilities, ProbabilitySeries } from "@/lib/types";
 
-const APP_STORE_URL =
-  "https://apps.apple.com/us/app/rateradar-fed-rate-tracker/id6768628917";
-
 const GEO_DEFINITION =
-  "RateRadar is a free iPhone app that tracks the U.S. federal funds rate and the market-implied probability of every upcoming Federal Reserve (FOMC) and European Central Bank rate decision. It computes its own odds from 30-Day Fed Funds Futures and €STR OIS data — never scraped — and keeps 60 days of probability history.";
+  "RateRadar is a free iPhone app that tracks the U.S. federal funds rate and the market-implied probability of every upcoming Federal Reserve (FOMC) and European Central Bank rate decision. It computes its own odds from 30-Day Fed Funds Futures and €STR OIS data, never scraped, and keeps 60 days of probability history.";
+
+/** The App Store posters, web-optimized. Alt text describes what is actually
+    on each screen, not what we wish it showed. */
+const SHOTS = [
+  {
+    src: "/shots/01.webp",
+    alt: "RateRadar dashboard on iPhone showing the next Federal Reserve decision and the current market-implied odds.",
+  },
+  {
+    src: "/shots/02.webp",
+    alt: "Outcome distribution screen asking whether the Fed will cut rates on December 9, 2026, with hold at 64 percent as the most likely outcome.",
+  },
+  {
+    src: "/shots/03.webp",
+    alt: "Per-meeting probability table for an FOMC meeting with a 60-day probability history chart underneath.",
+  },
+  {
+    src: "/shots/04.webp",
+    alt: "Alerts settings screen with meeting reminders and rate shift alerts, and a sharp move threshold set to 8 percentage points.",
+  },
+];
 
 const FAQ_ITEMS = [
   {
@@ -33,7 +53,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "When is the next FOMC meeting?",
-    a: "The FOMC — the Federal Reserve committee that sets U.S. interest rates — meets eight times a year. RateRadar always shows the next scheduled meeting with a live countdown, the market-implied probability of a hold, cut, or hike, and the current policy rate, so you never have to look up the calendar.",
+    a: "The FOMC is the Federal Reserve committee that sets U.S. interest rates, and it meets eight times a year. RateRadar always shows the next scheduled meeting with a live countdown, the market-implied probability of a hold, cut, or hike, and the current policy rate, so you never have to look up the calendar.",
   },
   {
     q: "Does RateRadar track the European Central Bank too?",
@@ -45,25 +65,13 @@ const FAQ_ITEMS = [
   },
   {
     q: "Can I see how rate expectations changed over time?",
-    a: "Yes. Historical tracking is RateRadar's core feature. It saves the probability of each outcome daily and keeps 60 days of history per meeting, so you can see how the odds of a cut, hold, or hike shifted week by week — not just today's snapshot. Sharp-move alerts flag big changes.",
+    a: "Yes. Historical tracking is RateRadar's core feature. It saves the probability of each outcome daily and keeps 60 days of history per meeting, so you can see how the odds of a cut, hold, or hike shifted week by week, not just today's snapshot. Sharp-move alerts flag big changes.",
+  },
+  {
+    q: "Is RateRadar free, and does it have in-app purchases?",
+    a: "RateRadar is free to download and has no in-app purchases and no subscription. There is nothing to unlock and no account to create. The app carries advertising, which is what pays for the data pipeline and hosting.",
   },
 ];
-
-const softwareApplicationLd = {
-  "@context": "https://schema.org",
-  "@type": "SoftwareApplication",
-  name: "RateRadar: Fed Rate Tracker",
-  operatingSystem: "iOS",
-  applicationCategory: "FinanceApplication",
-  url: APP_STORE_URL,
-  description:
-    "RateRadar tracks the U.S. federal funds rate and the market-implied probability of every upcoming Federal Reserve and European Central Bank rate decision. It computes its own odds in-house from Fed Funds Futures and €STR OIS data — never scraping CME FedWatch or ECB Watch — and keeps 60 days of history per meeting.",
-  offers: {
-    "@type": "Offer",
-    price: "0",
-    priceCurrency: "USD",
-  },
-};
 
 const faqPageLd = {
   "@context": "https://schema.org",
@@ -76,14 +84,14 @@ const faqPageLd = {
 };
 
 export const metadata: Metadata = {
-  title: "Fed + ECB rate-decision probabilities, with history",
+  title: "Fed and ECB rate decision probabilities, with 60 days of history",
   description:
-    "Live market-implied probabilities for Fed and ECB interest-rate decisions, with 60 days of historical charts showing how expectations shifted into each meeting.",
+    "Live market-implied odds of a Fed or ECB cut, hold, or hike at every upcoming meeting, plus 60 days of history. Free iPhone app, no account needed.",
   alternates: { canonical: "/" },
   openGraph: {
     title: "RateRadar · Fed + ECB rate-decision probabilities",
     description:
-      "See where rates are headed before the meeting. Fed + ECB probabilities with historical tracking.",
+      "See what is priced in before the meeting. Fed and ECB probabilities with historical tracking.",
     type: "website",
   },
 };
@@ -142,39 +150,30 @@ export default async function Home() {
     <main className="mx-auto max-w-5xl px-6 py-16">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify(softwareApplicationLd),
-        }}
-      />
-      <script
-        type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqPageLd) }}
       />
       <header className="mb-16">
-        <SectionLabel>Real-time market-implied odds</SectionLabel>
+        <SectionLabel>Market-implied odds, Fed and ECB</SectionLabel>
         <h1 className="mt-4 max-w-3xl font-serif text-5xl font-medium leading-[1.05] tracking-tight text-ink sm:text-6xl">
-          See where rates are headed.
-          <span className="block text-ink-mute">Before the meeting.</span>
+          Fed and ECB rate decision probabilities
         </h1>
         <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink-soft">
-          Market-implied probabilities for Fed and ECB interest-rate decisions, with
-          historical tracking over days and weeks. Computed from Fed Funds Futures and
-          €STR OIS. Never scraped.
+          See whether a cut, hold, or hike is priced into the next FOMC and ECB
+          meeting, and how those odds moved over the past 60 days. Free on
+          iPhone, and live on this page.
         </p>
+        <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3">
+          <AppStoreBadge slug="hero" priority />
+          <span className="text-sm text-ink-mute">
+            Free, no account, no in-app purchases. iOS 17 or later.
+          </span>
+        </div>
         <p
           data-geo-definition
-          className="mt-5 max-w-2xl text-base leading-relaxed text-ink-soft"
+          className="mt-7 max-w-2xl text-base leading-relaxed text-ink-soft"
         >
           {GEO_DEFINITION}
         </p>
-        <div className="mt-6">
-          <a
-            href={APP_STORE_URL}
-            className="inline-flex items-center gap-2 rounded-full border border-ink/20 px-5 py-2.5 text-sm font-medium text-ink transition-colors hover:border-ink hover:bg-ink hover:text-cream"
-          >
-            Download on the App Store
-          </a>
-        </div>
         <div className="mt-6">
           <MethodologyBadge
             version={methodologyVersion}
@@ -183,6 +182,65 @@ export default async function Home() {
           />
         </div>
       </header>
+
+      <Rule />
+
+      <section className="my-12" aria-labelledby="app-heading">
+        <SectionLabel>The app</SectionLabel>
+        <h2
+          id="app-heading"
+          className="mt-2 font-serif text-3xl font-medium leading-tight tracking-tight text-ink"
+        >
+          What the iPhone app shows you
+        </h2>
+        <p className="mt-3 max-w-2xl leading-relaxed text-ink-soft">
+          The same probabilities you see below, on your home screen, with the
+          history chart and alerts that this page cannot give you.
+        </p>
+        <ul className="mt-8 grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-4">
+          {SHOTS.map((s, i) => (
+            <li key={s.src}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={s.src}
+                alt={s.alt}
+                width={221}
+                height={480}
+                loading={i === 0 ? "eager" : "lazy"}
+                decoding="async"
+                className="h-auto w-full rounded-lg border border-ink/10"
+              />
+            </li>
+          ))}
+        </ul>
+        <div className="mt-8 flex flex-wrap items-center gap-x-6 gap-y-3">
+          <AppStoreBadge slug="screenshots" />
+          <p className="max-w-md text-sm leading-relaxed text-ink-mute">
+            More on the app:{" "}
+            <Link
+              href="/fed-rate-tracker-app"
+              className="text-cut underline-offset-4 hover:text-ink hover:underline"
+            >
+              what it does
+            </Link>
+            ,{" "}
+            <Link
+              href="/rate-cut-alerts"
+              className="text-cut underline-offset-4 hover:text-ink hover:underline"
+            >
+              how the alerts work
+            </Link>
+            , and{" "}
+            <Link
+              href="/cme-fedwatch-alternative"
+              className="text-cut underline-offset-4 hover:text-ink hover:underline"
+            >
+              how it compares to CME FedWatch
+            </Link>
+            .
+          </p>
+        </div>
+      </section>
 
       <Rule />
 
@@ -317,6 +375,12 @@ export default async function Home() {
             </div>
           ))}
         </dl>
+        <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-3">
+          <AppStoreBadge slug="faq" />
+          <span className="text-sm text-ink-mute">
+            Get the odds and the alerts on your phone.
+          </span>
+        </div>
       </section>
 
       <Rule />
@@ -335,7 +399,6 @@ export default async function Home() {
             lawoflarge
           </a>
         </p>
-        <p className="mt-3 text-xs">Last updated: 2026-07-23</p>
       </footer>
     </main>
   );

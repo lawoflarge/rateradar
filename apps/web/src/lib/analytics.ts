@@ -1,11 +1,11 @@
 /**
- * PostHog analytics scaffolding — disabled until NEXT_PUBLIC_POSTHOG_KEY is set.
+ * PostHog analytics scaffolding, disabled until NEXT_PUBLIC_POSTHOG_KEY is set.
  *
  * Once configured (Vercel env vars: NEXT_PUBLIC_POSTHOG_KEY +
  * NEXT_PUBLIC_POSTHOG_HOST), this module initializes the browser-side SDK and
  * exposes tiny tracking helpers used from client components.
  *
- * Keep events narrow and semantic — don't fire one per click. Start with:
+ * Keep events narrow and semantic; don't fire one per click. Start with:
  *   - page_view (auto)
  *   - meeting_viewed
  *   - chart_interacted

@@ -33,7 +33,7 @@ export function MostLikelyPath({
   const list = snapshots.slice(0, maxMeetings);
 
   // Running total of expected bps change. Use reduce instead of a mutable
-  // `let` accumulator — React 19's purity rule flags reassignment during render.
+  // `let` accumulator, since React 19's purity rule flags reassignment during render.
   type PathEntry = {
     snapshot: (typeof list)[number];
     expectedDelta: number;

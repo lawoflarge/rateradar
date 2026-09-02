@@ -11,6 +11,7 @@ const LINKS = [
   { href: "/glossary", label: "Glossary" },
   { href: "/brokers", label: "Brokers" },
   { href: "/about", label: "About" },
+  { href: "/fed-rate-tracker-app", label: "iPhone app" },
 ];
 
 export function NavBar() {

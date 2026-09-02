@@ -50,7 +50,7 @@ function actionLabel(label: string, deltaBps: number): string {
 }
 
 // Fonts: Inter (UI/labels), IBM Plex Serif (headline), JetBrains Mono (figures).
-// Satori only supports TTF/OTF, not woff2 — pin the ttf endpoints from
+// Satori only supports TTF/OTF, not woff2, so pin the ttf endpoints from
 // Google Fonts CSS2 (resolved without a modern UA, so Google returns ttf).
 // If Google bumps the version slug, refresh these.
 // Fetched once per warm instance and reused across requests to avoid hitting
@@ -164,7 +164,7 @@ export async function GET(
           fontFamily: "Inter, sans-serif",
         }}
       >
-        {/* Top band: wordmark — concentric-circle BrandMark recreated with stacked divs
+        {/* Top band: wordmark. Concentric-circle BrandMark recreated with stacked divs
             (Satori supports flex + borderRadius but not arbitrary SVG strokes reliably). */}
         <div
           style={{

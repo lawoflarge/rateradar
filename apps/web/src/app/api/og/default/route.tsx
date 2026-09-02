@@ -52,7 +52,7 @@ export function GET() {
           Fed + ECB rate-decision probabilities
         </div>
         <div style={{ fontSize: 36, marginTop: 28, color: INK_MUTE }}>
-          See where rates are headed — before the meeting.
+          See what is priced in before the meeting.
         </div>
       </div>
     ),

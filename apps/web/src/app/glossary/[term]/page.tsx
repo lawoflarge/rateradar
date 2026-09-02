@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AdSlot } from "@/components/AdSlot";
+import { AppStoreBadge } from "@/components/AppStoreBadge";
 import { JsonLd } from "@/components/JsonLd";
 import { Rule } from "@/components/Rule";
 import { SectionLabel } from "@/components/SectionLabel";
@@ -101,6 +102,20 @@ export default async function GlossaryTermPage({ params }: PageProps) {
           full methodology
         </Link>
         .
+      </div>
+
+      <div className="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3">
+        <AppStoreBadge slug={`glossary-${t.slug}`} />
+        <span className="max-w-xs text-sm leading-relaxed text-ink-mute">
+          Every term is explained inside the{" "}
+          <Link
+            href="/fed-rate-tracker-app"
+            className="text-cut underline-offset-4 hover:text-ink hover:underline"
+          >
+            free iPhone app
+          </Link>{" "}
+          too.
+        </span>
       </div>
 
       <Rule tone="soft" />

@@ -7,7 +7,7 @@ interface Props {
 }
 
 // Cache snapshot objects so identical inputs return identical references.
-// useSyncExternalStore compares snapshots with Object.is — without this cache
+// useSyncExternalStore compares snapshots with Object.is, so without this cache
 // every getSnapshot() call returns a fresh object and triggers React error
 // #185 (Maximum update depth exceeded) in production.
 const SNAPSHOT_CACHE = new Map<string, { prefix: string; value: string; suffix: string }>();
@@ -38,7 +38,7 @@ function subscribe(onChange: () => void): () => void {
 
 /**
  * Countdown to a meeting date. Uses `useSyncExternalStore` so React 19 stays happy
- * with time-dependent values — server renders an empty string to avoid hydration
+ * with time-dependent values. The server renders an empty string to avoid hydration
  * mismatches, client hydrates with the live countdown.
  */
 export function MeetingCountdown({ meetingDate }: Props) {
