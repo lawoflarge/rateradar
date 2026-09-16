@@ -12,7 +12,7 @@ export const APP_STORE_ID = "6768628917";
 
 /** Campaign-tagged App Store link. `mt=8` is Apple's software media type. */
 export function appStoreUrl(slug: string): string {
-  return `https://apps.apple.com/app/id${APP_STORE_ID}?ct=${slug}&mt=8`;
+  return `https://apps.apple.com/app/id${APP_STORE_ID}?pt=128877661&ct=${slug}&mt=8`;
 }
 
 interface AppStoreBadgeProps {

@@ -81,6 +81,14 @@ export function SiteFooter() {
           decide. RateRadar is informational and is not financial advice.
         </p>
       </div>
+      <p style={{ padding: "1rem 1.5rem", margin: 0, fontSize: "0.875rem" }}>
+        <a
+          href="https://lawoflarge.app/en/apps/rateradar"
+          style={{ color: "inherit", textDecoration: "underline", textUnderlineOffset: "3px" }}
+        >
+          RateRadar in the Law of Large app collection
+        </a>
+      </p>
     </footer>
   );
 }
