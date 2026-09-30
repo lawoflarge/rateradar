@@ -1,15 +1,15 @@
 {
   "date": "2026-09-30",
-  "generated_at": "2026-09-30T01:12:58.697567+00:00",
+  "generated_at": "2026-09-30T21:54:47.550760+00:00",
   "headline": {
     "meeting_id": "FED-2026-10-28",
     "bank_code": "FED",
     "meeting_date": "2026-10-28",
     "outcome_label": "Hold",
     "outcome_delta_bps": 0,
-    "prior_probability": 0.34996686662946463,
-    "current_probability": 0.548583984375,
-    "delta_pp": 19.861711774553537
+    "prior_probability": 0.548583984375,
+    "current_probability": 0.648590087890625,
+    "delta_pp": 10.0006103515625
   },
   "top_shifts": [
     {
@@ -18,9 +18,9 @@
       "meeting_date": "2026-10-28",
       "outcome_label": "Hold",
       "outcome_delta_bps": 0,
-      "prior_probability": 0.34996686662946463,
-      "current_probability": 0.548583984375,
-      "delta_pp": 19.861711774553537
+      "prior_probability": 0.548583984375,
+      "current_probability": 0.648590087890625,
+      "delta_pp": 10.0006103515625
     },
     {
       "meeting_id": "FED-2026-10-28",
@@ -28,19 +28,19 @@
       "meeting_date": "2026-10-28",
       "outcome_label": "+25bp",
       "outcome_delta_bps": 25,
-      "prior_probability": 0.6500331333705354,
-      "current_probability": 0.451416015625,
-      "delta_pp": -19.861711774553537
+      "prior_probability": 0.451416015625,
+      "current_probability": 0.351409912109375,
+      "delta_pp": -10.0006103515625
     },
     {
-      "meeting_id": "FED-2026-09-16",
+      "meeting_id": "FED-2026-12-09",
       "bank_code": "FED",
-      "meeting_date": "2026-09-16",
-      "outcome_label": "+25bp",
-      "outcome_delta_bps": 25,
-      "prior_probability": 0.9500209263392865,
-      "current_probability": 0.971405029296875,
-      "delta_pp": 2.1384102957588524
+      "meeting_date": "2026-12-09",
+      "outcome_label": "Hold",
+      "outcome_delta_bps": 0,
+      "prior_probability": 0.08001708984375,
+      "current_probability": 0.1199951171875,
+      "delta_pp": 3.997802734375
     }
   ],
   "calendar_context": []
