@@ -1,9 +1,9 @@
 # RateRadar
 
-> See where rates are headed — before the meeting.
+> See where rates are headed: before the meeting.
 
 A modern, mobile-first tracker for **Fed and ECB** interest-rate decisions with
-**historical probability charts** — the feature neither CME FedWatch nor
+**historical probability charts**: the feature neither CME FedWatch nor
 ECB Watch ship today.
 
 [![CI](https://github.com/lawoflarge/rateradar/actions/workflows/ci.yml/badge.svg)](https://github.com/lawoflarge/rateradar/actions/workflows/ci.yml)
@@ -18,20 +18,20 @@ ECB Watch ship today.
 ## What makes RateRadar different
 
 - **Full Fed + ECB coverage in one place.** Not two disconnected sites.
-- **60 days of historical probability charts** per meeting, color-coded by outcome — see exactly how expectations moved into each decision.
-- **Cumulative pricing headline** (Σ pᵢ · Δᵢ) — the single number that matters.
+- **60 days of historical probability charts** per meeting, color-coded by outcome: see exactly how expectations moved into each decision.
+- **Cumulative pricing headline** (Σ pᵢ · Δᵢ): the single number that matters.
 - **Implied forward rate curve** per bank and a side-by-side **Fed-vs-ECB divergence view**.
-- **Snapshot history in git.** Every cron run commits a JSON snapshot to `services/data-pipeline/snapshots/` and a derived content bundle to `content/` — the historical record is reproducible from the repo itself, not lost behind a paused database.
+- **Snapshot history in git.** Every cron run commits a JSON snapshot to `services/data-pipeline/snapshots/` and a derived content bundle to `content/`: the historical record is reproducible from the repo itself, not lost behind a paused database.
 - **Diff engine.** After each snapshot the pipeline runs `src.diff_engine` against `actuals.json` to compute hit-rates, biggest misses, and a public scoreboard (`content/scoreboard.json`).
 - **Deep-linkable meeting pages** with dynamic Open Graph images (Twitter, LinkedIn, iMessage unfurl).
-- **Plain-English glossary** + a transparent methodology page — every number on the site is derived from the math documented in [`docs/METHODOLOGY.md`](docs/METHODOLOGY.md).
+- **Plain-English glossary** + a transparent methodology page: every number on the site is derived from the math documented in [`docs/METHODOLOGY.md`](docs/METHODOLOGY.md).
 - **Native iOS app** on the App Store (Expo + WebView wrapper, banner ads opt-in via env flag).
 
 ## Why not just scrape CME FedWatch?
 
 We don't. Every probability shown on RateRadar is **computed in-house** from
 free futures / OIS prices, using the public CME step-function decomposition.
-That's a deliberate constraint — legal, App Store, and trust all benefit from
+That's a deliberate constraint: legal, App Store, and trust all benefit from
 not republishing somebody else's UI. See
 [`docs/METHODOLOGY.md`](docs/METHODOLOGY.md) for the full calculation, validation
 rules, and known MVP limitations.
@@ -70,7 +70,7 @@ rateradar/
 | API contract | OpenAPI 3.1 |
 | Hosting | Vercel (web), GitHub Actions cron (pipeline) |
 | Analytics | PostHog (scaffolded, env-gated) |
-| Ads | Google AdSense (web), AdMob (iOS) — both env-gated |
+| Ads | Google AdSense (web), AdMob (iOS): both env-gated |
 
 ## Quickstart
 
@@ -119,7 +119,7 @@ pytest
 5. Runs `src.diff_engine` to score recent snapshots against `actuals.json` and refresh the content bundle.
 6. Commits the snapshots and derived content back to `main`.
 
-The JSON snapshots are the source of truth — history survives even if the
+The JSON snapshots are the source of truth: history survives even if the
 Supabase free-tier project is paused.
 
 ## Deployment
