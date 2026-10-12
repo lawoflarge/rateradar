@@ -279,5 +279,7 @@
 	</array>
 	<key>UIUserInterfaceStyle</key>
 	<string>Light</string>
+	<key>CrossPromotionBaseURL</key>
+	<string>$(CROSS_PROMOTION_BASE_URL)</string>
 </dict>
 </plist>

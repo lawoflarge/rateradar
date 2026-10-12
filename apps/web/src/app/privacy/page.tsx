@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   },
 };
 
-const LAST_UPDATED = "2026-05-20";
+const LAST_UPDATED = "2026-10-11";
 
 export default function PrivacyPage() {
   return (
@@ -32,6 +32,11 @@ export default function PrivacyPage() {
       </header>
 
       <article>
+        <h2 className="mt-12 mb-4 font-serif text-2xl font-medium text-ink">Recommendations for our other iOS apps</h2>
+        <p className="my-4 text-lg leading-relaxed text-ink-soft">In the iOS app’s About page, the app can fetch up to three recommendations for our other apps. The choices depend on the app you are using, App Store availability and iOS compatibility, not on your personal data or activity inside the app. App icons load from Apple’s image servers. Opening a recommendation takes you to the App Store with a campaign label identifying the source app and placement, never a person.</p>
+        <p className="my-4 text-lg leading-relaxed text-ink-soft">We count qualified views and successful opens in aggregate. Our service stores daily counts with the source app, recommended app, placement, configuration revision and optional presentation variant. It does not store an account, advertising identifier, device identifier, persistent visitor identifier or personal profile, and it does not receive the app’s private content. These counts cannot tell us who installed an app.</p>
+        <p className="my-4 text-lg leading-relaxed text-ink-soft">The recommendation service is hosted by Supabase. Network requests necessarily expose an IP address to the hosting provider for delivery and security; our aggregate counter does not store it. See <a href="https://supabase.com/privacy" rel="noopener noreferrer" target="_blank">Supabase’s privacy policy</a>. Apple processes icon requests and App Store visits under <a href="https://www.apple.com/legal/privacy/" rel="noopener noreferrer" target="_blank">Apple’s privacy policy</a>.</p>
+
         <h2 className="mt-12 mb-4 font-serif text-2xl font-medium text-ink">
           1. Who runs RateRadar
         </h2>
@@ -52,7 +57,7 @@ export default function PrivacyPage() {
         </h2>
         <p className="my-4 text-lg leading-relaxed text-ink-soft">
           There are no accounts, no sign-ups, no email forms, and no
-          first-party analytics SDKs. What we collect ourselves:
+          personal usage profiles. What we collect ourselves:
         </p>
         <ul className="my-4 list-disc space-y-2 pl-6 text-lg leading-relaxed text-ink-soft">
           <li>
@@ -136,7 +141,7 @@ export default function PrivacyPage() {
             your explicit App Tracking Transparency consent.
           </li>
           <li>
-            We do not run our own analytics SDKs, fingerprinting, location
+            We use anonymous recommendation counts, but no fingerprinting, location
             tracking, microphone, camera, contacts, or health-data access.
           </li>
         </ul>

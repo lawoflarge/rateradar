@@ -4,7 +4,7 @@ import SwiftUI
 /// Static editorial page: serif H1/H2s, lg body copy, ink links underlined
 /// in amber on the web (mailto / external policy links).
 struct PrivacyView: View {
-    private static let lastUpdated = "2026-05-20"
+    private static let lastUpdated = "2026-10-11"
 
     var body: some View {
         ScrollView {
@@ -44,6 +44,7 @@ struct PrivacyView: View {
         VStack(alignment: .leading, spacing: 0) {
             section1
             section2
+            recommendations
             section3
             section4
             section5
@@ -56,6 +57,15 @@ struct PrivacyView: View {
 
     // MARK: - Sections
 
+    private var recommendations: some View {
+        Group {
+            h2("Recommendations for our other apps")
+            paragraph(plain("In About, the app can fetch up to three recommendations for our other apps. The choices depend on the app you are using, App Store availability and iOS compatibility, not on your personal data or activity inside the app. App icons load from Apple’s image servers. Opening a recommendation takes you to the App Store with a campaign label identifying the source app and placement, never a person."))
+            paragraph(plain("We count qualified views and successful opens in aggregate. Our service stores daily counts with the source app, recommended app, placement, configuration revision and optional presentation variant. It does not store an account, advertising identifier, device identifier, persistent visitor identifier or personal profile, and it does not receive the app’s private content. These counts cannot tell us who installed an app."))
+            paragraph(plain("The recommendation service is hosted by Supabase. Network requests necessarily expose an IP address to the hosting provider for delivery and security; our aggregate counter does not store it. See Supabase’s privacy policy. Apple processes icon requests and App Store visits under Apple’s privacy policy."))
+        }
+    }
+
     private var section1: some View {
         Group {
             h2("1. Who runs RateRadar")
@@ -66,7 +76,7 @@ struct PrivacyView: View {
     private var section2: some View {
         Group {
             h2("2. What we collect directly")
-            paragraph(plain("There are no accounts, no sign-ups, no email forms, and no first-party analytics SDKs. What we collect ourselves:"))
+            paragraph(plain("There are no accounts, no sign-ups, no email forms, and no personal usage profiles. What we collect ourselves:"))
             bulletList([
                 strong("Push notification tokens") + plain(" (iOS app only). If you opt in to rate-shift alerts in the RateRadar iOS app, your device registers an Apple Push Notification token (APNs device token) with our server so we can deliver alerts. The token identifies your device, not you. We never link it to your name, email, or any other identifier. RateRadar has no user accounts. Tokens are stored only for delivery and are rotated/revoked by iOS when you uninstall the app or disable notifications."),
                 strong("Standard request logs") + plain(" (rateradar-web.vercel.app). Our hosting provider, Vercel, records standard HTTP request metadata (IP address, user agent, path, timestamp) for operational purposes such as abuse prevention and performance monitoring. These logs are not linked to any user identifier, are kept for short retention windows, and are not sold or shared."),
@@ -95,7 +105,7 @@ struct PrivacyView: View {
                 plain("We do not share data with data brokers."),
                 plain("We do not combine RateRadar data with data from third-party apps, websites, or services for our own tracking purposes."),
                 plain("We do not access the iOS Advertising Identifier (IDFA) without your explicit App Tracking Transparency consent."),
-                plain("We do not run our own analytics SDKs, fingerprinting, location tracking, microphone, camera, contacts, or health-data access."),
+                plain("We use anonymous recommendation counts, but no fingerprinting, location tracking, microphone, camera, contacts, or health-data access."),
             ])
         }
     }

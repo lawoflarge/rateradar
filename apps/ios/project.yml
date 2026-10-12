@@ -6,6 +6,9 @@ options:
   createIntermediateGroups: true
 
 packages:
+  CrossPromotion:
+    url: https://github.com/lawoflarge/lawoflarge.app.git
+    revision: 168dd73615cde4a62f92b0064aee3048c628c5a4
   GoogleMobileAds:
     url: https://github.com/googleads/swift-package-manager-google-mobile-ads
     from: 12.0.0
@@ -15,8 +18,9 @@ packages:
 
 settings:
   base:
-    MARKETING_VERSION: "1.3.0"
-    CURRENT_PROJECT_VERSION: "1787939346"
+    CROSS_PROMOTION_BASE_URL: "https://zovzimsewjkjmazckhua.supabase.co/functions/v1/cross-promotion"
+    MARKETING_VERSION: "1.3.1"
+    CURRENT_PROJECT_VERSION: "1787939347"
     SWIFT_VERSION: "5.10"
     DEVELOPMENT_TEAM: "R95M36AU2X"
     SWIFT_STRICT_CONCURRENCY: targeted
@@ -29,6 +33,10 @@ targets:
     sources:
       - path: RateRadar
     dependencies:
+      - package: CrossPromotion
+        product: CrossPromotionCore
+      - package: CrossPromotion
+        product: CrossPromotionUI
       - package: GoogleMobileAds
         product: GoogleMobileAds
       - package: GoogleUserMessagingPlatform

@@ -1,18 +1,26 @@
 import SwiftUI
+import CrossPromotionUI
 
 /// Full text port of apps/web/src/app/about/page.tsx (mobile rendering).
 /// Static editorial page: serif H1/H2s, lg body copy, amber inline links
 /// (internal → router, external → system browser).
 struct AboutView: View {
+    @State private var promotions = AppPromotions.makeStore()
+
     @Environment(Router.self) private var router
 
     var body: some View {
+        PromotionViewport { viewport in
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
                 header
                 intro
                 honest
                 free
+                if let promotions {
+                    AppPromotionSection(store: promotions, viewport: viewport)
+                }
+
                 sourceCode
                 notAdvice
             }
@@ -20,6 +28,8 @@ struct AboutView: View {
             .padding(.horizontal, 24)
             .padding(.vertical, 64)
         }
+        }
+        .promotionLifecycle(promotions)
         .background(RR.cream)
         .environment(\.openURL, OpenURLAction { url in
             if url.scheme == "rateradar" {
