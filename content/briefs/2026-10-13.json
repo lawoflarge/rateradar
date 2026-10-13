@@ -1,46 +1,46 @@
 {
   "date": "2026-10-13",
-  "generated_at": "2026-10-13T02:57:59.801175+00:00",
+  "generated_at": "2026-10-13T22:19:10.889541+00:00",
   "headline": {
-    "meeting_id": "FED-2026-10-28",
+    "meeting_id": "FED-2026-12-09",
     "bank_code": "FED",
-    "meeting_date": "2026-10-28",
-    "outcome_label": "-50bp",
-    "outcome_delta_bps": -50,
-    "prior_probability": 0.0,
-    "current_probability": 0.0,
-    "delta_pp": 0.0
+    "meeting_date": "2026-12-09",
+    "outcome_label": "Hold",
+    "outcome_delta_bps": 0,
+    "prior_probability": 0.1400146484375,
+    "current_probability": 0.079986572265625,
+    "delta_pp": -6.0028076171875
   },
   "top_shifts": [
     {
-      "meeting_id": "FED-2026-10-28",
+      "meeting_id": "FED-2026-12-09",
       "bank_code": "FED",
-      "meeting_date": "2026-10-28",
-      "outcome_label": "-50bp",
-      "outcome_delta_bps": -50,
-      "prior_probability": 0.0,
-      "current_probability": 0.0,
-      "delta_pp": 0.0
-    },
-    {
-      "meeting_id": "FED-2026-10-28",
-      "bank_code": "FED",
-      "meeting_date": "2026-10-28",
-      "outcome_label": "-25bp",
-      "outcome_delta_bps": -25,
-      "prior_probability": 0.0,
-      "current_probability": 0.0,
-      "delta_pp": 0.0
-    },
-    {
-      "meeting_id": "FED-2026-10-28",
-      "bank_code": "FED",
-      "meeting_date": "2026-10-28",
+      "meeting_date": "2026-12-09",
       "outcome_label": "Hold",
       "outcome_delta_bps": 0,
-      "prior_probability": 0.0,
-      "current_probability": 0.0,
-      "delta_pp": 0.0
+      "prior_probability": 0.1400146484375,
+      "current_probability": 0.079986572265625,
+      "delta_pp": -6.0028076171875
+    },
+    {
+      "meeting_id": "FED-2026-12-09",
+      "bank_code": "FED",
+      "meeting_date": "2026-12-09",
+      "outcome_label": "+25bp",
+      "outcome_delta_bps": 25,
+      "prior_probability": 0.8599853515625,
+      "current_probability": 0.920013427734375,
+      "delta_pp": 6.0028076171875
+    },
+    {
+      "meeting_id": "FED-2026-10-28",
+      "bank_code": "FED",
+      "meeting_date": "2026-10-28",
+      "outcome_label": "+25bp",
+      "outcome_delta_bps": 25,
+      "prior_probability": 0.79998779296875,
+      "current_probability": 0.760009765625,
+      "delta_pp": -3.997802734375
     }
   ],
   "calendar_context": []
