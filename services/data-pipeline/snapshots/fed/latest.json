@@ -1,6 +1,6 @@
 {
   "bank_code": "FED",
-  "snapshot_at": "2026-10-23T21:01:36+00:00",
+  "snapshot_at": "2026-10-24T00:26:12+00:00",
   "methodology_version": "1.2.0",
   "estimation_basis": "forward-implied (Fed Funds futures via yfinance)",
   "rows": [
@@ -29,14 +29,14 @@
       "meeting_date": "2026-10-28",
       "outcome_label": "+25bp",
       "outcome_delta_bps": 25,
-      "probability": 0.8800048828125,
+      "probability": 0.899993896484375,
       "post_meeting_rate": 3.875
     },
     {
       "meeting_date": "2026-10-28",
       "outcome_label": "+50bp",
       "outcome_delta_bps": 50,
-      "probability": 0.1199951171875,
+      "probability": 0.100006103515625,
       "post_meeting_rate": 4.125
     },
     {
@@ -44,35 +44,35 @@
       "outcome_label": "-50bp",
       "outcome_delta_bps": -50,
       "probability": 0.0,
-      "post_meeting_rate": 3.404998779296875
+      "post_meeting_rate": 3.4000015258789062
     },
     {
       "meeting_date": "2026-12-09",
       "outcome_label": "-25bp",
       "outcome_delta_bps": -25,
       "probability": 0.0,
-      "post_meeting_rate": 3.654998779296875
+      "post_meeting_rate": 3.6500015258789062
     },
     {
       "meeting_date": "2026-12-09",
       "outcome_label": "Hold",
       "outcome_delta_bps": 0,
-      "probability": 0.220001220703125,
-      "post_meeting_rate": 3.904998779296875
+      "probability": 0.20001220703125,
+      "post_meeting_rate": 3.9000015258789062
     },
     {
       "meeting_date": "2026-12-09",
       "outcome_label": "+25bp",
       "outcome_delta_bps": 25,
-      "probability": 0.779998779296875,
-      "post_meeting_rate": 4.154998779296875
+      "probability": 0.79998779296875,
+      "post_meeting_rate": 4.150001525878906
     },
     {
       "meeting_date": "2026-12-09",
       "outcome_label": "+50bp",
       "outcome_delta_bps": 50,
       "probability": 0.0,
-      "post_meeting_rate": 4.404998779296875
+      "post_meeting_rate": 4.400001525878906
     }
   ]
 }

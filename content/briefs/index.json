@@ -1,6 +1,11 @@
 {
-  "generated_at": "2026-10-23T21:02:23.327451+00:00",
+  "generated_at": "2026-10-24T00:27:00.481689+00:00",
   "briefs": [
+    {
+      "date": "2026-10-24",
+      "headline_meeting_id": "FED-2026-12-09",
+      "headline_delta_pp": -1.9989013671875
+    },
     {
       "date": "2026-10-23",
       "headline_meeting_id": "FED-2026-10-28",
