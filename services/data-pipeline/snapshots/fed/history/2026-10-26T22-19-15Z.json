@@ -1,0 +1,78 @@
+{
+  "bank_code": "FED",
+  "snapshot_at": "2026-10-26T22:19:15+00:00",
+  "methodology_version": "1.2.0",
+  "estimation_basis": "forward-implied (Fed Funds futures via yfinance)",
+  "rows": [
+    {
+      "meeting_date": "2026-10-28",
+      "outcome_label": "-50bp",
+      "outcome_delta_bps": -50,
+      "probability": 0.0,
+      "post_meeting_rate": 3.125
+    },
+    {
+      "meeting_date": "2026-10-28",
+      "outcome_label": "-25bp",
+      "outcome_delta_bps": -25,
+      "probability": 0.0,
+      "post_meeting_rate": 3.375
+    },
+    {
+      "meeting_date": "2026-10-28",
+      "outcome_label": "Hold",
+      "outcome_delta_bps": 0,
+      "probability": 0.0,
+      "post_meeting_rate": 3.625
+    },
+    {
+      "meeting_date": "2026-10-28",
+      "outcome_label": "+25bp",
+      "outcome_delta_bps": 25,
+      "probability": 0.8800048828125,
+      "post_meeting_rate": 3.875
+    },
+    {
+      "meeting_date": "2026-10-28",
+      "outcome_label": "+50bp",
+      "outcome_delta_bps": 50,
+      "probability": 0.1199951171875,
+      "post_meeting_rate": 4.125
+    },
+    {
+      "meeting_date": "2026-12-09",
+      "outcome_label": "-50bp",
+      "outcome_delta_bps": -50,
+      "probability": 0.0,
+      "post_meeting_rate": 3.404998779296875
+    },
+    {
+      "meeting_date": "2026-12-09",
+      "outcome_label": "-25bp",
+      "outcome_delta_bps": -25,
+      "probability": 0.0,
+      "post_meeting_rate": 3.654998779296875
+    },
+    {
+      "meeting_date": "2026-12-09",
+      "outcome_label": "Hold",
+      "outcome_delta_bps": 0,
+      "probability": 0.139984130859375,
+      "post_meeting_rate": 3.904998779296875
+    },
+    {
+      "meeting_date": "2026-12-09",
+      "outcome_label": "+25bp",
+      "outcome_delta_bps": 25,
+      "probability": 0.860015869140625,
+      "post_meeting_rate": 4.154998779296875
+    },
+    {
+      "meeting_date": "2026-12-09",
+      "outcome_label": "+50bp",
+      "outcome_delta_bps": 50,
+      "probability": 0.0,
+      "post_meeting_rate": 4.404998779296875
+    }
+  ]
+}
