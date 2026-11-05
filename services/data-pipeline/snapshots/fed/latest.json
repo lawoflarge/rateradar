@@ -1,6 +1,6 @@
 {
   "bank_code": "FED",
-  "snapshot_at": "2026-11-04T23:14:03+00:00",
+  "snapshot_at": "2026-11-05T02:09:27+00:00",
   "methodology_version": "1.2.0",
   "estimation_basis": "forward-implied (Fed Funds futures via yfinance)",
   "rows": [
@@ -57,14 +57,14 @@
       "meeting_date": "2026-12-09",
       "outcome_label": "Hold",
       "outcome_delta_bps": 0,
-      "probability": 0.139984130859375,
+      "probability": 0.160003662109375,
       "post_meeting_rate": 3.8799972534179688
     },
     {
       "meeting_date": "2026-12-09",
       "outcome_label": "+25bp",
       "outcome_delta_bps": 25,
-      "probability": 0.860015869140625,
+      "probability": 0.839996337890625,
       "post_meeting_rate": 4.129997253417969
     },
     {
