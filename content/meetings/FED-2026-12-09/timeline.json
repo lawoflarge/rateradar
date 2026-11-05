@@ -1023,6 +1023,10 @@
       {
         "snapshot_at": "2026-11-05T02:09:27+00:00",
         "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-11-05T23:17:21+00:00",
+        "probability": 0.0
       }
     ],
     "-25": [
@@ -2044,6 +2048,10 @@
       },
       {
         "snapshot_at": "2026-11-05T02:09:27+00:00",
+        "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-11-05T23:17:21+00:00",
         "probability": 0.0
       }
     ],
@@ -3067,6 +3075,10 @@
       {
         "snapshot_at": "2026-11-05T02:09:27+00:00",
         "probability": 0.160003662109375
+      },
+      {
+        "snapshot_at": "2026-11-05T23:17:21+00:00",
+        "probability": 0.0
       }
     ],
     "25": [
@@ -4089,6 +4101,10 @@
       {
         "snapshot_at": "2026-11-05T02:09:27+00:00",
         "probability": 0.839996337890625
+      },
+      {
+        "snapshot_at": "2026-11-05T23:17:21+00:00",
+        "probability": 0.32000732421875
       }
     ],
     "50": [
@@ -5111,6 +5127,10 @@
       {
         "snapshot_at": "2026-11-05T02:09:27+00:00",
         "probability": 0.0
+      },
+      {
+        "snapshot_at": "2026-11-05T23:17:21+00:00",
+        "probability": 0.67999267578125
       }
     ]
   },
@@ -5134,13 +5154,13 @@
       "delta_pp": 68.0023193359375
     },
     {
-      "from_snapshot_at": "2026-06-02T20:48:03+00:00",
-      "to_snapshot_at": "2026-06-02T23:11:04+00:00",
-      "outcome_label": "+25bp",
-      "outcome_delta_bps": 25,
+      "from_snapshot_at": "2026-11-05T02:09:27+00:00",
+      "to_snapshot_at": "2026-11-05T23:17:21+00:00",
+      "outcome_label": "+50bp",
+      "outcome_delta_bps": 50,
       "from_probability": 0.0,
-      "to_probability": 0.319976806640625,
-      "delta_pp": 31.9976806640625
+      "to_probability": 0.67999267578125,
+      "delta_pp": 67.999267578125
     }
   ]
 }
