@@ -1,6 +1,6 @@
 {
   "date": "2026-11-10",
-  "generated_at": "2026-11-10T01:13:11.845217+00:00",
+  "generated_at": "2026-11-10T04:02:16.789023+00:00",
   "headline": {
     "meeting_id": "FED-2026-12-09",
     "bank_code": "FED",
@@ -33,14 +33,14 @@
       "delta_pp": 5.999755859375
     },
     {
-      "meeting_id": "FED-2026-12-09",
-      "bank_code": "FED",
-      "meeting_date": "2026-12-09",
-      "outcome_label": "-50bp",
-      "outcome_delta_bps": -50,
-      "prior_probability": 0.0,
+      "meeting_id": "ECB-2026-07-23",
+      "bank_code": "ECB",
+      "meeting_date": "2026-07-23",
+      "outcome_label": "-25bp",
+      "outcome_delta_bps": -25,
+      "prior_probability": 7.105427357601002e-15,
       "current_probability": 0.0,
-      "delta_pp": 0.0
+      "delta_pp": -7.105427357601002e-13
     }
   ],
   "calendar_context": []
