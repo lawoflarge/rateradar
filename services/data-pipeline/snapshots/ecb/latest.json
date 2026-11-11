@@ -1,6 +1,6 @@
 {
   "bank_code": "ECB",
-  "snapshot_at": "2026-11-10T22:51:58+00:00",
+  "snapshot_at": "2026-11-11T01:48:28+00:00",
   "methodology_version": "1.2.0",
   "estimation_basis": "spot-anchored \u2014 forward odds unavailable",
   "rows": [
